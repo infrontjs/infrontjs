@@ -2,9 +2,12 @@ export const version = "0.2.0";
 
 
 // Base
+import { Api } from "./base/Api.js";
 import { PropertyObject } from "./base/PropertyObject.js";
 import { State } from "./base/State.js";
+
 const base = {};
+base.Api = Api;
 base.PropertyObject = PropertyObject;
 base.State = State;
 export { base };

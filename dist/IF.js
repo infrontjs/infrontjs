@@ -86,6 +86,34 @@
 	    return Object.prototype.toString.call( value );
 	}
 
+	class Api
+	{
+	    constructor( endpoint = '' )
+	    {
+	        this.endpoint = trim( endpoint, '/' );
+	    }
+
+	    async get( route, cb = null )
+	    {
+	        let r = trim( route, "/" ),
+	            req = new Request( this.endpoint + '/' + route, { method: 'GET' } );
+
+	        if ( cb )
+	        {
+	            fetch( req )
+	                .then( response => response.json() )
+	                .then( json => cb( null, json ) )
+	                .catch( error => cb( error, null ) );
+	        }
+	        else
+	        {
+	            const response = await fetch( req );
+	            const json = await response.json();
+	            return json;
+	        }
+	    }
+	}
+
 	class PropertyObject
 	{
 	    constructor( props = {} )
@@ -114,6 +142,25 @@
 	                    }
 	                }
 	            );
+	        }
+	    }
+
+	    getPropertyValue( key, defValue = null )
+	    {
+	        if ( -1 < key.indexOf( '.') )
+	        {
+	            return key.split('.').reduce(function(prev, curr) {
+	                return prev ? prev[curr] : defValue
+	            }, this._props );
+	        }
+
+	        else if ( this._props.hasOwnProperty( key ) )
+	        {
+	            return this._props[ key ];
+	        }
+	        else
+	        {
+	            return defValue;
 	        }
 	    }
 	}
@@ -742,11 +789,11 @@
 
 	class StateManager
 	{
-	    constructor( appInstance, pathToStateFolder = './../states' )
+	    constructor( appInstance )
 	    {
 	        this.app = appInstance;
 	        this.currentState = null;
-	        this.pathToStateFolder = trim( pathToStateFolder, '/' );
+	        this.pathToStateFolder = this.app.getPropertyValue( 'stateManager.rootPath' );
 	    }
 
 	    async createState( name, routeParams, path = '' )
@@ -814,13 +861,66 @@
 	    }
 	}
 
+	class TemplateManager
+	{
+	    constructor( appInstance )
+	    {
+	        this.app = appInstance;
+	        this._cache = [];
+	    }
+
+	    _getTemplateFromCache( templateUrl )
+	    {
+	        const cachedTemplate =  this._cache.find( tmpl => tmpl.url === templateUrl );
+	        if ( cachedTemplate )
+	        {
+	            return cachedTemplate.html;
+	        }
+	    }
+
+	    async fetchTemplate( templateUrl, useCache = true )
+	    {
+	        let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
+	        if ( !tmplHtml )
+	        {
+	            const response = await fetch( templateUrl );
+	            tmplHtml = await response.text();
+	            this._cache.push(
+	                {
+	                    url : templateUrl,
+	                    html : tmplHtml
+	                }
+	            );
+	        }
+	        return tmplHtml;
+	    }
+
+	    async renderTemplate( templateUrl, element = null )
+	    {
+	        let html = await this.fetchTemplate( templateUrl );
+	        this.app.viewManager.render( html, element );
+	    }
+	}
+
 	// Global app pool
 	const apps = [];
 
 	const DEFAULT_SETTINGS = {
 	    "uid" : null,
 	    "title" : "InfrontJS",
-	    "container" : null
+	    "container" : null,
+	    "router" : {
+	        "isEnabled" : true
+	    },
+	    "stateManager" : {
+	        "rootPath" : ""
+	    },
+	    "viewManager" : {
+
+	    },
+	    "templateManager" : {
+	        "rootPath" : ""
+	    }
 	};
 
 	class App extends PropertyObject
@@ -839,13 +939,36 @@
 	            this.container = document.querySelector( 'body' );
 	        }
 
-	        this.stateManager = new StateManager( this );
-	        this.router = new Router( this );
-	        this.viewManager = new ViewManager( this );
+	        // Init core components
+	        this.initStateManager();
+	        this.initRouter();
+	        this.initViewManager();
+	        this.initTemplateManager();
+
 	        this.viewManager.setWindowTitle( this.title );
 
 	        // Add app to global app pool
 	        apps[ this.uid ] = this;
+	    }
+
+	    initStateManager()
+	    {
+	        this.stateManager = new StateManager( this );
+	    }
+
+	    initRouter()
+	    {
+	        this.router = new Router( this );
+	    }
+
+	    initViewManager()
+	    {
+	        this.viewManager = new ViewManager( this );
+	    }
+
+	    initTemplateManager()
+	    {
+	        this.templateManager = new TemplateManager( this );
 	    }
 
 	    async destroy()
@@ -896,7 +1019,9 @@
 	}
 
 	const version = "0.2.0";
+
 	const base = {};
+	base.Api = Api;
 	base.PropertyObject = PropertyObject;
 	base.State = State;
 

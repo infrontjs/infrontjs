@@ -30,6 +30,25 @@ class PropertyObject
             );
         }
     }
+
+    getPropertyValue( key, defValue = null )
+    {
+        if ( -1 < key.indexOf( '.') )
+        {
+            return key.split('.').reduce(function(prev, curr) {
+                return prev ? prev[curr] : defValue
+            }, this._props );
+        }
+
+        else if ( this._props.hasOwnProperty( key ) )
+        {
+            return this._props[ key ];
+        }
+        else
+        {
+            return defValue;
+        }
+    }
 }
 
 export { PropertyObject };

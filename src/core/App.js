@@ -4,21 +4,39 @@ import { createUid } from "../util/Functions.js";
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
 import { ViewManager } from "./ViewManager.js";
+import { TemplateManager } from "./TemplateManager.js";
 
 // Global app pool
 const apps = [];
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_PROPS = {
     "uid" : null,
     "title" : "InfrontJS",
     "container" : null
 };
 
+const DEFAULT_SETTINGS = {
+    "router" : {
+        "isEnabled" : true
+    },
+    "stateManager" : {
+        "rootPath" : ""
+    },
+    "viewManager" : {
+
+    },
+    "templateManager" : {
+        "rootPath" : ""
+    }
+};
+
 class App extends PropertyObject
 {
-    constructor( settings = {} )
+    constructor( props = {}, settings = {} )
     {
-        super( { ...DEFAULT_SETTINGS, ...settings } );
+        super( { ...DEFAULT_PROPS, ...props } );
+
+        this.settings = new PropertyObject( { ...DEFAULT_SETTINGS, settings } );
 
         if ( !this.uid )
         {
@@ -30,13 +48,36 @@ class App extends PropertyObject
             this.container = document.querySelector( 'body' );
         }
 
-        this.stateManager = new StateManager( this );
-        this.router = new Router( this );
-        this.viewManager = new ViewManager( this );
+        // Init core components
+        this.initStateManager();
+        this.initRouter();
+        this.initViewManager();
+        this.initTemplateManager();
+
         this.viewManager.setWindowTitle( this.title );
 
         // Add app to global app pool
         apps[ this.uid ] = this;
+    }
+
+    initStateManager()
+    {
+        this.stateManager = new StateManager( this );
+    }
+
+    initRouter()
+    {
+        this.router = new Router( this );
+    }
+
+    initViewManager()
+    {
+        this.viewManager = new ViewManager( this );
+    }
+
+    initTemplateManager()
+    {
+        this.templateManager = new TemplateManager( this );
     }
 
     async destroy()

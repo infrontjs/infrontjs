@@ -32,7 +32,8 @@
       async function run()
       {
           const app = new MyApp();
-          app.viewManager.renderTemplate( './tmpl.html' );
+          await app.templateManager.renderTemplate( 'layout.html' );
+          app.templateManager.renderTemplate( 'tmpl.html', document.getElementById( 'inner' ) );
       }
 
       run();

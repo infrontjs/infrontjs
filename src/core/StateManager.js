@@ -2,11 +2,12 @@ import { trim } from "../util/Functions.js";
 
 class StateManager
 {
-    constructor( appInstance, pathToStateFolder = './../states' )
+    constructor( appInstance )
     {
         this.app = appInstance;
         this.currentState = null;
-        this.pathToStateFolder = trim( pathToStateFolder, '/' );
+        this.pathToStateFolder = this.app.settings.getPropertyValue( 'stateManager.rootPath' );
+        console.log( this.pathToStateFolder );
     }
 
     async createState( name, routeParams, path = '' )

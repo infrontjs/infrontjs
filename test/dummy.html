@@ -6,6 +6,8 @@
 </head>
 <body>
 
+<div id="app"></div>
+
 <script type="module">
   import * as IF from "./../src/IF.js";
   window.IF = IF;
@@ -16,14 +18,24 @@
   {
       class MyApp extends IF.App
       {
-          constructor( props )
+          constructor()
           {
-              super( props );
+              super(
+                  {
+                      "container" : document.querySelector( 'body' ),
+                      "title" : "My First InfrontJS Application"
+                  }
+              );
           }
       }
 
-      const app = new MyApp();
-      console.log( IF );
+      async function run()
+      {
+          const app = new MyApp();
+          app.viewManager.renderTemplate( './tmpl.html' );
+      }
+
+      run();
   };
 </script>
 

@@ -800,6 +800,12 @@ class ViewManager
             window.document.title = title;
         }
     }
+
+    render( html, element = null )
+    {
+        const targetContainer = element instanceof HTMLElement ? element : this.rootContainer;
+        targetContainer.innerHTML = html;
+    }
 }
 
 // Global app pool

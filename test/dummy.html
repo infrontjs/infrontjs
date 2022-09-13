@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script type="module">
+  import * as IF from "./../src/IF.js";
+  window.IF = IF;
+</script>
+
+<script type="text/javascript">
+  window.onload = function()
+  {
+      class MyApp extends IF.App
+      {
+          constructor( props )
+          {
+              super( props );
+          }
+      }
+      //const app = new IF.App();
+      const app = new MyApp();
+      app.uid = "NEW";
+      console.log( app, app.uid );
+  };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "infrontjs",
+  "version": "0.0.1",
+  "description": "The progressive frontend framework.",
+  "main": "IF.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrontjs/infrontjs.git"
+  },
+  "keywords": [
+    "javascript",
+    "frontend",
+    "framework"
+  ],
+  "author": "benny!",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/infrontjs/infrontjs/issues"
+  },
+  "homepage": "https://github.com/infrontjs/infrontjs#readme",
+  "devDependencies": {
+    "rollup": "^2.79.0"
+  }
+}

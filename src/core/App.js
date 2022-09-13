@@ -50,11 +50,9 @@ class App extends PropertyObject
 
         // Init core components
         this.initStateManager();
-        this.initRouter();
         this.initViewManager();
         this.initTemplateManager();
-
-        this.viewManager.setWindowTitle( this.title );
+        this.initRouter();
 
         // Add app to global app pool
         apps[ this.uid ] = this;
@@ -78,6 +76,12 @@ class App extends PropertyObject
     initTemplateManager()
     {
         this.templateManager = new TemplateManager( this );
+    }
+
+    async run()
+    {
+        this.viewManager.setWindowTitle( this.title );
+        this.router.enable();
     }
 
     async destroy()

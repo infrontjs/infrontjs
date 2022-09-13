@@ -29,11 +29,44 @@
           }
       }
 
+      class TestState extends IF.base.State
+      {
+          static ID = 'test';
+
+          constructor()
+          {
+              super();
+          }
+
+          enter()
+          {
+              console.log( "Hello from TestState" );
+          }
+      }
+
+      class Test2State extends IF.base.State
+      {
+          static ID = 'test2';
+
+          constructor()
+          {
+              super();
+          }
+
+          enter()
+          {
+              console.log( "Hello from TestState Two" );
+          }
+      }
+
       async function run()
       {
           const app = new MyApp();
-          await app.templateManager.renderTemplate( 'layout.html' );
-          app.templateManager.renderTemplate( 'tmpl.html', document.getElementById( 'inner' ) );
+          app.stateManager.addState( TestState );
+          app.stateManager.addState( Test2State );
+          app.router.addStateRoute( '/test', TestState.ID );
+          app.router.addStateRoute( '/test2', Test2State.ID );
+          app.run();
       }
 
       run();

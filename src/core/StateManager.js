@@ -1,32 +1,36 @@
-import { trim } from "../util/Functions.js";
+import { State } from "../base/State.js";
 
 class StateManager
 {
     constructor( appInstance )
     {
+        this._states =  {};
         this.app = appInstance;
         this.currentState = null;
         this.pathToStateFolder = this.app.settings.getPropertyValue( 'stateManager.rootPath' );
-        console.log( this.pathToStateFolder );
     }
 
-    async createState( name, routeParams, path = '' )
+    addState( stateClass )
+    {
+        if ( false === ( stateClass.prototype instanceof State ) )
+        {
+            throw new Error( 'StateManager.addState expects an argument of type State.' );
+        }
+
+        if ( false === this._states.hasOwnProperty( stateClass.ID ) )
+        {
+            this._states[ stateClass.ID ] = stateClass;
+        }
+    }
+
+    createState( stateId, routeParams )
     {
         let stateInstance = null;
 
-        if ( path && path.length > 0 )
-        {
-            path = trim( path, '/' );
-            path += '/';
-        }
 
-        // Note
-        // Webpack workaround to make dynamic module loading possble
-        const stateModule = await import( `${this.pathToStateFolder}/${path}${name}` );
-
-        if ( stateModule && stateModule.hasOwnProperty( name ) )
+        if ( this._states.hasOwnProperty( stateId ) )
         {
-            stateInstance = new stateModule[ name ]( this.app, routeParams );
+            stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
 
         return stateInstance;

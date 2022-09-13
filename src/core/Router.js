@@ -1,6 +1,7 @@
 import { trim } from "../util/Functions.js";
 import { UrlPattern } from "../util/UrlPattern.js";
 import { RouteParams } from "../util/RouteParams.js";
+import { State } from "./../base/State.js";
 
 class Router
 {
@@ -13,30 +14,22 @@ class Router
         this.currentRoute = null;
     }
 
-    addState( stateName, stateRoute = null )
+    addStateRoute( stateRoute, stateId )
     {
         let sRoute = trim( stateRoute, '/' ),
-            sName = trim( stateName, '/' ),
-            sPaths = sName.split( '/' ),
-            sPath = '';
+            sId = stateId;
+
+        if ( sId instanceof State )
+        {
+            this.app.stateManager.addState( sId );
+            sId = sId.ID;
+        }
 
         sRoute = '/' + sRoute;
 
-        if ( sPaths.length > 1 )
-        {
-            sName = sPaths.pop();
-            for ( let pi = 0; pi < sPaths.length; pi++ )
-            {
-                sPath += sPaths[ pi ] + '/';
-            }
-
-            sPath = trim( sPath, '/' );
-        }
-
         this._routeStatePool.push(
             {
-                "name" : sName,
-                "path" : sPath,
+                "stateId" : sId,
                 "route" : new UrlPattern( sRoute )
             }
         );
@@ -63,8 +56,7 @@ class Router
             {
 
                 stateRouteData = {
-                    "stateName" : this._routeStatePool[ si ].name,
-                    "statePath" : this._routeStatePool[ si ].path,
+                    "stateId" : this._routeStatePool[ si ].stateId,
                     "routeParams" : new RouteParams( params, query )
                 };
                 break;
@@ -81,9 +73,7 @@ class Router
             return;
         }
         this.isEnabled = true;
-
         window.addEventListener( 'hashchange', this.processHash.bind( this ) );
-        this.enabled = true;
         this.processHash();
     }
 
@@ -98,7 +88,7 @@ class Router
         let route = hash.slice(1);
 
         // always start with a leading slash
-        route = '/' + Util.trim( route, '/' );
+        route = '/' + trim( route, '/' );
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
@@ -120,12 +110,11 @@ class Router
         try
         {
             let stateData = this.resolveStateDataByRoute( route );
-            if ( stateData && stateData.hasOwnProperty( 'stateName' ) && stateData.hasOwnProperty( 'routeParams' ) )
+            if ( stateData && stateData.hasOwnProperty( 'stateId' ) && stateData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = await this.app.stateManager.createState(
-                    stateData.stateName,
-                    stateData.routeParams,
-                    stateData.statePath
+                let stateInstance = this.app.stateManager.createState(
+                    stateData.stateId,
+                    stateData.routeParams
                 );
 
                 this.app.stateManager.switchTo( stateInstance );

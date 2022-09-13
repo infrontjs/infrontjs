@@ -1,6 +1,6 @@
-import { Util } from "../base/Util.js";
-import { UrlPattern } from "../base/UrlPattern.js";
-import { RouteParams } from "../base/RouteParams.js";
+import { trim } from "../util/Functions.js";
+import { UrlPattern } from "../util/UrlPattern.js";
+import { RouteParams } from "../util/RouteParams.js";
 
 class Router
 {
@@ -15,8 +15,8 @@ class Router
 
     addState( stateName, stateRoute = null )
     {
-        let sRoute = Util.trim( stateRoute, '/' ),
-            sName = Util.trim( stateName, '/' ),
+        let sRoute = trim( stateRoute, '/' ),
+            sName = trim( stateName, '/' ),
             sPaths = sName.split( '/' ),
             sPath = '';
 
@@ -30,7 +30,7 @@ class Router
                 sPath += sPaths[ pi ] + '/';
             }
 
-            sPath = Utils.trim( sPath, '/' );
+            sPath = trim( sPath, '/' );
         }
 
         this._routeStatePool.push(
@@ -107,7 +107,7 @@ class Router
 
     redirect( url, forceReload = false )
     {
-        location.hash = '/' + Util.trim( url, '/' );
+        location.hash = '/' + trim( url, '/' );
         if ( true === forceReload )
         {
             this.processHash();

@@ -1,10 +1,10 @@
-import { Util } from './Util.js';
+import { isPlainObject } from "../util/Functions.js";
 
 class PropertyObject
 {
     constructor( props = {} )
     {
-        if ( false === Util.isPlainObject( props ) )
+        if ( false === isPlainObject( props ) )
         {
             throw new Error( 'PropertyObject expects a plain object.' );
         }

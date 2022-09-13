@@ -1,97 +1,90 @@
-class Util
+/**
+ * Refer to:
+ * https://github.com/lodash/lodash/blob/master/isPlainObject.js
+ * @param value
+ * @returns {boolean}
+ */
+function isPlainObject( value )
 {
-    /**
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/master/isPlainObject.js
-     * @param value
-     * @returns {boolean}
-     */
-    static isPlainObject( value )
+    if ( !_isObjectLike( value ) || _getTag( value ) != '[object Object]' )
     {
-        if ( !Util.isObjectLike( value ) || Util.getTag( value ) != '[object Object]' )
-        {
-            return false
-        }
-
-        if ( Object.getPrototypeOf( value ) === null )
-        {
-            return true
-        }
-
-        let proto = value;
-        while ( Object.getPrototypeOf( proto ) !== null)
-        {
-            proto = Object.getPrototypeOf(proto);
-        }
-
-        return Object.getPrototypeOf( value ) === proto
+        return false
     }
 
-    /**
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/master/isObjectLike.js
-     *
-     * @param value
-     * @returns {boolean}
-     */
-    static isObjectLike( value )
+    if ( Object.getPrototypeOf( value ) === null )
     {
-        return typeof value === 'object' && value !== null
+        return true
     }
 
-    /**
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/master/.internal/getTag.js
-     *
-     * @param value
-     * @returns {string|string}
-     */
-    static getTag( value )
+    let proto = value;
+    while ( Object.getPrototypeOf( proto ) !== null)
     {
-        if ( value == null )
-        {
-            return value === undefined ? '[object Undefined]' : '[object Null]'
-        }
-        return Object.prototype.toString.call( value );
+        proto = Object.getPrototypeOf(proto);
     }
 
-    static createUid()
+    return Object.getPrototypeOf( value ) === proto
+}
+
+
+function createUid()
+{
+    return ( [ 1e7 ] + -1e3 + -4e3 + -8e3 + -1e11 ).replace( /[018]/g, c =>
+        ( c ^ crypto.getRandomValues( new Uint8Array( 1 ) )[ 0 ] & 15 >> c / 4 ).toString( 16 )
+    );
+}
+
+function trim( str, characters, flags )
+{
+    characters = characters || " ";
+    flags = flags || "g";
+    if (typeof str !== "string" || typeof characters !== "string" || typeof flags !== "string")
     {
-        return ( [ 1e7 ] + -1e3 + -4e3 + -8e3 + -1e11 ).replace( /[018]/g, c =>
-            ( c ^ crypto.getRandomValues( new Uint8Array( 1 ) )[ 0 ] & 15 >> c / 4 ).toString( 16 )
-        );
+        throw new TypeError("argument must be string");
     }
 
-    static trim( str, characters, flags )
+    if (!/^[gi]*$/.test(flags))
     {
-        characters = characters || " ";
-        flags = flags || "g";
-        if (typeof str !== "string" || typeof characters !== "string" || typeof flags !== "string")
-        {
-            throw new TypeError("argument must be string");
-        }
-
-        if (!/^[gi]*$/.test(flags))
-        {
-            throw new TypeError("Invalid flags supplied '" + flags.match(new RegExp("[^gi]*")) + "'");
-        }
-
-        characters = characters.replace(/[\[\](){}?*+\^$\\.|\-]/g, "\\$&");
-
-        return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
+        throw new TypeError("Invalid flags supplied '" + flags.match(new RegExp("[^gi]*")) + "'");
     }
 
-    constructor()
+    characters = characters.replace(/[\[\](){}?*+\^$\\.|\-]/g, "\\$&");
+
+    return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
+}
+
+/**
+ * Refer to:
+ * https://github.com/lodash/lodash/blob/master/isObjectLike.js
+ *
+ * @param value
+ * @returns {boolean}
+ */
+function _isObjectLike( value )
+{
+    return typeof value === 'object' && value !== null
+}
+
+/**
+ * Refer to:
+ * https://github.com/lodash/lodash/blob/master/.internal/getTag.js
+ *
+ * @param value
+ * @returns {string|string}
+ */
+function _getTag( value )
+{
+    if ( value == null )
     {
-        throw new Error( 'Util is not intended to be initialized. Use it statically.' );
+        return value === undefined ? '[object Undefined]' : '[object Null]'
     }
+    return Object.prototype.toString.call( value );
 }
 
 class PropertyObject
 {
     constructor( props = {} )
     {
-        if ( false === Util.isPlainObject( props ) )
+        if ( false === isPlainObject( props ) )
         {
             throw new Error( 'PropertyObject expects a plain object.' );
         }
@@ -617,8 +610,8 @@ class Router
 
     addState( stateName, stateRoute = null )
     {
-        let sRoute = Util.trim( stateRoute, '/' ),
-            sName = Util.trim( stateName, '/' ),
+        let sRoute = trim( stateRoute, '/' ),
+            sName = trim( stateName, '/' ),
             sPaths = sName.split( '/' ),
             sPath = '';
 
@@ -632,7 +625,7 @@ class Router
                 sPath += sPaths[ pi ] + '/';
             }
 
-            sPath = Utils.trim( sPath, '/' );
+            sPath = trim( sPath, '/' );
         }
 
         this._routeStatePool.push(
@@ -709,7 +702,7 @@ class Router
 
     redirect( url, forceReload = false )
     {
-        location.hash = '/' + Util.trim( url, '/' );
+        location.hash = '/' + trim( url, '/' );
         if ( true === forceReload )
         {
             this.processHash();
@@ -747,7 +740,7 @@ class StateManager
     {
         this.app = appInstance;
         this.currentState = null;
-        this.pathToStateFolder = Util.trim( pathToStateFolder, '/' );
+        this.pathToStateFolder = trim( pathToStateFolder, '/' );
     }
 
     async createState( name, routeParams, path = '' )
@@ -756,7 +749,7 @@ class StateManager
 
         if ( path && path.length > 0 )
         {
-            path = Utils.trim( path, '/' );
+            path = trim( path, '/' );
             path += '/';
         }
 
@@ -826,7 +819,7 @@ class App extends PropertyObject
 
         if ( !this.uid )
         {
-            this.uid = Util.createUid();
+            this.uid = createUid();
         }
 
         if ( !this.container || false === this.container instanceof HTMLElement )
@@ -890,13 +883,12 @@ async function destroyApp( appToDestroy )
     }
 }
 
-const version = "0.01";
+const version = "0.2.0";
 const base = {};
-base.Util = Util;
 base.PropertyObject = PropertyObject;
 base.State = State;
 
 // Marketing ;-)
 console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
 
-export { App, base, destroyApp, getApp, version };
+export { App, base, createUid, destroyApp, getApp, isPlainObject, trim, version };

@@ -1,4 +1,4 @@
-import { Util } from "./../base/Util.js";
+import { trim } from "../util/Functions.js";
 
 class StateManager
 {
@@ -6,7 +6,7 @@ class StateManager
     {
         this.app = appInstance;
         this.currentState = null;
-        this.pathToStateFolder = Util.trim( pathToStateFolder, '/' );
+        this.pathToStateFolder = trim( pathToStateFolder, '/' );
     }
 
     async createState( name, routeParams, path = '' )
@@ -15,7 +15,7 @@ class StateManager
 
         if ( path && path.length > 0 )
         {
-            path = Utils.trim( path, '/' );
+            path = trim( path, '/' );
             path += '/';
         }
 

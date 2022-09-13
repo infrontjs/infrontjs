@@ -1,17 +1,18 @@
-export const version = "0.01";
+export const version = "0.2.0";
 
 
-// base
-import { Util } from "./base/Util.js";
+// Base
 import { PropertyObject } from "./base/PropertyObject.js";
 import { State } from "./base/State.js";
 const base = {};
-base.Util = Util;
 base.PropertyObject = PropertyObject;
 base.State = State;
-
 export { base };
 
+// global functions
+export { trim, createUid, isPlainObject } from "./util/Functions.js";
+
+// Core
 export { App, destroyApp, getApp } from "./core/App.js";
 
 // Marketing ;-)

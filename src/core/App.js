@@ -1,5 +1,5 @@
 import { PropertyObject } from "../base/PropertyObject.js";
-import { Util } from "../base/Util.js";
+import { createUid } from "../util/Functions.js";
 
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
@@ -22,7 +22,7 @@ class App extends PropertyObject
 
         if ( !this.uid )
         {
-            this.uid = Util.createUid();
+            this.uid = createUid();
         }
 
         if ( !this.container || false === this.container instanceof HTMLElement )

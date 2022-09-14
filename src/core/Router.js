@@ -1,43 +1,51 @@
-import { trim } from "../util/Functions.js";
+import { trim, isClass, isClassChildOf } from "../util/Functions.js";
 import { UrlPattern } from "../util/UrlPattern.js";
 import { RouteParams } from "../util/RouteParams.js";
 import { State } from "./../base/State.js";
 
 class Router
 {
+    static ACTION_TYPE_FUNCTION = 'function';
+    static ACTION_TYPE_STATE = 'state';
+
     constructor( appInstance )
     {
-        this._routeStatePool = [];
+        this._routeActions = [];
         this.app = appInstance;
         this.isEnabled = false;
         this.previousRoute = null;
         this.currentRoute = null;
     }
 
-    addStateRoute( stateRoute, stateId )
+    addRoute( route, action )
     {
-        let sRoute = trim( stateRoute, '/' ),
-            sId = stateId;
-
-        if ( sId instanceof State )
-        {
-            this.app.stateManager.addState( sId );
-            sId = sId.ID;
-        }
+        let sRoute = trim( route, '/' ),
+            type = Router.ACTION_TYPE_FUNCTION;
 
         sRoute = '/' + sRoute;
 
-        this._routeStatePool.push(
-            {
-                "stateId" : sId,
-                "route" : new UrlPattern( sRoute )
-            }
-        );
+        if ( true === isClass( action ) && true === isClassChildOf( action, 'State' )  )
+        {
+            type = Router.ACTION_TYPE_STATE
+            this.app.stateManager.addStateClass( action );
+            this._routeActions.push(
+                {
+                    "type" : type,
+                    "action" : action.ID,
+                    "route" : new UrlPattern( sRoute )
+                }
+            );
+        }
+        // else: check if object and if object has an enter and exit method
+        else
+        {
+            throw new Error( 'Invalid action type.' );
+        }
     }
 
-    resolveStateDataByRoute( route )
+    resolveActionDataByRoute( route )
     {
-        let stateRouteData = null,
+        let routeData = null,
             params = {},
             query = {},
             routeSplits = route.split( "?" );
@@ -49,21 +57,21 @@ class Router
             query = Object.fromEntries( sp.entries() );
         }
 
-        for (let si = 0; si < this._routeStatePool.length; si++ )
+        for (let si = 0; si < this._routeActions.length; si++ )
         {
-            params = this._routeStatePool[ si ].route.match( route );
+            params = this._routeActions[ si ].route.match( route );
             if ( params )
             {
 
-                stateRouteData = {
-                    "stateId" : this._routeStatePool[ si ].stateId,
+                routeData = {
+                    "routeActionData" : this._routeActions[ si ],
                     "routeParams" : new RouteParams( params, query )
                 };
                 break;
             }
         }
 
-        return stateRouteData;
+        return routeData;
     }
 
     enable()
@@ -109,15 +117,19 @@ class Router
         // Get view call
         try
         {
-            let stateData = this.resolveStateDataByRoute( route );
-            if ( stateData && stateData.hasOwnProperty( 'stateId' ) && stateData.hasOwnProperty( 'routeParams' ) )
+            const actionData = this.resolveActionDataByRoute( route );
+            if ( actionData && actionData.hasOwnProperty( 'routeActionData' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = this.app.stateManager.createState(
-                    stateData.stateId,
-                    stateData.routeParams
-                );
-
-                this.app.stateManager.switchTo( stateInstance );
+                switch( actionData.routeActionData.type )
+                {
+                    case Router.ACTION_TYPE_STATE:
+                        let stateInstance = this.app.stateManager.createState(
+                            actionData.routeActionData.action,
+                            actionData.routeParams
+                        );
+                        this.app.stateManager.switchTo( stateInstance );
+                    break;
+                }
             }
         }
         catch( e )

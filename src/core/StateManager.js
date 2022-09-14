@@ -1,3 +1,4 @@
+import { isClass, isClassChildOf } from "../util/Functions.js";
 import { State } from "../base/State.js";
 
 class StateManager
@@ -10,11 +11,11 @@ class StateManager
         this.pathToStateFolder = this.app.settings.getPropertyValue( 'stateManager.rootPath' );
     }
 
-    addState( stateClass )
+    addStateClass( stateClass )
     {
-        if ( false === ( stateClass.prototype instanceof State ) )
+        if ( false === isClass( stateClass ) || false === isClassChildOf( stateClass, 'State') )
         {
-            throw new Error( 'StateManager.addState expects an argument of type State.' );
+            throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
         }
 
         if ( false === this._states.hasOwnProperty( stateClass.ID ) )
@@ -26,7 +27,6 @@ class StateManager
     createState( stateId, routeParams )
     {
         let stateInstance = null;
-
 
         if ( this._states.hasOwnProperty( stateId ) )
         {

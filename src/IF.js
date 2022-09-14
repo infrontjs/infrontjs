@@ -13,7 +13,7 @@ base.State = State;
 export { base };
 
 // global functions
-export { trim, createUid, isPlainObject } from "./util/Functions.js";
+export { trim, createUid, isPlainObject, isClass, isClassChildOf } from "./util/Functions.js";
 
 // Core
 export { App, destroyApp, getApp } from "./core/App.js";

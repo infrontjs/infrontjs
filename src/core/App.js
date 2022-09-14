@@ -78,10 +78,14 @@ class App extends PropertyObject
         this.templateManager = new TemplateManager( this );
     }
 
-    async run()
+    async run( route = null )
     {
         this.viewManager.setWindowTitle( this.title );
         this.router.enable();
+        if ( route )
+        {
+            this.router.redirect( route );
+        }
     }
 
     async destroy()

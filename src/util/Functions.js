@@ -25,6 +25,38 @@ function isPlainObject( value )
     return Object.getPrototypeOf( value ) === proto
 }
 
+/**
+ * Checks if given value is a class constructor
+ * Refer:
+ * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
+ * @param v
+ * @returns {boolean}
+ */
+function isClass( v )
+{
+    return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+}
+
+function isClassChildOf( classContructor, parentClassName )
+{
+    let ret = false,
+        regexEnd = new RegExp( 'function ()', "gm" ),
+        regex = new RegExp( `class ${parentClassName}`, "gm" );
+
+    while ( ret === false && null === regexEnd.exec( Object.getPrototypeOf( classContructor ).toString() ) )
+    {
+        if ( null !== regex.exec( Object.getPrototypeOf( classContructor ).toString() ) )
+        {
+            ret = true;
+        }
+        else
+        {
+            classContructor = Object.getPrototypeOf( classContructor );
+        }
+    }
+
+    return ret;
+}
 
 function createUid()
 {
@@ -51,6 +83,11 @@ function trim( str, characters, flags )
 
     return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// start: private methods
 
 /**
  * Refer to:
@@ -80,4 +117,8 @@ function _getTag( value )
     return Object.prototype.toString.call( value );
 }
 
-export { trim, createUid, isPlainObject };
+// stop: private methods
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+export { trim, createUid, isPlainObject, isClass, isClassChildOf };

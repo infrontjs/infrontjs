@@ -1171,7 +1171,7 @@ async function destroyApp( appToDestroy )
     }
 }
 
-const version = "0.9.0";
+const version = "0.2.3";
 
 const base = {};
 base.Api = Api;

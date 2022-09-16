@@ -1,8 +1,8 @@
 {
   "name": "infrontjs",
-  "version": "0.0.1",
+  "version": "0.2.3",
   "description": "The progressive frontend framework.",
-  "main": "IF.js",
+  "main": "src/IF.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +22,10 @@
   },
   "homepage": "https://github.com/infrontjs/infrontjs#readme",
   "devDependencies": {
+    "@babel/plugin-proposal-class-static-block": "^7.18.6",
+    "@babel/preset-env": "^7.19.1",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^22.0.2",
     "rollup": "^2.79.0"
   }
 }

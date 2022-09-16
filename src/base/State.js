@@ -11,6 +11,11 @@ class State
         return true;
     }
 
+    canExit()
+    {
+        return true;
+    }
+
     enter()
     {
     }

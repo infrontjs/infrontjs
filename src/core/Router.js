@@ -5,8 +5,8 @@ import { State } from "./../base/State.js";
 
 class Router
 {
-    static ACTION_TYPE_FUNCTION = 'function';
-    static ACTION_TYPE_STATE = 'state';
+    static ACTION_TYPE_FUNCTION = "function";
+    static ACTION_TYPE_STATE = "state";
 
     constructor( appInstance )
     {
@@ -17,6 +17,7 @@ class Router
         this.currentRoute = null;
     }
 
+    // Add third optional param called isIndexAction to be triggered, when route is empty
     addRoute( route, action )
     {
         let sRoute = trim( route, '/' ),

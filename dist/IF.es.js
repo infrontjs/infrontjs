@@ -25,6 +25,38 @@ function isPlainObject( value )
     return Object.getPrototypeOf( value ) === proto
 }
 
+/**
+ * Checks if given value is a class constructor
+ * Refer:
+ * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
+ * @param v
+ * @returns {boolean}
+ */
+function isClass( v )
+{
+    return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+}
+
+function isClassChildOf( classContructor, parentClassName )
+{
+    let ret = false,
+        regexEnd = new RegExp( 'function ()', "gm" ),
+        regex = new RegExp( `class ${parentClassName}`, "gm" );
+
+    while ( ret === false && null === regexEnd.exec( Object.getPrototypeOf( classContructor ).toString() ) )
+    {
+        if ( null !== regex.exec( Object.getPrototypeOf( classContructor ).toString() ) )
+        {
+            ret = true;
+        }
+        else
+        {
+            classContructor = Object.getPrototypeOf( classContructor );
+        }
+    }
+
+    return ret;
+}
 
 function createUid()
 {
@@ -51,6 +83,11 @@ function trim( str, characters, flags )
 
     return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// start: private methods
 
 /**
  * Refer to:
@@ -89,8 +126,8 @@ class Api
 
     async get( route, cb = null )
     {
-        let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + route, { method: 'GET' } );
+        trim( route, "/" );
+            let req = new Request( this.endpoint + '/' + route, { method: 'GET' } );
 
         if ( cb )
         {
@@ -646,47 +683,48 @@ class RouteParams
 
 class Router
 {
+    static ACTION_TYPE_FUNCTION = "function";
+    static ACTION_TYPE_STATE = "state";
+
     constructor( appInstance )
     {
-        this._routeStatePool = [];
+        this._routeActions = [];
         this.app = appInstance;
         this.isEnabled = false;
         this.previousRoute = null;
         this.currentRoute = null;
     }
 
-    addState( stateName, stateRoute = null )
+    // Add third optional param called isIndexAction to be triggered, when route is empty
+    addRoute( route, action )
     {
-        let sRoute = trim( stateRoute, '/' ),
-            sName = trim( stateName, '/' ),
-            sPaths = sName.split( '/' ),
-            sPath = '';
+        let sRoute = trim( route, '/' ),
+            type = Router.ACTION_TYPE_FUNCTION;
 
         sRoute = '/' + sRoute;
 
-        if ( sPaths.length > 1 )
+        if ( true === isClass( action ) && true === isClassChildOf( action, 'State' )  )
         {
-            sName = sPaths.pop();
-            for ( let pi = 0; pi < sPaths.length; pi++ )
-            {
-                sPath += sPaths[ pi ] + '/';
-            }
-
-            sPath = trim( sPath, '/' );
+            type = Router.ACTION_TYPE_STATE;
+            this.app.stateManager.addStateClass( action );
+            this._routeActions.push(
+                {
+                    "type" : type,
+                    "action" : action.ID,
+                    "route" : new UrlPattern( sRoute )
+                }
+            );
         }
-
-        this._routeStatePool.push(
-            {
-                "name" : sName,
-                "path" : sPath,
-                "route" : new UrlPattern( sRoute )
-            }
-        );
+        // else: check if object and if object has an enter and exit method
+        else
+        {
+            throw new Error( 'Invalid action type.' );
+        }
     }
 
-    resolveStateDataByRoute( route )
+    resolveActionDataByRoute( route )
     {
-        let stateRouteData = null,
+        let routeData = null,
             params = {},
             query = {},
             routeSplits = route.split( "?" );
@@ -698,22 +736,21 @@ class Router
             query = Object.fromEntries( sp.entries() );
         }
 
-        for (let si = 0; si < this._routeStatePool.length; si++ )
+        for (let si = 0; si < this._routeActions.length; si++ )
         {
-            params = this._routeStatePool[ si ].route.match( route );
+            params = this._routeActions[ si ].route.match( route );
             if ( params )
             {
 
-                stateRouteData = {
-                    "stateName" : this._routeStatePool[ si ].name,
-                    "statePath" : this._routeStatePool[ si ].path,
+                routeData = {
+                    "routeActionData" : this._routeActions[ si ],
                     "routeParams" : new RouteParams( params, query )
                 };
                 break;
             }
         }
 
-        return stateRouteData;
+        return routeData;
     }
 
     enable()
@@ -723,9 +760,7 @@ class Router
             return;
         }
         this.isEnabled = true;
-
         window.addEventListener( 'hashchange', this.processHash.bind( this ) );
-        this.enabled = true;
         this.processHash();
     }
 
@@ -740,7 +775,7 @@ class Router
         let route = hash.slice(1);
 
         // always start with a leading slash
-        route = '/' + Util.trim( route, '/' );
+        route = '/' + trim( route, '/' );
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
@@ -761,16 +796,19 @@ class Router
         // Get view call
         try
         {
-            let stateData = this.resolveStateDataByRoute( route );
-            if ( stateData && stateData.hasOwnProperty( 'stateName' ) && stateData.hasOwnProperty( 'routeParams' ) )
+            const actionData = this.resolveActionDataByRoute( route );
+            if ( actionData && actionData.hasOwnProperty( 'routeActionData' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = await this.app.stateManager.createState(
-                    stateData.stateName,
-                    stateData.routeParams,
-                    stateData.statePath
-                );
-
-                this.app.stateManager.switchTo( stateInstance );
+                switch( actionData.routeActionData.type )
+                {
+                    case Router.ACTION_TYPE_STATE:
+                        let stateInstance = this.app.stateManager.createState(
+                            actionData.routeActionData.action,
+                            actionData.routeParams
+                        );
+                        this.app.stateManager.switchTo( stateInstance );
+                    break;
+                }
             }
         }
         catch( e )
@@ -785,28 +823,32 @@ class StateManager
 {
     constructor( appInstance )
     {
+        this._states =  {};
         this.app = appInstance;
         this.currentState = null;
-        this.pathToStateFolder = this.app.getPropertyValue( 'stateManager.rootPath' );
+        this.pathToStateFolder = this.app.settings.getPropertyValue( 'stateManager.rootPath' );
     }
 
-    async createState( name, routeParams, path = '' )
+    addStateClass( stateClass )
+    {
+        if ( false === isClass( stateClass ) || false === isClassChildOf( stateClass, 'State') )
+        {
+            throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
+        }
+
+        if ( false === this._states.hasOwnProperty( stateClass.ID ) )
+        {
+            this._states[ stateClass.ID ] = stateClass;
+        }
+    }
+
+    createState( stateId, routeParams )
     {
         let stateInstance = null;
 
-        if ( path && path.length > 0 )
+        if ( this._states.hasOwnProperty( stateId ) )
         {
-            path = trim( path, '/' );
-            path += '/';
-        }
-
-        // Note
-        // Webpack workaround to make dynamic module loading possble
-        const stateModule = await import( `${this.pathToStateFolder}/${path}${name}` );
-
-        if ( stateModule && stateModule.hasOwnProperty( name ) )
-        {
-            stateInstance = new stateModule[ name ]( this.app, routeParams );
+            stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
 
         return stateInstance;
@@ -855,6 +897,39 @@ class ViewManager
     }
 }
 
+function _template( html, data )
+{
+    var me = _template;
+    return (function ()
+    {
+        var name = html,
+            string = (name = 'template(string)', html); // no warnings
+        var line = 1, body = (
+            "try { " +
+            (me.variable ?  "var " + me.variable + " = this.stash;" : "with (this.stash) { ") +
+            "this.ret += '"  +
+            string.
+            replace(/<%/g, '\x11').replace(/%>/g, '\x13'). // if you want other tag, just edit this line
+                replace(/'(?![^\x11\x13]+?\x13)/g, '\\x27').
+            replace(/^\s*|\s*$/g, '').
+            replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
+            replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
+            replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '").
+            replace(/\x11=(.+?)\x13/g, "' + this.escapeHTML($1) + '").
+            replace(/\x11(.+?)\x13/g, "'; $1; this.ret += '") +
+            "'; " + (me.variable ? "" : "}") + "return this.ret;" +
+            "} catch (e) { throw 'TemplateError: ' + e + ' (on " + name + "' + ' line ' + this.line + ')'; } " +
+            "//@ sourceURL=" + name + "\n" // source map
+        ).replace(/this\.ret \+= '';/g, '');
+        var func = new Function(body);
+        var map  = { '&' : '&amp;', '<' : '&lt;', '>' : '&gt;', '\x22' : '&#x22;', '\x27' : '&#x27;' };
+        var escapeHTML = function (string) { return (''+string).replace(/[&<>\'\"]/g, function (_) { return map[_] }) };
+        var nl2br = function(string) { return escapeHTML(string).replace(/(?:\ r\n|\r|\n)/g, '<br>')};
+        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, line: 1, ret : '', stash: stash }) };
+    })()(data);
+}
+
+
 class TemplateManager
 {
     constructor( appInstance )
@@ -889,20 +964,89 @@ class TemplateManager
         return tmplHtml;
     }
 
-    async renderTemplate( templateUrl, element = null )
+    compileTemplate( tmpl, data = {} )
     {
-        let html = await this.fetchTemplate( templateUrl );
-        this.app.viewManager.render( html, element );
+        return _template( tmpl, data );
+    }
+
+    async renderTemplate( templateUrl, data = {}, containerElement = null )
+    {
+        let tmpl = await this.fetchTemplate( templateUrl ),
+            html = this.compileTemplate( tmpl, data );
+
+        this.app.viewManager.render( html, containerElement );
+
+        return html;
+    }
+}
+
+class L18n
+{
+    constructor( appInstance )
+    {
+        this.app = appInstance;
+        this.defaultLanguage = 'en';
+        this.currentLanguage = this.defaultLanguage;
+
+        this.dictionary = {};
+    }
+
+    expose( fnName = '_lc' )
+    {
+        if ( window )
+        {
+            window[ fnName ] = this.getLocale.bind( this );
+        }
+    }
+
+    getLocale( key, params )
+    {
+        const defaultLanguage = this.defaultLanguage,
+            language = this.currentLanguage,
+            dictionary = this.dictionary;
+
+        if ( language && dictionary[ language ].hasOwnProperty( key ) )
+        {
+            return dictionary[ language][ key ].replace(/{(\d+)}/g, function(match, number)
+            {
+                return typeof params[number] != 'undefined'
+                    ? params[number]
+                    : match
+                    ;
+            });
+        }
+        else if ( defaultLanguage &&
+            dictionary.hasOwnProperty( defaultLanguage ) &&
+            dictionary[ defaultLanguage ].hasOwnProperty( key ) )
+        {
+            return dictionary[ defaultLanguage ][ key ].replace(/{(\d+)}/g, function(match, number)
+            {
+                return typeof params[number] != 'undefined'
+                    ? params[number]
+                    : match
+                    ;
+            });
+        }
+        else
+        {
+            return '###' + key + '###';
+        }
     }
 }
 
 // Global app pool
 const apps = [];
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_PROPS = {
     "uid" : null,
     "title" : "InfrontJS",
-    "container" : null,
+    "container" : null
+};
+
+const DEFAULT_SETTINGS = {
+    "l18n" : {
+        "defaultLanguage" : "en"
+    },
     "router" : {
         "isEnabled" : true
     },
@@ -910,7 +1054,6 @@ const DEFAULT_SETTINGS = {
         "rootPath" : ""
     },
     "viewManager" : {
-
     },
     "templateManager" : {
         "rootPath" : ""
@@ -919,9 +1062,11 @@ const DEFAULT_SETTINGS = {
 
 class App extends PropertyObject
 {
-    constructor( settings = {} )
+    constructor( props = {}, settings = {} )
     {
-        super( { ...DEFAULT_SETTINGS, ...settings } );
+        super( { ...DEFAULT_PROPS, ...props } );
+
+        this.settings = new PropertyObject( { ...DEFAULT_SETTINGS, settings } );
 
         if ( !this.uid )
         {
@@ -934,17 +1079,21 @@ class App extends PropertyObject
         }
 
         // Init core components
+        this.initL18n();
         this.initStateManager();
-        this.initRouter();
         this.initViewManager();
         this.initTemplateManager();
-
-        this.viewManager.setWindowTitle( this.title );
+        this.initRouter();
 
         // Add app to global app pool
         apps[ this.uid ] = this;
     }
 
+    initL18n()
+    {
+        this.l18n = new L18n( this );
+
+    }
     initStateManager()
     {
         this.stateManager = new StateManager( this );
@@ -963,6 +1112,16 @@ class App extends PropertyObject
     initTemplateManager()
     {
         this.templateManager = new TemplateManager( this );
+    }
+
+    async run( route = null )
+    {
+        this.viewManager.setWindowTitle( this.title );
+        this.router.enable();
+        if ( route )
+        {
+            this.router.redirect( route );
+        }
     }
 
     async destroy()
@@ -1012,7 +1171,7 @@ async function destroyApp( appToDestroy )
     }
 }
 
-const version = "0.2.0";
+const version = "0.9.0";
 
 const base = {};
 base.Api = Api;
@@ -1022,4 +1181,4 @@ base.State = State;
 // Marketing ;-)
 console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
 
-export { App, base, createUid, destroyApp, getApp, isPlainObject, trim, version };
+export { App, base, createUid, destroyApp, getApp, isClass, isClassChildOf, isPlainObject, trim, version };

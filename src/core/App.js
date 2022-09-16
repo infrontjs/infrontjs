@@ -5,6 +5,7 @@ import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
 import { ViewManager } from "./ViewManager.js";
 import { TemplateManager } from "./TemplateManager.js";
+import { L18n } from "./L18n.js";
 
 // Global app pool
 const apps = [];
@@ -16,6 +17,9 @@ const DEFAULT_PROPS = {
 };
 
 const DEFAULT_SETTINGS = {
+    "l18n" : {
+        "defaultLanguage" : "en"
+    },
     "router" : {
         "isEnabled" : true
     },
@@ -23,7 +27,6 @@ const DEFAULT_SETTINGS = {
         "rootPath" : ""
     },
     "viewManager" : {
-
     },
     "templateManager" : {
         "rootPath" : ""
@@ -49,6 +52,7 @@ class App extends PropertyObject
         }
 
         // Init core components
+        this.initL18n();
         this.initStateManager();
         this.initViewManager();
         this.initTemplateManager();
@@ -58,6 +62,11 @@ class App extends PropertyObject
         apps[ this.uid ] = this;
     }
 
+    initL18n()
+    {
+        this.l18n = new L18n( this );
+
+    }
     initStateManager()
     {
         this.stateManager = new StateManager( this );

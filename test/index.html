@@ -14,6 +14,7 @@
 </script>
 
 <script type="text/javascript">
+
   window.onload = function()
   {
       class MyApp extends IF.App
@@ -48,25 +49,22 @@
       {
           static ID = 'test2';
 
-          constructor()
-          {
-              super();
-          }
-
-          enter()
+          async enter()
           {
               console.log( "Hello from TestState Two" );
+              this.app.templateManager.renderTemplate( 'tmpl.html' );
           }
       }
 
       async function run()
       {
           const app = new MyApp();
-          app.stateManager.addState( TestState );
-          app.stateManager.addState( Test2State );
-          app.router.addStateRoute( '/test', TestState.ID );
-          app.router.addStateRoute( '/test2', Test2State.ID );
+          app.stateManager.addStateClass( TestState );
+          app.stateManager.addStateClass( Test2State );
+          app.router.addRoute ( '/test', TestState );
+          app.router.addRoute( '/test2', Test2State );
           app.run();
+
       }
 
       run();

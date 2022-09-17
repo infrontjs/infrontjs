@@ -43,7 +43,7 @@ class StateManager
         return stateInstance;
     }
 
-    switchTo( newState )
+    async switchTo( newState )
     {
         if ( false === newState.canEnter() )
         {
@@ -51,20 +51,19 @@ class StateManager
             if ( redirectTo )
             {
                 this.app.router.redirect( redirectTo );
+                return false;
             }
-            else
-            {
-                throw Error( 'Forbidden to enter new state:' + newState.ID );
-            }
+
+            throw Error( 'Forbidden to enter new state:' + newState.getId() );
         }
 
         if ( this.currentState )
         {
-            this.currentState.exit();
+            await this.currentState.exit();
             delete this.currentState;
         }
 
-        newState.enter();
+        await newState.enter();
         this.currentState = newState;
     }
 

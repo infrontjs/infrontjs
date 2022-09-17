@@ -1,9 +1,16 @@
 class State
 {
+    static ID = null;
+
     constructor( app, routeParams )
     {
         this.app = app;
         this.routeParams = routeParams;
+    }
+
+    getId()
+    {
+        return this.constructor.ID;
     }
 
     canEnter()
@@ -21,11 +28,11 @@ class State
         return null;
     }
 
-    enter()
+    async enter()
     {
     }
 
-    exit()
+    async exit()
     {
     }
 }

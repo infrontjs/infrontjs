@@ -1,18 +1,56 @@
-import { trim } from "../util/Functions.js";
+import { trim, isPlainObject } from "../util/Functions.js";
 
 class Api
 {
-    constructor( endpoint = '' )
+    constructor( endpoint = '', headers = {} )
     {
         this.endpoint = trim( endpoint, '/' );
+        if ( this.endpoint.length <= 1 )
+        {
+            throw new Error( 'No endpoint set.' );
+        }
+
+        this.headers = new Headers( headers );
     }
 
     async get( route, cb = null )
     {
         let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + route, { method: 'GET' } ),
-            res = null;
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
 
+        return await this._fetch( req, cb );
+    }
+
+    async post( route, data = {}, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
+        return await this._fetch( req, cb );
+    }
+
+    async delete( route, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
+        return await this._fetch( req, cb );
+    }
+
+    async put( route, data = {}, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
+        return await this._fetch( req, cb );
+    }
+
+    async patch( route, data = {}, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
+        return await this._fetch( req, cb );
+    }
+
+    async _fetch( req, cb = null )
+    {
         if ( cb )
         {
             fetch( req )
@@ -26,6 +64,19 @@ class Api
             const json = await response.json();
             return json;
         }
+    }
+
+    _createFetchOptions( method, data = null )
+    {
+        const opts = {
+            "method" : method.toUpperCase(),
+            "headers" : this.headers
+        };
+        if ( isPlainObject( data ) )
+        {
+            opts.body = JSON.stringify( data );
+        }
+        return opts;
     }
 }
 

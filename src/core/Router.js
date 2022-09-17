@@ -128,7 +128,7 @@ class Router
                             actionData.routeActionData.action,
                             actionData.routeParams
                         );
-                        this.app.stateManager.switchTo( stateInstance );
+                        await this.app.stateManager.switchTo( stateInstance );
                     break;
                 }
             }

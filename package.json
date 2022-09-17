@@ -4,7 +4,7 @@
   "description": "The progressive frontend framework.",
   "main": "src/IF.js",
   "scripts": {
-    "build" : "rollup -c",
+    "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,5 +28,8 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.2",
     "rollup": "^2.79.0"
+  },
+  "dependencies": {
+    "infrontjs": "^0.3.0"
   }
 }

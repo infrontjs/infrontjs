@@ -16,6 +16,11 @@ class State
         return true;
     }
 
+    getRedirectTo()
+    {
+        return null;
+    }
+
     enter()
     {
     }

@@ -26,6 +26,17 @@ function isPlainObject( value )
 }
 
 /**
+ * Checks if given value is string
+ *
+ * @param {*} v Value to check
+ * @returns {boolean}
+ */
+function isString( v )
+{
+    return ( typeof v === 'string' || v instanceof String );
+}
+
+/**
  * Checks if given value is a class constructor
  * Refer:
  * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
@@ -193,28 +204,6 @@ class PropertyObject
         {
             return defValue;
         }
-    }
-}
-
-class State
-{
-    constructor( app, routeParams )
-    {
-        this.app = app;
-        this.routeParams = routeParams;
-    }
-
-    canEnter()
-    {
-        return true;
-    }
-
-    enter()
-    {
-    }
-
-    exit()
-    {
     }
 }
 
@@ -681,6 +670,38 @@ class RouteParams
     }
 }
 
+class State
+{
+    constructor( app, routeParams )
+    {
+        this.app = app;
+        this.routeParams = routeParams;
+    }
+
+    canEnter()
+    {
+        return true;
+    }
+
+    canExit()
+    {
+        return true;
+    }
+
+    getRedirectTo()
+    {
+        return null;
+    }
+
+    enter()
+    {
+    }
+
+    exit()
+    {
+    }
+}
+
 class Router
 {
     static ACTION_TYPE_FUNCTION = "function";
@@ -836,10 +857,18 @@ class StateManager
             throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
         }
 
-        if ( false === this._states.hasOwnProperty( stateClass.ID ) )
+        // Throw an error if ID is null or already taken
+        if ( false === isString( stateClass.ID ) )
         {
-            this._states[ stateClass.ID ] = stateClass;
+            throw new Error( 'Given stateClass does not have a valid static ID' );
         }
+
+        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
+        {
+            throw new Error( 'stateClass.ID already exists in states pool.' );
+        }
+
+        this._states[ stateClass.ID ] = stateClass;
     }
 
     createState( stateId, routeParams )
@@ -858,8 +887,15 @@ class StateManager
     {
         if ( false === newState.canEnter() )
         {
-            // @todo Think about how to handle this
-            return false;
+            const redirectTo = newState.getRedirectTo();
+            if ( redirectTo )
+            {
+                this.app.router.redirect( redirectTo );
+            }
+            else
+            {
+                throw Error( 'Forbidden to enter new state:' + newState.ID );
+            }
         }
 
         if ( this.currentState )
@@ -947,7 +983,12 @@ class TemplateManager
         }
     }
 
-    async fetchTemplate( templateUrl, useCache = true )
+    getHtml( tmpl, data = {} )
+    {
+        return _template( tmpl, data );
+    }
+
+    async get( templateUrl, useCache = true )
     {
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
         if ( !tmplHtml )
@@ -962,21 +1003,6 @@ class TemplateManager
             );
         }
         return tmplHtml;
-    }
-
-    compileTemplate( tmpl, data = {} )
-    {
-        return _template( tmpl, data );
-    }
-
-    async renderTemplate( templateUrl, data = {}, containerElement = null )
-    {
-        let tmpl = await this.fetchTemplate( templateUrl ),
-            html = this.compileTemplate( tmpl, data );
-
-        this.app.viewManager.render( html, containerElement );
-
-        return html;
     }
 }
 
@@ -1035,7 +1061,7 @@ class L18n
 }
 
 // Global app pool
-const apps = [];
+const apps = {};
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -1044,6 +1070,7 @@ const DEFAULT_PROPS = {
 };
 
 const DEFAULT_SETTINGS = {
+    "sayHello" : true,
     "l18n" : {
         "defaultLanguage" : "en"
     },
@@ -1073,6 +1100,12 @@ class App extends PropertyObject
             this.uid = createUid();
         }
 
+        // If container property is a string, check if it is a querySelector
+        if ( isString( this.container ) )
+        {
+            this.container = document.querySelector( this.container );
+        }
+
         if ( !this.container || false === this.container instanceof HTMLElement )
         {
             this.container = document.querySelector( 'body' );
@@ -1087,6 +1120,11 @@ class App extends PropertyObject
 
         // Add app to global app pool
         apps[ this.uid ] = this;
+
+        if ( true === this.settings.sayHello && console )
+        {
+            console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
+        }
     }
 
     initL18n()
@@ -1129,22 +1167,20 @@ class App extends PropertyObject
     }
 }
 
-function getApp( uid = '' )
+function getApp( uid = null )
 {
-    if ( uid )
+    if ( uid && apps.hasOwnProperty( uid ) )
     {
-        uid = '' + uid;
-        return apps.find( app => app.uid === uid );
+        return apps[ uid ];
     }
-    else if ( apps.length > 0 )
+    else if ( null === uid &&  Object.keys( apps ) > 0 )
     {
-        return apps[ 0 ];
+        return apps[ Object.keys( apps )[ 0 ] ];
     }
     else
     {
         return null;
     }
-
 }
 
 async function destroyApp( appToDestroy )
@@ -1167,18 +1203,10 @@ async function destroyApp( appToDestroy )
     }
     else
     {
-        console.warn( `App with UID ${uid} not found.` );
+        console && console.warn( `App with UID ${uid} not found.` );
     }
 }
 
-const version = "0.2.3";
+const version = "0.4.0";
 
-const base = {};
-base.Api = Api;
-base.PropertyObject = PropertyObject;
-base.State = State;
-
-// Marketing ;-)
-console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
-
-export { App, base, createUid, destroyApp, getApp, isClass, isClassChildOf, isPlainObject, trim, version };
+export { Api, App, L18n, PropertyObject, Router, State, StateManager, TemplateManager, ViewManager, createUid, destroyApp, getApp, isClass, isClassChildOf, isPlainObject, trim, version };

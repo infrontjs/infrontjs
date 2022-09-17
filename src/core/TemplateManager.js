@@ -48,7 +48,12 @@ class TemplateManager
         }
     }
 
-    async fetchTemplate( templateUrl, useCache = true )
+    getHtml( tmpl, data = {} )
+    {
+        return _template( tmpl, data );
+    }
+
+    async get( templateUrl, useCache = true )
     {
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
         if ( !tmplHtml )
@@ -63,21 +68,6 @@ class TemplateManager
             );
         }
         return tmplHtml;
-    }
-
-    compileTemplate( tmpl, data = {} )
-    {
-        return _template( tmpl, data );
-    }
-
-    async renderTemplate( templateUrl, data = {}, containerElement = null )
-    {
-        let tmpl = await this.fetchTemplate( templateUrl ),
-            html = this.compileTemplate( tmpl, data );
-
-        this.app.viewManager.render( html, containerElement );
-
-        return html;
     }
 }
 

@@ -1,5 +1,6 @@
-import { PropertyObject } from "../base/PropertyObject.js";
-import { createUid } from "../util/Functions.js";
+import { PropertyObject } from "./PropertyObject.js";
+import { createUid, isString } from "../util/Functions.js";
+import { version } from "../IF.js";
 
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
@@ -8,7 +9,7 @@ import { TemplateManager } from "./TemplateManager.js";
 import { L18n } from "./L18n.js";
 
 // Global app pool
-const apps = [];
+const apps = {};
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -17,6 +18,7 @@ const DEFAULT_PROPS = {
 };
 
 const DEFAULT_SETTINGS = {
+    "sayHello" : true,
     "l18n" : {
         "defaultLanguage" : "en"
     },
@@ -46,6 +48,12 @@ class App extends PropertyObject
             this.uid = createUid();
         }
 
+        // If container property is a string, check if it is a querySelector
+        if ( isString( this.container ) )
+        {
+            this.container = document.querySelector( this.container );
+        }
+
         if ( !this.container || false === this.container instanceof HTMLElement )
         {
             this.container = document.querySelector( 'body' );
@@ -60,6 +68,11 @@ class App extends PropertyObject
 
         // Add app to global app pool
         apps[ this.uid ] = this;
+
+        if ( true === this.settings.sayHello && console )
+        {
+            console && console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
+        }
     }
 
     initL18n()
@@ -102,22 +115,20 @@ class App extends PropertyObject
     }
 }
 
-function getApp( uid = '' )
+function getApp( uid = null )
 {
-    if ( uid )
+    if ( uid && apps.hasOwnProperty( uid ) )
     {
-        uid = '' + uid;
-        return apps.find( app => app.uid === uid );
+        return apps[ uid ];
     }
-    else if ( apps.length > 0 )
+    else if ( null === uid &&  Object.keys( apps ) > 0 )
     {
-        return apps[ 0 ];
+        return apps[ Object.keys( apps )[ 0 ] ];
     }
     else
     {
         return null;
     }
-
 }
 
 async function destroyApp( appToDestroy )
@@ -140,7 +151,7 @@ async function destroyApp( appToDestroy )
     }
     else
     {
-        console.warn( `App with UID ${uid} not found.` );
+        console && console.warn( `App with UID ${uid} not found.` );
     }
 }
 

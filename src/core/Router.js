@@ -1,7 +1,7 @@
 import { trim, isClass, isClassChildOf } from "../util/Functions.js";
 import { UrlPattern } from "../util/UrlPattern.js";
 import { RouteParams } from "../util/RouteParams.js";
-import { State } from "./../base/State.js";
+import { State } from "./State.js";
 
 class Router
 {
@@ -135,7 +135,7 @@ class Router
         }
         catch( e )
         {
-            console.error( e );
+            console && console.error( e );
             // Uncatched error
         }
     }

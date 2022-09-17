@@ -1,18 +1,16 @@
-export const version = "0.3.0";
+export const version = "0.4.0";
 
 
-// Base
-import { Api } from "./base/Api.js";
-import { PropertyObject } from "./base/PropertyObject.js";
-import { State } from "./base/State.js";
-
-export { Api, PropertyObject, State };
+// Classes
+export { Api } from "./core/Api.js";
+export { App, destroyApp, getApp } from "./core/App.js";
+export { L18n } from "./core/L18n.js";
+export { PropertyObject } from "./core/PropertyObject.js";
+export { Router } from "./core/Router.js";
+export { State } from "./core/State.js";
+export { StateManager } from "./core/StateManager.js";
+export { TemplateManager } from "./core/TemplateManager.js";
+export { ViewManager } from "./core/ViewManager.js";
 
 // global functions
 export { trim, createUid, isPlainObject, isClass, isClassChildOf } from "./util/Functions.js";
-
-// Core
-export { App, destroyApp, getApp } from "./core/App.js";
-
-// Marketing ;-)
-console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );

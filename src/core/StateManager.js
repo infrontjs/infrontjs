@@ -1,5 +1,5 @@
-import { isClass, isClassChildOf } from "../util/Functions.js";
-import { State } from "../base/State.js";
+import { isClass, isClassChildOf, isString } from "../util/Functions.js";
+import { State } from "./State.js";
 
 class StateManager
 {
@@ -8,7 +8,6 @@ class StateManager
         this._states =  {};
         this.app = appInstance;
         this.currentState = null;
-        this.pathToStateFolder = this.app.settings.getPropertyValue( 'stateManager.rootPath' );
     }
 
     addStateClass( stateClass )
@@ -18,10 +17,18 @@ class StateManager
             throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
         }
 
-        if ( false === this._states.hasOwnProperty( stateClass.ID ) )
+        // Throw an error if ID is null or already taken
+        if ( false === isString( stateClass.ID ) )
         {
-            this._states[ stateClass.ID ] = stateClass;
+            throw new Error( 'Given stateClass does not have a valid static ID' );
         }
+
+        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
+        {
+            throw new Error( 'stateClass.ID already exists in states pool.' );
+        }
+
+        this._states[ stateClass.ID ] = stateClass;
     }
 
     createState( stateId, routeParams )
@@ -40,8 +47,15 @@ class StateManager
     {
         if ( false === newState.canEnter() )
         {
-            // @todo Think about how to handle this
-            return false;
+            const redirectTo = newState.getRedirectTo();
+            if ( redirectTo )
+            {
+                this.app.router.redirect( redirectTo );
+            }
+            else
+            {
+                throw Error( 'Forbidden to enter new state:' + newState.ID );
+            }
         }
 
         if ( this.currentState )

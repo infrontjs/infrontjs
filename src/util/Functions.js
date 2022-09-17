@@ -26,6 +26,17 @@ function isPlainObject( value )
 }
 
 /**
+ * Checks if given value is string
+ *
+ * @param {*} v Value to check
+ * @returns {boolean}
+ */
+function isString( v )
+{
+    return ( typeof v === 'string' || v instanceof String );
+}
+
+/**
  * Checks if given value is a class constructor
  * Refer:
  * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
@@ -121,4 +132,4 @@ function _getTag( value )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-export { trim, createUid, isPlainObject, isClass, isClassChildOf };
+export { trim, createUid, isPlainObject, isString, isClass, isClassChildOf };

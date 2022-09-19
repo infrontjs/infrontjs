@@ -95,6 +95,28 @@ function trim( str, characters, flags )
     return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
 }
 
+function serializeForm( form )
+{
+    var object = {};
+    new FormData( form ).forEach(( value, key) =>
+    {
+        // Reflect.has in favor of: object.hasOwnProperty(key)
+        if( !Reflect.has( object, key ) )
+        {
+            object[ key ] = value;
+            return;
+        }
+
+        if( !Array.isArray( object[ key ] ) )
+        {
+            object[ key ] = [ object[ key ] ];
+        }
+
+        object[ key ].push( value );
+    });
+    return object;
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,4 +154,4 @@ function _getTag( value )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-export { trim, createUid, isPlainObject, isString, isClass, isClassChildOf };
+export { trim, createUid, isPlainObject, isString, isClass, isClassChildOf,serializeForm };

@@ -1,6 +1,5 @@
 import { PropertyObject } from "./PropertyObject.js";
 import { createUid, isString } from "../util/Functions.js";
-import { version } from "../IF.js";
 
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
@@ -8,8 +7,8 @@ import { ViewManager } from "./ViewManager.js";
 import { TemplateManager } from "./TemplateManager.js";
 import { L18n } from "./L18n.js";
 
-// Global app pool
-const apps = {};
+
+const VERSION = '0.7.0';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -37,6 +36,25 @@ const DEFAULT_SETTINGS = {
 
 class App extends PropertyObject
 {
+    static POOL = {};
+
+    static get( uid = null )
+    {
+        if ( uid && App.POOL.hasOwnProperty( uid ) )
+        {
+            return App.POOL[ uid ];
+        }
+        else if ( null === uid &&  Object.keys( App.POOL ).length > 0 )
+        {
+            return App.POOL[ Object.keys( App.POOL )[ 0 ] ];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+
     constructor( props = {}, settings = {} )
     {
         super( { ...DEFAULT_PROPS, ...props } );
@@ -67,11 +85,12 @@ class App extends PropertyObject
         this.initRouter();
 
         // Add app to global app pool
-        apps[ this.uid ] = this;
+        //apps[ this.uid ] = this;
+        App.POOL[ this.uid ] = this;
 
         if ( true === this.settings.sayHello && console )
         {
-            console && console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
+            console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
     }
 
@@ -112,47 +131,8 @@ class App extends PropertyObject
 
     async destroy()
     {
+        // @todo Implement logic, set innerHTML to zero ... etc
     }
 }
 
-function getApp( uid = null )
-{
-    if ( uid && apps.hasOwnProperty( uid ) )
-    {
-        return apps[ uid ];
-    }
-    else if ( null === uid &&  Object.keys( apps ) > 0 )
-    {
-        return apps[ Object.keys( apps )[ 0 ] ];
-    }
-    else
-    {
-        return null;
-    }
-}
-
-async function destroyApp( appToDestroy )
-{
-    let idx = -1;
-    if ( appToDestroy instanceof App )
-    {
-        idx = apps.findIndex( app => app.uid === appToDestroy.uid );
-    }
-    else
-    {
-        let appUid = '' + appToDestroy;
-        idx = apps.findIndex( app => app.uid === appUid );
-    }
-
-    if ( -1 < idx )
-    {
-        await apps[ idx ].destroy();
-        apps.splice( idx, 1 );
-    }
-    else
-    {
-        console && console.warn( `App with UID ${uid} not found.` );
-    }
-}
-
-export { App, getApp, destroyApp };
+export { App };

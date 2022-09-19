@@ -95,6 +95,28 @@ function trim( str, characters, flags )
     return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
 }
 
+function serializeForm( form )
+{
+    var object = {};
+    new FormData( form ).forEach(( value, key) =>
+    {
+        // Reflect.has in favor of: object.hasOwnProperty(key)
+        if( !Reflect.has( object, key ) )
+        {
+            object[ key ] = value;
+            return;
+        }
+
+        if( !Array.isArray( object[ key ] ) )
+        {
+            object[ key ] = [ object[ key ] ];
+        }
+
+        object[ key ].push( value );
+    });
+    return object;
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,16 +152,55 @@ function _getTag( value )
 
 class Api
 {
-    constructor( endpoint = '' )
+    constructor( endpoint = '', headers = {} )
     {
         this.endpoint = trim( endpoint, '/' );
+        if ( this.endpoint.length <= 1 )
+        {
+            throw new Error( 'No endpoint set.' );
+        }
+
+        this.headers = new Headers( headers );
     }
 
     async get( route, cb = null )
     {
-        trim( route, "/" );
-            let req = new Request( this.endpoint + '/' + route, { method: 'GET' } );
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
 
+        return await this._fetch( req, cb );
+    }
+
+    async post( route, data = {}, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
+        return await this._fetch( req, cb );
+    }
+
+    async delete( route, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
+        return await this._fetch( req, cb );
+    }
+
+    async put( route, data = {}, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
+        return await this._fetch( req, cb );
+    }
+
+    async patch( route, data = {}, cb = null )
+    {
+        let r = trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
+        return await this._fetch( req, cb );
+    }
+
+    async _fetch( req, cb = null )
+    {
         if ( cb )
         {
             fetch( req )
@@ -153,6 +214,19 @@ class Api
             const json = await response.json();
             return json;
         }
+    }
+
+    _createFetchOptions( method, data = null )
+    {
+        const opts = {
+            "method" : method.toUpperCase(),
+            "headers" : this.headers
+        };
+        if ( isPlainObject( data ) )
+        {
+            opts.body = JSON.stringify( data );
+        }
+        return opts;
     }
 }
 
@@ -672,10 +746,17 @@ class RouteParams
 
 class State
 {
+    static ID = null;
+
     constructor( app, routeParams )
     {
         this.app = app;
         this.routeParams = routeParams;
+    }
+
+    getId()
+    {
+        return this.constructor.ID;
     }
 
     canEnter()
@@ -693,11 +774,11 @@ class State
         return null;
     }
 
-    enter()
+    async enter()
     {
     }
 
-    exit()
+    async exit()
     {
     }
 }
@@ -827,14 +908,14 @@ class Router
                             actionData.routeActionData.action,
                             actionData.routeParams
                         );
-                        this.app.stateManager.switchTo( stateInstance );
+                        await this.app.stateManager.switchTo( stateInstance );
                     break;
                 }
             }
         }
         catch( e )
         {
-            console.error( e );
+            console && console.error( e );
             // Uncatched error
         }
     }
@@ -847,7 +928,6 @@ class StateManager
         this._states =  {};
         this.app = appInstance;
         this.currentState = null;
-        this.pathToStateFolder = this.app.settings.getPropertyValue( 'stateManager.rootPath' );
     }
 
     addStateClass( stateClass )
@@ -883,7 +963,7 @@ class StateManager
         return stateInstance;
     }
 
-    switchTo( newState )
+    async switchTo( newState )
     {
         if ( false === newState.canEnter() )
         {
@@ -891,20 +971,19 @@ class StateManager
             if ( redirectTo )
             {
                 this.app.router.redirect( redirectTo );
+                return false;
             }
-            else
-            {
-                throw Error( 'Forbidden to enter new state:' + newState.ID );
-            }
+
+            throw Error( 'Forbidden to enter new state:' + newState.getId() );
         }
 
         if ( this.currentState )
         {
-            this.currentState.exit();
+            await this.currentState.exit();
             delete this.currentState;
         }
 
-        newState.enter();
+        await newState.enter();
         this.currentState = newState;
     }
 
@@ -1060,8 +1139,7 @@ class L18n
     }
 }
 
-// Global app pool
-const apps = {};
+const VERSION = '0.7.0';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -1089,6 +1167,25 @@ const DEFAULT_SETTINGS = {
 
 class App extends PropertyObject
 {
+    static POOL = {};
+
+    static get( uid = null )
+    {
+        if ( uid && App.POOL.hasOwnProperty( uid ) )
+        {
+            return App.POOL[ uid ];
+        }
+        else if ( null === uid &&  Object.keys( App.POOL ).length > 0 )
+        {
+            return App.POOL[ Object.keys( App.POOL )[ 0 ] ];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+
     constructor( props = {}, settings = {} )
     {
         super( { ...DEFAULT_PROPS, ...props } );
@@ -1119,11 +1216,12 @@ class App extends PropertyObject
         this.initRouter();
 
         // Add app to global app pool
-        apps[ this.uid ] = this;
+        //apps[ this.uid ] = this;
+        App.POOL[ this.uid ] = this;
 
         if ( true === this.settings.sayHello && console )
         {
-            console.log( "%c»InfrontJS« Version " + version, "font-family: monospace sans-serif; background-color: black; color: white;" );
+            console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
     }
 
@@ -1164,49 +1262,8 @@ class App extends PropertyObject
 
     async destroy()
     {
+        // @todo Implement logic, set innerHTML to zero ... etc
     }
 }
 
-function getApp( uid = null )
-{
-    if ( uid && apps.hasOwnProperty( uid ) )
-    {
-        return apps[ uid ];
-    }
-    else if ( null === uid &&  Object.keys( apps ) > 0 )
-    {
-        return apps[ Object.keys( apps )[ 0 ] ];
-    }
-    else
-    {
-        return null;
-    }
-}
-
-async function destroyApp( appToDestroy )
-{
-    let idx = -1;
-    if ( appToDestroy instanceof App )
-    {
-        idx = apps.findIndex( app => app.uid === appToDestroy.uid );
-    }
-    else
-    {
-        let appUid = '' + appToDestroy;
-        idx = apps.findIndex( app => app.uid === appUid );
-    }
-
-    if ( -1 < idx )
-    {
-        await apps[ idx ].destroy();
-        apps.splice( idx, 1 );
-    }
-    else
-    {
-        console && console.warn( `App with UID ${uid} not found.` );
-    }
-}
-
-const version = "0.4.0";
-
-export { Api, App, L18n, PropertyObject, Router, State, StateManager, TemplateManager, ViewManager, createUid, destroyApp, getApp, isClass, isClassChildOf, isPlainObject, trim, version };
+export { Api, App, L18n, PropertyObject, Router, State, StateManager, TemplateManager, ViewManager, createUid, isClass, isClassChildOf, isPlainObject, isString, serializeForm, trim };

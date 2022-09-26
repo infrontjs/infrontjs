@@ -869,7 +869,6 @@
 	        }
 	        this.isEnabled = true;
 	        window.addEventListener( 'hashchange', this.processHash.bind( this ) );
-	        this.processHash();
 	    }
 
 	    disable()
@@ -897,6 +896,15 @@
 	        {
 	            this.processHash();
 	        }
+	    }
+
+	    resolveRoute( route )
+	    {
+	        let r = trim( route, '/#' );
+	        r = trim( r, '#' );
+	        r = trim( r, '/' );
+
+	        return '/' + r;
 	    }
 
 	    async execute( route )
@@ -951,10 +959,12 @@
 
 	        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
 	        {
-	            throw new Error( 'stateClass.ID already exists in states pool.' );
+	            return false;
 	        }
 
 	        this._states[ stateClass.ID ] = stateClass;
+
+	        return true;
 	    }
 
 	    createState( stateId, routeParams )
@@ -1018,26 +1028,39 @@
 	    }
 	}
 
+	const _extendedFunctions = {};
+
 	function _template( html, data )
 	{
 	    var me = _template;
+
 	    return (function ()
 	    {
 	        var name = html,
 	            string = (name = 'template(string)', html); // no warnings
+
+	        // Add replaces in here
+	        string = string.
+	                    replace(/<%/g, '\x11').replace(/%>/g, '\x13'). // if you want other tag, just edit this line
+	                    replace(/'(?![^\x11\x13]+?\x13)/g, '\\x27').
+	                    replace(/^\s*|\s*$/g, '').
+	                    replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
+	                    replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
+	                    replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '");
+
+	        Object.keys( _extendedFunctions ).forEach( (v) =>
+	        {
+	            string = string.replace( new RegExp( '\\x11=' + v + '(.+?)\\x13', 'g' ), "' + this.extFunc[ '" + v + "' ]($1) + '" );
+	        });
+
+	        string = string.
+	                    replace(/\x11=(.+?)\x13/g, "' + this.escapeHTML($1) + '").
+	                    replace(/\x11(.+?)\x13/g, "'; $1; this.ret += '");
+
 	        var line = 1, body = (
 	            "try { " +
 	            (me.variable ?  "var " + me.variable + " = this.stash;" : "with (this.stash) { ") +
-	            "this.ret += '"  +
-	            string.
-	            replace(/<%/g, '\x11').replace(/%>/g, '\x13'). // if you want other tag, just edit this line
-	                replace(/'(?![^\x11\x13]+?\x13)/g, '\\x27').
-	            replace(/^\s*|\s*$/g, '').
-	            replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
-	            replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
-	            replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '").
-	            replace(/\x11=(.+?)\x13/g, "' + this.escapeHTML($1) + '").
-	            replace(/\x11(.+?)\x13/g, "'; $1; this.ret += '") +
+	            "this.ret += '"  + string +
 	            "'; " + (me.variable ? "" : "}") + "return this.ret;" +
 	            "} catch (e) { throw 'TemplateError: ' + e + ' (on " + name + "' + ' line ' + this.line + ')'; } " +
 	            "//@ sourceURL=" + name + "\n" // source map
@@ -1046,13 +1069,14 @@
 	        var map  = { '&' : '&amp;', '<' : '&lt;', '>' : '&gt;', '\x22' : '&#x22;', '\x27' : '&#x27;' };
 	        var escapeHTML = function (string) { return (''+string).replace(/[&<>\'\"]/g, function (_) { return map[_] }) };
 	        var nl2br = function(string) { return escapeHTML(string).replace(/(?:\ r\n|\r|\n)/g, '<br>')};
-	        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, line: 1, ret : '', stash: stash }) };
+	        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
 	    })()(data);
 	}
 
 
 	class TemplateManager
 	{
+	    // @todo Think about a templateRootDirectory
 	    constructor( appInstance )
 	    {
 	        this.app = appInstance;
@@ -1065,6 +1089,20 @@
 	        if ( cachedTemplate )
 	        {
 	            return cachedTemplate.html;
+	        }
+	    }
+
+	    addTemplateFunction( name, fn )
+	    {
+	        // @todo Add Check of type function
+	        _extendedFunctions[ name ] = fn;
+	    }
+
+	    removeTemplateFunction( name )
+	    {
+	        if ( _extendedFunctions.hasOwnProperty( name ) )
+	        {
+	            delete _extendedFunctions[ name ];
 	        }
 	    }
 
@@ -1145,7 +1183,7 @@
 	    }
 	}
 
-	const VERSION = '0.7.0';
+	const VERSION = '0.7.3';
 
 	const DEFAULT_PROPS = {
 	    "uid" : null,
@@ -1262,7 +1300,11 @@
 	        this.router.enable();
 	        if ( route )
 	        {
-	            this.router.redirect( route );
+	            this.router.redirect( route, ( this.router.resolveRoute( route ) === this.router.resolveRoute( location.hash ) ) );
+	        }
+	        else
+	        {
+	            this.router.processHash();
 	        }
 	    }
 

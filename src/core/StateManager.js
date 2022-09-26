@@ -25,10 +25,12 @@ class StateManager
 
         if ( true === this._states.hasOwnProperty( stateClass.ID ) )
         {
-            throw new Error( 'stateClass.ID already exists in states pool.' );
+            return false;
         }
 
         this._states[ stateClass.ID ] = stateClass;
+
+        return true;
     }
 
     createState( stateId, routeParams )

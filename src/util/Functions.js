@@ -154,4 +154,4 @@ function _getTag( value )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-export { trim, createUid, isPlainObject, isString, isClass, isClassChildOf,serializeForm };
+export { trim, createUid, isPlainObject, isString, isClass, isClassChildOf, serializeForm };

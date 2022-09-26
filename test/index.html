@@ -30,7 +30,7 @@
           }
       }
 
-      class TestState extends IF.base.State
+      class TestState extends IF.State
       {
           static ID = 'test';
 
@@ -45,14 +45,16 @@
           }
       }
 
-      class Test2State extends IF.base.State
+      class Test2State extends IF.State
       {
           static ID = 'test2';
 
           async enter()
           {
               console.log( "Hello from TestState Two" );
-              this.app.templateManager.renderTemplate( 'tmpl.html' );
+              const tmpl = await this.app.templateManager.get( 'tmpl.html' );
+              const html = this.app.templateManager.getHtml( tmpl );
+              console.log( html );
           }
       }
 

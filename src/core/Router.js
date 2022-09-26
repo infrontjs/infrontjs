@@ -83,7 +83,6 @@ class Router
         }
         this.isEnabled = true;
         window.addEventListener( 'hashchange', this.processHash.bind( this ) );
-        this.processHash();
     }
 
     disable()
@@ -111,6 +110,15 @@ class Router
         {
             this.processHash();
         }
+    }
+
+    resolveRoute( route )
+    {
+        let r = trim( route, '/#' );
+        r = trim( r, '#' );
+        r = trim( r, '/' );
+
+        return '/' + r;
     }
 
     async execute( route )

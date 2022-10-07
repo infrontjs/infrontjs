@@ -25,7 +25,7 @@ class Router
 
         sRoute = '/' + sRoute;
 
-        if ( true === isClass( action ) && true === isClassChildOf( action, 'State' )  )
+        if ( true === isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
             type = Router.ACTION_TYPE_STATE
             this.app.stateManager.addStateClass( action );

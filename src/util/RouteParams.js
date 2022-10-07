@@ -6,6 +6,11 @@ class RouteParams
         this._q = query;
     }
 
+    getParams()
+    {
+        return this._p;
+    }
+
     getParam( key, defaultValue = null )
     {
         if ( this._p && this._p.hasOwnProperty( key ) )
@@ -28,6 +33,11 @@ class RouteParams
         {
             return defaultValue;
         }
+    }
+
+    getQueries()
+    {
+        return this._q;
     }
 }
 

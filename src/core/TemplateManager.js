@@ -16,7 +16,9 @@ function _template( html, data )
                     replace(/^\s*|\s*$/g, '').
                     replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
                     replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
-                    replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '");
+                    replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '").
+                    replace(/\x11=tmpl(.+?)\x13/g, "' + this.tmpl($1) + '");
+
 
         Object.keys( _extendedFunctions ).forEach( (v) =>
         {
@@ -39,7 +41,8 @@ function _template( html, data )
         var map  = { '&' : '&amp;', '<' : '&lt;', '>' : '&gt;', '\x22' : '&#x22;', '\x27' : '&#x27;' };
         var escapeHTML = function (string) { return (''+string).replace(/[&<>\'\"]/g, function (_) { return map[_] }) };
         var nl2br = function(string) { return escapeHTML(string).replace(/(?:\ r\n|\r|\n)/g, '<br>')};
-        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
+        var tmpl = function(d) { return _template( d[0], d[1] ); };
+        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, tmpl: tmpl, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
     })()(data);
 }
 

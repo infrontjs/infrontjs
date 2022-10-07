@@ -53,7 +53,8 @@
           {
               console.log( "Hello from TestState Two" );
               const tmpl = await this.app.templateManager.get( 'tmpl.html' );
-              const html = this.app.templateManager.getHtml( tmpl );
+              const includeTmpl = await this.app.templateManager.get( 'includeTmpl.html' );
+              const html = this.app.templateManager.getHtml( tmpl, { includeTmpl : includeTmpl, crap : '123' } );
               console.log( html );
           }
       }

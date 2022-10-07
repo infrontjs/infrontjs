@@ -725,6 +725,11 @@
 	        this._q = query;
 	    }
 
+	    getParams()
+	    {
+	        return this._p;
+	    }
+
 	    getParam( key, defaultValue = null )
 	    {
 	        if ( this._p && this._p.hasOwnProperty( key ) )
@@ -747,6 +752,11 @@
 	        {
 	            return defaultValue;
 	        }
+	    }
+
+	    getQueries()
+	    {
+	        return this._q;
 	    }
 	}
 
@@ -811,7 +821,7 @@
 
 	        sRoute = '/' + sRoute;
 
-	        if ( true === isClass( action ) && true === isClassChildOf( action, 'State' )  )
+	        if ( true === isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
 	        {
 	            type = Router.ACTION_TYPE_STATE;
 	            this.app.stateManager.addStateClass( action );
@@ -1046,7 +1056,9 @@
 	                    replace(/^\s*|\s*$/g, '').
 	                    replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
 	                    replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
-	                    replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '");
+	                    replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '").
+	                    replace(/\x11=tmpl(.+?)\x13/g, "' + this.tmpl($1) + '");
+
 
 	        Object.keys( _extendedFunctions ).forEach( (v) =>
 	        {
@@ -1069,7 +1081,8 @@
 	        var map  = { '&' : '&amp;', '<' : '&lt;', '>' : '&gt;', '\x22' : '&#x22;', '\x27' : '&#x27;' };
 	        var escapeHTML = function (string) { return (''+string).replace(/[&<>\'\"]/g, function (_) { return map[_] }) };
 	        var nl2br = function(string) { return escapeHTML(string).replace(/(?:\ r\n|\r|\n)/g, '<br>')};
-	        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
+	        var tmpl = function(d) { return _template( d[0], d[1] ); };
+	        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, tmpl: tmpl, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
 	    })()(data);
 	}
 
@@ -1183,7 +1196,7 @@
 	    }
 	}
 
-	const VERSION = '0.7.3';
+	const VERSION = '0.7.5';
 
 	const DEFAULT_PROPS = {
 	    "uid" : null,

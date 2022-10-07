@@ -50,6 +50,9 @@ function isClass( v )
 
 function isClassChildOf( classContructor, parentClassName )
 {
+    // @todo FIX THIS - breaks on webpack in production mode
+    return true;
+
     let ret = false,
         regexEnd = new RegExp( 'function ()', "gm" ),
         regex = new RegExp( `class ${parentClassName}`, "gm" );

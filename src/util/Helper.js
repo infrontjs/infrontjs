@@ -77,6 +77,17 @@ class Helper
     }
 
     /**
+     * Checks if given value is an array or not
+     *
+     * @param {*} v Value to check
+     * @returns {boolean}
+     */
+    static isArray( v )
+    {
+        return Array.isArray( v );
+    }
+
+    /**
      * Refer to:
      * https://github.com/lodash/lodash/blob/master/isPlainObject.js
      * @param value

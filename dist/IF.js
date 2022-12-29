@@ -7,6 +7,13 @@
 	class State
 	{
 	    static ID = null;
+	    static IS_DEFAULT = false;
+
+	    /**
+	     * Route(s) which trigger this state
+	     * @type {string|array}
+	     */
+	    static ROUTE = null;
 
 	    constructor( app, routeParams )
 	    {
@@ -119,6 +126,17 @@
 	    static isString( v )
 	    {
 	        return ( typeof v === 'string' || v instanceof String );
+	    }
+
+	    /**
+	     * Checks if given value is an array or not
+	     *
+	     * @param {*} v Value to check
+	     * @returns {boolean}
+	     */
+	    static isArray( v )
+	    {
+	        return Array.isArray( v );
 	    }
 
 	    /**
@@ -815,6 +833,7 @@
 	        this._states =  {};
 	        this.app = appInstance;
 	        this.currentState = null;
+	        this.defaultState = null;
 	    }
 
 	    addState( stateClass )
@@ -838,6 +857,24 @@
 
 	        this._states[ stateClass.ID ] = stateClass;
 
+	        if ( Helper.isString( stateClass.ROUTE ) )
+	        {
+	            this.app.router.addRoute( stateClass.ROUTE, stateClass );
+	        }
+	        else if ( Helper.isArray( stateClass.ROUTE ) )
+	        {
+	            for ( let route in stateClass.ROUTE )
+	            {
+	                this.app.router.addRoute( route, stateClass );
+	            }
+	        }
+
+	        if ( stateClass.IS_DEFAULT )
+	        {
+	            // @todo Add warning if defaultState is already set and not of the same ID
+	            this.defaultState = stateClass;
+	        }
+
 	        return true;
 	    }
 
@@ -851,6 +888,11 @@
 	        }
 
 	        return stateInstance;
+	    }
+
+	    getDefaultState()
+	    {
+	        return this.defaultState;
 	    }
 
 	    async switchTo( newState )
@@ -1106,10 +1148,18 @@
 	        }
 	    }
 
-
 	    constructor( props = {}, settings = {} )
 	    {
-	        this._props = { ...DEFAULT_PROPS, ...props };
+	        props = { ...DEFAULT_PROPS, ...props };
+	        for ( let prop in props )
+	        {
+	            this[ prop ] = props[ prop ];
+	        }
+
+	        if ( !this.uid )
+	        {
+	            this.uid = Helper.createUid();
+	        }
 
 	        this.settings = { ...DEFAULT_SETTINGS, settings };
 
@@ -1171,9 +1221,31 @@
 	        this.templateManager = new TemplateManager( this );
 	    }
 
+	    /**
+	     * Get setting of key
+	     * @param {string} key Setting property
+	     * @param {*} defVal Default return value. Default is null.
+	     * @returns {*|null}
+	     */
+	    getSetting( key, defVal = null )
+	    {
+	        if ( this.settings.hasOwnProperty( key ) )
+	        {
+	            return this.settings[ key ];
+	        }
+	        else
+	        {
+	            return defVal;
+	        }
+	    }
+
 	    async run( route = null )
 	    {
 	        this.viewManager.setWindowTitle( this.title );
+
+	        // @todo Check if default state is set
+	        // @todo Check if DefaultStates are allowed by setting configuration
+
 	        this.router.enable();
 	        if ( route )
 	        {

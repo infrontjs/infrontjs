@@ -56,12 +56,20 @@
 
       async function run()
       {
-          const app = new MyApp();
-          app.stateManager.addState( TestState );
-          app.stateManager.addState( Test2State );
-          app.router.addRoute ( '/test', TestState );
-          app.router.addRoute( '/test2', Test2State );
+
+          const app = new IF.App();
           app.run();
+          window.app = app;
+
+          // const app = new MyApp();
+          // /*
+          // app.stateManager.addState( TestState );
+          // app.stateManager.addState( Test2State );
+          // app.router.addRoute ( '/test', TestState );
+          // app.router.addRoute( '/test2', Test2State );
+          //  */
+          //
+          // app.run();
 
       }
 

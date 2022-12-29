@@ -6,6 +6,8 @@ import { ViewManager } from "./ViewManager.js";
 import { TemplateManager } from "./TemplateManager.js";
 import { L18n } from "./L18n.js";
 
+import { DefaultState } from "../base/DefaultState.js";
+
 
 const VERSION = '0.7.7';
 
@@ -52,7 +54,7 @@ class App
             return null;
         }
     }
-    
+
     constructor( props = {}, settings = {} )
     {
         props = { ...DEFAULT_PROPS, ...props };
@@ -126,9 +128,33 @@ class App
         this.templateManager = new TemplateManager( this );
     }
 
+    /**
+     * Get setting of key
+     * @param {string} key Setting property
+     * @param {*} defVal Default return value. Default is null.
+     * @returns {*|null}
+     */
+    getSetting( key, defVal = null )
+    {
+        if ( this.settings.hasOwnProperty( key ) )
+        {
+            return this.settings[ key ];
+        }
+        else
+        {
+            return defVal;
+        }
+    }
+
     async run( route = null )
     {
         this.viewManager.setWindowTitle( this.title );
+
+        // @todo Check if default state is set
+        // @todo Check if DefaultStates are allowed by setting configuration
+
+        this.stateManager.addState( DefaultState );
+
         this.router.enable();
         if ( route )
         {

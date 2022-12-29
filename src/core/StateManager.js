@@ -7,6 +7,7 @@ class StateManager
         this._states =  {};
         this.app = appInstance;
         this.currentState = null;
+        this.defaultState = null;
     }
 
     addState( stateClass )
@@ -30,6 +31,24 @@ class StateManager
 
         this._states[ stateClass.ID ] = stateClass;
 
+        if ( Helper.isString( stateClass.ROUTE ) )
+        {
+            this.app.router.addRoute( stateClass.ROUTE, stateClass );
+        }
+        else if ( Helper.isArray( stateClass.ROUTE ) )
+        {
+            for ( let route in stateClass.ROUTE )
+            {
+                this.app.router.addRoute( route, stateClass );
+            }
+        }
+
+        if ( stateClass.IS_DEFAULT )
+        {
+            // @todo Add warning if defaultState is already set and not of the same ID
+            this.defaultState = stateClass;
+        }
+
         return true;
     }
 
@@ -43,6 +62,11 @@ class StateManager
         }
 
         return stateInstance;
+    }
+
+    getDefaultState()
+    {
+        return this.defaultState;
     }
 
     async switchTo( newState )

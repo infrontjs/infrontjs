@@ -27,7 +27,7 @@ class Router
         if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
             type = Router.ACTION_TYPE_STATE
-            this.app.stateManager.addStateClass( action );
+            this.app.stateManager.addState( action );
             this._routeActions.push(
                 {
                     "type" : type,

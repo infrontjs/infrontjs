@@ -34,11 +34,6 @@
       {
           static ID = 'test';
 
-          constructor()
-          {
-              super();
-          }
-
           enter()
           {
               console.log( "Hello from TestState" );
@@ -62,8 +57,8 @@
       async function run()
       {
           const app = new MyApp();
-          app.stateManager.addStateClass( TestState );
-          app.stateManager.addStateClass( Test2State );
+          app.stateManager.addState( TestState );
+          app.stateManager.addState( Test2State );
           app.router.addRoute ( '/test', TestState );
           app.router.addRoute( '/test2', Test2State );
           app.run();

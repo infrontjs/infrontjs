@@ -1,4 +1,3 @@
-import { PropertyObject } from "./PropertyObject.js";
 import { Helper } from "../util/Helper.js";
 
 import { Router } from "./Router.js";
@@ -34,7 +33,7 @@ const DEFAULT_SETTINGS = {
     }
 };
 
-class App extends PropertyObject
+class App
 {
     static POOL = {};
 
@@ -53,13 +52,21 @@ class App extends PropertyObject
             return null;
         }
     }
-
-
+    
     constructor( props = {}, settings = {} )
     {
-        super( { ...DEFAULT_PROPS, ...props } );
+        props = { ...DEFAULT_PROPS, ...props };
+        for ( let prop in props )
+        {
+            this[ prop ] = props[ prop ];
+        }
 
-        this.settings = new PropertyObject( { ...DEFAULT_SETTINGS, settings } );
+        if ( !this.uid )
+        {
+            this.uid = Helper.createUid();
+        }
+
+        this.settings = { ...DEFAULT_SETTINGS, settings };
 
         if ( !this.uid )
         {

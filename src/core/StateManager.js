@@ -9,12 +9,12 @@ class StateManager
         this.currentState = null;
     }
 
-    addStateClass( stateClass )
+    addState( stateClass )
     {
         // @todo Fix this, only check for function or class
         if ( false === Helper.isClass( stateClass ) )
         {
-            throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
+            throw new Error( 'StateManager.addState expects a class/subclass of State.' );
         }
 
         // Throw an error if ID is null or already taken

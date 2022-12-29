@@ -1,217 +1,146 @@
 /**
- * Refer to:
- * https://github.com/lodash/lodash/blob/master/isPlainObject.js
- * @param value
- * @returns {boolean}
- */
-function isPlainObject( value )
-{
-    if ( !_isObjectLike( value ) || _getTag( value ) != '[object Object]' )
-    {
-        return false
-    }
-
-    if ( Object.getPrototypeOf( value ) === null )
-    {
-        return true
-    }
-
-    let proto = value;
-    while ( Object.getPrototypeOf( proto ) !== null)
-    {
-        proto = Object.getPrototypeOf(proto);
-    }
-
-    return Object.getPrototypeOf( value ) === proto
-}
-
-/**
- * Checks if given value is string
  *
- * @param {*} v Value to check
- * @returns {boolean}
  */
-function isString( v )
+class Helper
 {
-    return ( typeof v === 'string' || v instanceof String );
-}
-
-/**
- * Checks if given value is a class constructor
- * Refer:
- * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
- * @param v
- * @returns {boolean}
- */
-function isClass( v )
-{
-    return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
-}
-
-function isClassChildOf( classContructor, parentClassName )
-{
-    // @todo FIX THIS - breaks on webpack in production mode
-    return true;
-}
-
-function createUid()
-{
-    return ( [ 1e7 ] + -1e3 + -4e3 + -8e3 + -1e11 ).replace( /[018]/g, c =>
-        ( c ^ crypto.getRandomValues( new Uint8Array( 1 ) )[ 0 ] & 15 >> c / 4 ).toString( 16 )
-    );
-}
-
-function trim( str, characters, flags )
-{
-    characters = characters || " ";
-    flags = flags || "g";
-    if (typeof str !== "string" || typeof characters !== "string" || typeof flags !== "string")
+    /**
+     *
+     * @param {string} str String to trim
+     * @param {string|undefined} characters Characters to trim. Default is empty space.
+     * @param {string|undefined} flags RegExp flag. Default is "g"
+     * @returns {string}
+     */
+    static trim ( str, characters = " ", flags = "g" )
     {
-        throw new TypeError("argument must be string");
-    }
-
-    if (!/^[gi]*$/.test(flags))
-    {
-        throw new TypeError("Invalid flags supplied '" + flags.match(new RegExp("[^gi]*")) + "'");
-    }
-
-    characters = characters.replace(/[\[\](){}?*+\^$\\.|\-]/g, "\\$&");
-
-    return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
-}
-
-function serializeForm( form )
-{
-    var object = {};
-    new FormData( form ).forEach(( value, key) =>
-    {
-        // Reflect.has in favor of: object.hasOwnProperty(key)
-        if( !Reflect.has( object, key ) )
+        if (typeof str !== "string" || typeof characters !== "string" || typeof flags !== "string")
         {
-            object[ key ] = value;
-            return;
+            throw new TypeError("argument must be string");
         }
 
-        if( !Array.isArray( object[ key ] ) )
+        if (!/^[gi]*$/.test(flags))
         {
-            object[ key ] = [ object[ key ] ];
+            throw new TypeError("Invalid flags supplied '" + flags.match(new RegExp("[^gi]*")) + "'");
         }
 
-        object[ key ].push( value );
-    });
-    return object;
-}
+        characters = characters.replace(/[\[\](){}?*+\^$\\.|\-]/g, "\\$&");
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// start: private methods
-
-/**
- * Refer to:
- * https://github.com/lodash/lodash/blob/master/isObjectLike.js
- *
- * @param value
- * @returns {boolean}
- */
-function _isObjectLike( value )
-{
-    return typeof value === 'object' && value !== null
-}
-
-/**
- * Refer to:
- * https://github.com/lodash/lodash/blob/master/.internal/getTag.js
- *
- * @param value
- * @returns {string|string}
- */
-function _getTag( value )
-{
-    if ( value == null )
-    {
-        return value === undefined ? '[object Undefined]' : '[object Null]'
+        return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
     }
-    return Object.prototype.toString.call( value );
-}
 
-class Api
-{
-    constructor( endpoint = '', headers = {} )
+    /**
+     * Serialize given from
+     * @param form
+     * @returns {{}}
+     */
+    static serializeForm( form )
     {
-        this.endpoint = trim( endpoint, '/' );
-        if ( this.endpoint.length <= 1 )
+        const object = {};
+        new FormData( form ).forEach(( value, key) =>
         {
-            throw new Error( 'No endpoint set.' );
+            // Reflect.has in favor of: object.hasOwnProperty(key)
+            if( !Reflect.has( object, key ) )
+            {
+                object[ key ] = value;
+                return;
+            }
+
+            if( !Array.isArray( object[ key ] ) )
+            {
+                object[ key ] = [ object[ key ] ];
+            }
+
+            object[ key ].push( value );
+        });
+        return object;
+    }
+
+    /**
+     * Creates an unique ID
+     * @returns {string}
+     */
+    static createUid()
+    {
+        return ( [ 1e7 ] + -1e3 + -4e3 + -8e3 + -1e11 ).replace( /[018]/g, c =>
+            ( c ^ crypto.getRandomValues( new Uint8Array( 1 ) )[ 0 ] & 15 >> c / 4 ).toString( 16 )
+        );
+    }
+
+    /**
+     * Checks if given value is string
+     *
+     * @param {*} v Value to check
+     * @returns {boolean}
+     */
+    static isString( v )
+    {
+        return ( typeof v === 'string' || v instanceof String );
+    }
+
+    /**
+     * Refer to:
+     * https://github.com/lodash/lodash/blob/master/isPlainObject.js
+     * @param value
+     * @returns {boolean}
+     */
+    static isPlainObject( value )
+    {
+        if ( !Helper._isObjectLike( value ) || Helper._getTag( value ) != '[object Object]' )
+        {
+            return false
         }
 
-        this.headers = new Headers( headers );
-    }
-
-    async get( route, cb = null )
-    {
-        let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
-
-        return await this._fetch( req, cb );
-    }
-
-    async post( route, data = {}, cb = null )
-    {
-        let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
-        return await this._fetch( req, cb );
-    }
-
-    async delete( route, cb = null )
-    {
-        let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
-        return await this._fetch( req, cb );
-    }
-
-    async put( route, data = {}, cb = null )
-    {
-        let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
-        return await this._fetch( req, cb );
-    }
-
-    async patch( route, data = {}, cb = null )
-    {
-        let r = trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
-        return await this._fetch( req, cb );
-    }
-
-    async _fetch( req, cb = null )
-    {
-        if ( cb )
+        if ( Object.getPrototypeOf( value ) === null )
         {
-            fetch( req )
-                .then( response => response.json() )
-                .then( json => cb( null, json ) )
-                .catch( error => cb( error, null ) );
+            return true
         }
-        else
+
+        let proto = value;
+        while ( Object.getPrototypeOf( proto ) !== null)
         {
-            const response = await fetch( req );
-            const json = await response.json();
-            return json;
+            proto = Object.getPrototypeOf(proto);
         }
+
+        return Object.getPrototypeOf( value ) === proto
     }
 
-    _createFetchOptions( method, data = null )
+    /**
+     * Checks if given value is a class constructor
+     * Refer:
+     * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
+     * @param v
+     * @returns {boolean}
+     */
+    static isClass( v )
     {
-        const opts = {
-            "method" : method.toUpperCase(),
-            "headers" : this.headers
-        };
-        if ( isPlainObject( data ) )
+        return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+    }
+
+    /**
+     * Refer to:
+     * https://github.com/lodash/lodash/blob/master/isObjectLike.js
+     *
+     * @param value
+     * @returns {boolean}
+     */
+    static _isObjectLike( value )
+    {
+        return typeof value === 'object' && value !== null
+    }
+
+    /**
+     * Refer to:
+     * https://github.com/lodash/lodash/blob/master/.internal/getTag.js
+     *
+     * @param value
+     * @returns {string|string}
+     */
+    static _getTag( value )
+    {
+        if ( value == null )
         {
-            opts.body = JSON.stringify( data );
+            return value === undefined ? '[object Undefined]' : '[object Null]'
         }
-        return opts;
+        return Object.prototype.toString.call( value );
     }
 }
 
@@ -219,7 +148,7 @@ class PropertyObject
 {
     constructor( props = {} )
     {
-        if ( false === isPlainObject( props ) )
+        if ( false === Helper.isPlainObject( props ) )
         {
             throw new Error( 'PropertyObject expects a plain object.' );
         }
@@ -739,45 +668,6 @@ class RouteParams
     }
 }
 
-class State
-{
-    static ID = null;
-
-    constructor( app, routeParams )
-    {
-        this.app = app;
-        this.routeParams = routeParams;
-    }
-
-    getId()
-    {
-        return this.constructor.ID;
-    }
-
-    canEnter()
-    {
-        return true;
-    }
-
-    canExit()
-    {
-        return true;
-    }
-
-    getRedirectTo()
-    {
-        return null;
-    }
-
-    async enter()
-    {
-    }
-
-    async exit()
-    {
-    }
-}
-
 class Router
 {
     static ACTION_TYPE_FUNCTION = "function";
@@ -795,12 +685,12 @@ class Router
     // Add third optional param called isIndexAction to be triggered, when route is empty
     addRoute( route, action )
     {
-        let sRoute = trim( route, '/' ),
+        let sRoute = Helper.trim( route, '/' ),
             type = Router.ACTION_TYPE_FUNCTION;
 
         sRoute = '/' + sRoute;
 
-        if ( true === isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
+        if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
             type = Router.ACTION_TYPE_STATE;
             this.app.stateManager.addStateClass( action );
@@ -871,7 +761,7 @@ class Router
         let route = hash.slice(1);
 
         // always start with a leading slash
-        route = '/' + trim( route, '/' );
+        route = '/' + Helper.trim( route, '/' );
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
@@ -880,7 +770,7 @@ class Router
 
     redirect( url, forceReload = false )
     {
-        location.hash = '/' + trim( url, '/' );
+        location.hash = '/' + Helper.trim( url, '/' );
         if ( true === forceReload )
         {
             this.processHash();
@@ -889,9 +779,9 @@ class Router
 
     resolveRoute( route )
     {
-        let r = trim( route, '/#' );
-        r = trim( r, '#' );
-        r = trim( r, '/' );
+        let r = Helper.trim( route, '/#' );
+        r = Helper.trim( r, '#' );
+        r = Helper.trim( r, '/' );
 
         return '/' + r;
     }
@@ -935,13 +825,14 @@ class StateManager
 
     addStateClass( stateClass )
     {
-        if ( false === isClass( stateClass ) || false === isClassChildOf() )
+        // @todo Fix this, only check for function or class
+        if ( false === Helper.isClass( stateClass ) )
         {
             throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
         }
 
         // Throw an error if ID is null or already taken
-        if ( false === isString( stateClass.ID ) )
+        if ( false === Helper.isString( stateClass.ID ) )
         {
             throw new Error( 'Given stateClass does not have a valid static ID' );
         }
@@ -1230,11 +1121,11 @@ class App extends PropertyObject
 
         if ( !this.uid )
         {
-            this.uid = createUid();
+            this.uid = Helper.createUid();
         }
 
         // If container property is a string, check if it is a querySelector
-        if ( isString( this.container ) )
+        if ( Helper.isString( this.container ) )
         {
             this.container = document.querySelector( this.container );
         }
@@ -1306,4 +1197,123 @@ class App extends PropertyObject
     }
 }
 
-export { Api, App, L18n, PropertyObject, Router, State, StateManager, TemplateManager, ViewManager, createUid, isClass, isClassChildOf, isPlainObject, isString, serializeForm, trim };
+class State
+{
+    static ID = null;
+
+    constructor( app, routeParams )
+    {
+        this.app = app;
+        this.routeParams = routeParams;
+    }
+
+    getId()
+    {
+        return this.constructor.ID;
+    }
+
+    canEnter()
+    {
+        return true;
+    }
+
+    canExit()
+    {
+        return true;
+    }
+
+    getRedirectTo()
+    {
+        return null;
+    }
+
+    async enter()
+    {
+    }
+
+    async exit()
+    {
+    }
+}
+
+class Http
+{
+    constructor( endpoint = '', headers = {} )
+    {
+        this.endpoint = Helper.trim( endpoint, '/' );
+        if ( this.endpoint.length <= 1 )
+        {
+            throw new Error( 'No endpoint set.' );
+        }
+
+        this.headers = new Headers( headers );
+    }
+
+    async get( route, cb = null )
+    {
+        let r = Helper.trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
+
+        return await this._fetch( req, cb );
+    }
+
+    async post( route, data = {}, cb = null )
+    {
+        let r = Helper.trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
+        return await this._fetch( req, cb );
+    }
+
+    async delete( route, cb = null )
+    {
+        let r = Helper.trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
+        return await this._fetch( req, cb );
+    }
+
+    async put( route, data = {}, cb = null )
+    {
+        let r = Helper.trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
+        return await this._fetch( req, cb );
+    }
+
+    async patch( route, data = {}, cb = null )
+    {
+        let r = Helper.trim( route, "/" ),
+            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
+        return await this._fetch( req, cb );
+    }
+
+    async _fetch( req, cb = null )
+    {
+        if ( cb )
+        {
+            fetch( req )
+                .then( response => response.json() )
+                .then( json => cb( null, json ) )
+                .catch( error => cb( error, null ) );
+        }
+        else
+        {
+            const response = await fetch( req );
+            const json = await response.json();
+            return json;
+        }
+    }
+
+    _createFetchOptions( method, data = null )
+    {
+        const opts = {
+            "method" : method.toUpperCase(),
+            "headers" : this.headers
+        };
+        if ( Helper.isPlainObject( data ) )
+        {
+            opts.body = JSON.stringify( data );
+        }
+        return opts;
+    }
+}
+
+export { App, Helper, Http, L18n, PropertyObject, Router, State, StateManager, TemplateManager, ViewManager };

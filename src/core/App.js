@@ -1,5 +1,5 @@
 import { PropertyObject } from "./PropertyObject.js";
-import { createUid, isString } from "../util/Functions.js";
+import { Helper } from "../util/Helper.js";
 
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
@@ -63,11 +63,11 @@ class App extends PropertyObject
 
         if ( !this.uid )
         {
-            this.uid = createUid();
+            this.uid = Helper.createUid();
         }
 
         // If container property is a string, check if it is a querySelector
-        if ( isString( this.container ) )
+        if ( Helper.isString( this.container ) )
         {
             this.container = document.querySelector( this.container );
         }

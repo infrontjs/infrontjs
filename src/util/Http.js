@@ -1,10 +1,9 @@
-import { trim, isPlainObject } from "../util/Functions.js";
-
+import { Helper } from "../util/Helper.js";
 class Http
 {
     constructor( endpoint = '', headers = {} )
     {
-        this.endpoint = trim( endpoint, '/' );
+        this.endpoint = Helper.trim( endpoint, '/' );
         if ( this.endpoint.length <= 1 )
         {
             throw new Error( 'No endpoint set.' );
@@ -15,7 +14,7 @@ class Http
 
     async get( route, cb = null )
     {
-        let r = trim( route, "/" ),
+        let r = Helper.trim( route, "/" ),
             req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
 
         return await this._fetch( req, cb );
@@ -23,28 +22,28 @@ class Http
 
     async post( route, data = {}, cb = null )
     {
-        let r = trim( route, "/" ),
+        let r = Helper.trim( route, "/" ),
             req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
         return await this._fetch( req, cb );
     }
 
     async delete( route, cb = null )
     {
-        let r = trim( route, "/" ),
+        let r = Helper.trim( route, "/" ),
             req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
         return await this._fetch( req, cb );
     }
 
     async put( route, data = {}, cb = null )
     {
-        let r = trim( route, "/" ),
+        let r = Helper.trim( route, "/" ),
             req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
         return await this._fetch( req, cb );
     }
 
     async patch( route, data = {}, cb = null )
     {
-        let r = trim( route, "/" ),
+        let r = Helper.trim( route, "/" ),
             req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
         return await this._fetch( req, cb );
     }
@@ -72,7 +71,7 @@ class Http
             "method" : method.toUpperCase(),
             "headers" : this.headers
         };
-        if ( isPlainObject( data ) )
+        if ( Helper.isPlainObject( data ) )
         {
             opts.body = JSON.stringify( data );
         }

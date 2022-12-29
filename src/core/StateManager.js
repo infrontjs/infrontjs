@@ -1,5 +1,4 @@
-import { isClass, isClassChildOf, isString } from "../util/Functions.js";
-import { State } from "./State.js";
+import { Helper } from "../util/Helper.js";
 
 class StateManager
 {
@@ -12,13 +11,14 @@ class StateManager
 
     addStateClass( stateClass )
     {
-        if ( false === isClass( stateClass ) || false === isClassChildOf( stateClass, 'State') )
+        // @todo Fix this, only check for function or class
+        if ( false === Helper.isClass( stateClass ) )
         {
             throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
         }
 
         // Throw an error if ID is null or already taken
-        if ( false === isString( stateClass.ID ) )
+        if ( false === Helper.isString( stateClass.ID ) )
         {
             throw new Error( 'Given stateClass does not have a valid static ID' );
         }

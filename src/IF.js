@@ -1,5 +1,4 @@
 // Classes
-export { Http } from "./core/Http.js";
 export { App } from "./core/App.js";
 export { L18n } from "./core/L18n.js";
 export { PropertyObject } from "./core/PropertyObject.js";
@@ -9,5 +8,5 @@ export { StateManager } from "./core/StateManager.js";
 export { TemplateManager } from "./core/TemplateManager.js";
 export { ViewManager } from "./core/ViewManager.js";
 
-// global functions
-export { trim, createUid, isPlainObject, isClass, isClassChildOf, isString, serializeForm } from "./util/Functions.js";
+export { Helper } from "./util/Helper.js";
+export { Http } from "./util/Http.js";

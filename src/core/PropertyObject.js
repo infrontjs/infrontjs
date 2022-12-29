@@ -1,10 +1,10 @@
-import { isPlainObject } from "../util/Functions.js";
+import { Helper } from "../util/Helper.js";
 
 class PropertyObject
 {
     constructor( props = {} )
     {
-        if ( false === isPlainObject( props ) )
+        if ( false === Helper.isPlainObject( props ) )
         {
             throw new Error( 'PropertyObject expects a plain object.' );
         }

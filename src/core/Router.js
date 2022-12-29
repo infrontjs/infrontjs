@@ -1,7 +1,6 @@
-import { trim, isClass, isClassChildOf } from "../util/Functions.js";
 import { UrlPattern } from "../util/UrlPattern.js";
 import { RouteParams } from "../util/RouteParams.js";
-import { State } from "./State.js";
+import { Helper } from "../util/Helper.js";
 
 class Router
 {
@@ -20,12 +19,12 @@ class Router
     // Add third optional param called isIndexAction to be triggered, when route is empty
     addRoute( route, action )
     {
-        let sRoute = trim( route, '/' ),
+        let sRoute = Helper.trim( route, '/' ),
             type = Router.ACTION_TYPE_FUNCTION;
 
         sRoute = '/' + sRoute;
 
-        if ( true === isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
+        if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
             type = Router.ACTION_TYPE_STATE
             this.app.stateManager.addStateClass( action );
@@ -96,7 +95,7 @@ class Router
         let route = hash.slice(1);
 
         // always start with a leading slash
-        route = '/' + trim( route, '/' );
+        route = '/' + Helper.trim( route, '/' );
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
@@ -105,7 +104,7 @@ class Router
 
     redirect( url, forceReload = false )
     {
-        location.hash = '/' + trim( url, '/' );
+        location.hash = '/' + Helper.trim( url, '/' );
         if ( true === forceReload )
         {
             this.processHash();
@@ -114,9 +113,9 @@ class Router
 
     resolveRoute( route )
     {
-        let r = trim( route, '/#' );
-        r = trim( r, '#' );
-        r = trim( r, '/' );
+        let r = Helper.trim( route, '/#' );
+        r = Helper.trim( r, '#' );
+        r = Helper.trim( r, '/' );
 
         return '/' + r;
     }

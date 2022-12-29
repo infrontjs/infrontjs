@@ -1,6 +1,6 @@
 import { trim, isPlainObject } from "../util/Functions.js";
 
-class Api
+class Http
 {
     constructor( endpoint = '', headers = {} )
     {
@@ -80,4 +80,4 @@ class Api
     }
 }
 
-export { Api };
+export { Http };

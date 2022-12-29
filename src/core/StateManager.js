@@ -65,8 +65,8 @@ class StateManager
             delete this.currentState;
         }
 
-        await newState.enter();
         this.currentState = newState;
+        await newState.enter();
     }
 
 }

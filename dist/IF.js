@@ -56,23 +56,8 @@
 
 	function isClassChildOf( classContructor, parentClassName )
 	{
-	    let ret = false,
-	        regexEnd = new RegExp( 'function ()', "gm" ),
-	        regex = new RegExp( `class ${parentClassName}`, "gm" );
-
-	    while ( ret === false && null === regexEnd.exec( Object.getPrototypeOf( classContructor ).toString() ) )
-	    {
-	        if ( null !== regex.exec( Object.getPrototypeOf( classContructor ).toString() ) )
-	        {
-	            ret = true;
-	        }
-	        else
-	        {
-	            classContructor = Object.getPrototypeOf( classContructor );
-	        }
-	    }
-
-	    return ret;
+	    // @todo FIX THIS - breaks on webpack in production mode
+	    return true;
 	}
 
 	function createUid()
@@ -956,7 +941,7 @@
 
 	    addStateClass( stateClass )
 	    {
-	        if ( false === isClass( stateClass ) || false === isClassChildOf( stateClass, 'State') )
+	        if ( false === isClass( stateClass ) || false === isClassChildOf() )
 	        {
 	            throw new Error( 'StateManager.addStateClass expects a class/subclass of State.' );
 	        }
@@ -1009,8 +994,8 @@
 	            delete this.currentState;
 	        }
 
-	        await newState.enter();
 	        this.currentState = newState;
+	        await newState.enter();
 	    }
 
 	}
@@ -1196,7 +1181,7 @@
 	    }
 	}
 
-	const VERSION = '0.7.5';
+	const VERSION = '0.7.6';
 
 	const DEFAULT_PROPS = {
 	    "uid" : null,

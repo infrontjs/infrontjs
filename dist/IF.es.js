@@ -1,3 +1,42 @@
+class State
+{
+    static ID = null;
+
+    constructor( app, routeParams )
+    {
+        this.app = app;
+        this.routeParams = routeParams;
+    }
+
+    getId()
+    {
+        return this.constructor.ID;
+    }
+
+    canEnter()
+    {
+        return true;
+    }
+
+    canExit()
+    {
+        return true;
+    }
+
+    getRedirectTo()
+    {
+        return null;
+    }
+
+    async enter()
+    {
+    }
+
+    async exit()
+    {
+    }
+}
+
 /**
  *
  */
@@ -1066,7 +1105,7 @@ class L18n
     }
 }
 
-const VERSION = '0.7.6';
+const VERSION = '0.7.7';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -1194,45 +1233,6 @@ class App extends PropertyObject
     async destroy()
     {
         // @todo Implement logic, set innerHTML to zero ... etc
-    }
-}
-
-class State
-{
-    static ID = null;
-
-    constructor( app, routeParams )
-    {
-        this.app = app;
-        this.routeParams = routeParams;
-    }
-
-    getId()
-    {
-        return this.constructor.ID;
-    }
-
-    canEnter()
-    {
-        return true;
-    }
-
-    canExit()
-    {
-        return true;
-    }
-
-    getRedirectTo()
-    {
-        return null;
-    }
-
-    async enter()
-    {
-    }
-
-    async exit()
-    {
     }
 }
 

@@ -8,7 +8,7 @@ import { TemplateManager } from "./TemplateManager.js";
 import { L18n } from "./L18n.js";
 
 
-const VERSION = '0.7.6';
+const VERSION = '0.7.7';
 
 const DEFAULT_PROPS = {
     "uid" : null,

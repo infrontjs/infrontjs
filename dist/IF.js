@@ -4,6 +4,45 @@
 	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.IF = {}));
 })(this, (function (exports) { 'use strict';
 
+	class State
+	{
+	    static ID = null;
+
+	    constructor( app, routeParams )
+	    {
+	        this.app = app;
+	        this.routeParams = routeParams;
+	    }
+
+	    getId()
+	    {
+	        return this.constructor.ID;
+	    }
+
+	    canEnter()
+	    {
+	        return true;
+	    }
+
+	    canExit()
+	    {
+	        return true;
+	    }
+
+	    getRedirectTo()
+	    {
+	        return null;
+	    }
+
+	    async enter()
+	    {
+	    }
+
+	    async exit()
+	    {
+	    }
+	}
+
 	/**
 	 *
 	 */
@@ -1072,7 +1111,7 @@
 	    }
 	}
 
-	const VERSION = '0.7.6';
+	const VERSION = '0.7.7';
 
 	const DEFAULT_PROPS = {
 	    "uid" : null,
@@ -1200,45 +1239,6 @@
 	    async destroy()
 	    {
 	        // @todo Implement logic, set innerHTML to zero ... etc
-	    }
-	}
-
-	class State
-	{
-	    static ID = null;
-
-	    constructor( app, routeParams )
-	    {
-	        this.app = app;
-	        this.routeParams = routeParams;
-	    }
-
-	    getId()
-	    {
-	        return this.constructor.ID;
-	    }
-
-	    canEnter()
-	    {
-	        return true;
-	    }
-
-	    canExit()
-	    {
-	        return true;
-	    }
-
-	    getRedirectTo()
-	    {
-	        return null;
-	    }
-
-	    async enter()
-	    {
-	    }
-
-	    async exit()
-	    {
 	    }
 	}
 

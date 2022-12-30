@@ -9,7 +9,7 @@ import { L18n } from "./L18n.js";
 import { DefaultState } from "../base/DefaultState.js";
 
 
-const VERSION = '0.7.7';
+const VERSION = '0.7.8';
 
 const DEFAULT_PROPS = {
     "uid" : null,

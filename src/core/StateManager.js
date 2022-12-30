@@ -7,7 +7,7 @@ class StateManager
         this._states =  {};
         this.app = appInstance;
         this.currentState = null;
-        this.defaultState = null;
+        this.defaultStateId = null;
     }
 
     addState( stateClass )
@@ -46,7 +46,7 @@ class StateManager
         if ( stateClass.IS_DEFAULT )
         {
             // @todo Add warning if defaultState is already set and not of the same ID
-            this.defaultState = stateClass;
+            this.defaultStateId = stateClass.ID;
         }
 
         return true;
@@ -64,9 +64,9 @@ class StateManager
         return stateInstance;
     }
 
-    getDefaultState()
+    getDefaultStateId()
     {
-        return this.defaultState;
+        return this.defaultStateId;
     }
 
     async switchTo( newState )

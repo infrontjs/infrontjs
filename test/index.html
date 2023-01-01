@@ -61,7 +61,7 @@
           app.run();
 
 
-          const myWatchable = IF.Helper.createWatchable( {}, (e) => { console.log( e ); } );
+          const myWatchable = IF.Helper.createObservable( {}, (e) => { console.log( e ); } );
           console.log( myWatchable );
           window.mw = myWatchable;
           window.app = app;

@@ -895,7 +895,15 @@
 	        return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
 	    }
 
-	    static createWatchable( objReference, onChange = undefined, batchUpDelay = true )
+	    /**
+	     * Create an observable object
+	     *
+	     * @param {function} onChange Optional callback triggered on change. Default is undefined.
+	     * @param {object} objReference Optional referenced object which will be transformed to an observable. Default is an empty new object.
+	     * @param {boolean} batchUpDelay Optional flag defining if change events are batched up for 10ms before being triggered. Default is true.
+	     * @returns {ProxyConstructor}
+	     */
+	    static createObservable( onChange = undefined, objReference = {}, batchUpDelay = true )
 	    {
 	        return ObservableSlim.create(
 	            objReference,

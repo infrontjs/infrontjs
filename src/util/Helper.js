@@ -1,6 +1,5 @@
-/**
- *
- */
+import { ObservableSlim } from "../core/Internals.js";
+
 class Helper
 {
     /**
@@ -124,6 +123,22 @@ class Helper
     static isClass( v )
     {
         return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+    }
+
+    /**
+     *
+     * @param {function} onChange Optional callback triggered on change. Default is undefined.
+     * @param {object} objReference Optional referenced object which will be transformed to an observable. Default is an empty new object.
+     * @param {boolean} batchUpDelay Optional flag defining if change events are batched up for 10ms before being triggered. Default is true.
+     * @returns {ProxyConstructor}
+     */
+    static createWatchable( onChange = undefined, objReference = {}, batchUpDelay = true )
+    {
+        return ObservableSlim.create(
+            objReference,
+            batchUpDelay,
+            onChange
+        );
     }
 
     /**

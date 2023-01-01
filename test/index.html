@@ -59,6 +59,11 @@
 
           const app = new IF.App();
           app.run();
+
+
+          const myWatchable = IF.Helper.createWatchable( {}, (e) => { console.log( e ); } );
+          console.log( myWatchable );
+          window.mw = myWatchable;
           window.app = app;
 
           // const app = new MyApp();

@@ -9,11 +9,11 @@ import { L18n } from "./L18n.js";
 import { DefaultState } from "../base/DefaultState.js";
 
 
-const VERSION = '0.7.8';
+const VERSION = '0.8.0';
 
 const DEFAULT_PROPS = {
     "uid" : null,
-    "title" : "InfrontJS",
+    "title" : null,
     "container" : null
 };
 
@@ -136,6 +136,7 @@ class App
      */
     getSetting( key, defVal = null )
     {
+        // @todo Fix, add nested tree logic
         if ( this.settings.hasOwnProperty( key ) )
         {
             return this.settings[ key ];
@@ -148,12 +149,15 @@ class App
 
     async run( route = null )
     {
-        this.viewManager.setWindowTitle( this.title );
+        if ( this.title )
+        {
+            this.viewManager.setWindowTitle( this.title );
+        }
 
         // @todo Check if default state is set
         // @todo Check if DefaultStates are allowed by setting configuration
 
-        this.stateManager.addState( DefaultState );
+        //this.stateManager.addState( DefaultState );
 
         this.router.enable();
         if ( route )

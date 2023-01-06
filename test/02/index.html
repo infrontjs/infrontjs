@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>[02] InfrontJS States - The Basics</title>
+</head>
+<body>
+
+<script type="module">
+  import * as IF from "./../../src/IF.js";
+  window.onload = function()
+  {
+    class HomeState extends IF.State
+    {
+      static ID = 'home';
+      static ROUTE = '/';
+
+      enter()
+      {
+        this.app.container.innerHTML = `
+        <ul>
+            <li><a href="${this.app.router.createUrl(AnotherState.ROUTE)}">Another State</a></li>
+            <li><a href="${this.app.router.createUrl(ForbiddenState.ROUTE)}">Forbidden State</a></li>
+            <li><a href="${this.app.router.createUrl('does-not-exists')}">404</a></li>
+        </ul>
+        `;
+      }
+
+    }
+
+    class AnotherState extends IF.State
+    {
+      static ID = 'another';
+      static ROUTE = '/another';
+
+      enter()
+      {
+        this.app.container.innerHTML =  `
+        <h1>Another State</h1>
+        <a href="${this.app.router.createUrl(HomeState.ROUTE)}">Back Home</a>
+        `;
+      }
+    }
+
+    class ForbiddenState extends IF.State
+    {
+        static ID = 'forbidden';
+        static ROUTE = '/forbidden';
+
+        canEnter()
+        {
+            alert( "Entering this state is forbidden." );
+            return false;
+        }
+
+        getRedirectTo()
+        {
+            return HomeState.ROUTE;
+        }
+    }
+
+    async function run()
+    {
+      const app = new IF.App();
+      app.stateManager.addState( HomeState );
+      app.stateManager.addState( AnotherState );
+      app.stateManager.addState( ForbiddenState );
+      app.run();
+    }
+
+    run();
+  };
+</script>
+</body>
+</html>

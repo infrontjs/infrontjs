@@ -1,6 +1,7 @@
 import { RouteParams } from "./RouteParams.js";
 import { Helper } from "../util/Helper.js";
 
+const UrlPattern = new UP();
 class Router
 {
     static ACTION_TYPE_FUNCTION = "function";
@@ -8,11 +9,15 @@ class Router
 
     constructor( appInstance )
     {
+        // @todo Implement auto
+        this.mode = 'url';  // url, hash, auto
         this._routeActions = [];
         this.app = appInstance;
         this.isEnabled = false;
         this.previousRoute = null;
         this.currentRoute = null;
+        // @todo only use window.location.pathname if nothing is set in settings and mode is equal to url
+        this.basePath = Helper.trim( window.location.pathname, '/' );
     }
 
     // Add third optional param called isIndexAction to be triggered, when route is empty
@@ -52,7 +57,7 @@ class Router
         route = routeSplits[ 0 ];
         if ( routeSplits.length > 0 )
         {
-            let sp = new URLSearchParams( routeSplits[ 1 ] );
+            let sp = new URLSearchParams( routeSplits[ 0 ] );
             query = Object.fromEntries( sp.entries() );
         }
 
@@ -72,6 +77,24 @@ class Router
         return routeData;
     }
 
+    createUrl( str ) {
+        // @todo Check whether its hash based routing or not
+        if ( this.mode === 'hash' )
+        {
+            return '#/' + Helper.trim( str, '/' );
+        }
+        else if ( 'url' === this.mode )
+        {
+            return window.location.origin + '/' + this.basePath + '/' + Helper.trim( str, '/' );
+        }
+    }
+
+    startsWithHash(string)
+    {
+        const regEx = /^#/;
+        const startsWithHash = regEx.test(string);
+        return Boolean(startsWithHash);
+    }
     enable()
     {
         if ( true === this.isEnabled )
@@ -79,7 +102,15 @@ class Router
             return;
         }
         this.isEnabled = true;
-        window.addEventListener( 'hashchange', this.processHash.bind( this ) );
+
+        if ( this.mode === 'url' )
+        {
+            document.addEventListener( 'click', this.processUrl.bind( this ), false);
+        }
+        else if ( this.mode = 'hash' )
+        {
+            window.addEventListener( 'hashchange', this.processHash.bind( this ) );
+        }
     }
 
     disable()
@@ -97,15 +128,72 @@ class Router
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
-        this.execute( route );
+        this.execute(  this.resolveActionDataByRoute( route ) );
+    }
+
+    processUrl( event )
+    {
+        const target = event.target.closest('a');
+
+        // we are interested only in anchor tag clicks
+        if (!target) {
+            return;
+        }
+
+        const url = target.getAttribute('href');
+
+        // we don't care about example.com#hash or
+        // example.com/#hash links
+        if (this.startsWithHash(url)) {
+            return;
+        }
+
+        // if the link is leading to other page we
+        // need to disable default browser behavior
+        // to avoid page refresh
+        if ( target.hostname === location.hostname )
+        {
+            event.preventDefault();
+            //this.redirect(url);
+            let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
+            console.log( route );
+            route = '/' + Helper.trim( route, '/' );
+
+            this.previousRoute = this.currentRoute;
+            this.currentRoute = route;
+
+            console.log( route );
+            const actionData = this.resolveActionDataByRoute( route );
+            if ( actionData )
+            {
+                window.history.pushState( null, null, url );
+            }
+            this.execute( actionData );
+        }
+
+        // otherwise go to the given destination
     }
 
     redirect( url, forceReload = false )
     {
-        location.hash = '/' + Helper.trim( url, '/' );
-        if ( true === forceReload )
+        if ( 'hash' === this.mode )
         {
-            this.processHash();
+            location.hash = '/' + Helper.trim( url, '/' );
+            if ( true === forceReload )
+            {
+                this.processHash();
+            }
+        }
+        else if ( 'url' === this.mode )
+        {
+            if ( true === forceReload )
+            {
+                window.history.pushState( null, null, url );
+            }
+            else
+            {
+                window.history.replaceState( null, null, url );
+            }
         }
     }
 
@@ -118,12 +206,11 @@ class Router
         return '/' + r;
     }
 
-    async execute( route )
+    async execute( actionData )
     {
         // Get view call
         try
         {
-            const actionData = this.resolveActionDataByRoute( route );
             if ( actionData && actionData.hasOwnProperty( 'routeActionData' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
                 switch( actionData.routeActionData.type )
@@ -137,6 +224,7 @@ class Router
                     break;
                 }
             }
+            // @todo Change this to 404 state
             else if ( null === actionData && null !== this.app.stateManager.getDefaultStateId() )
             {
                 const defaultStateInstance = this.app.stateManager.createState( this.app.stateManager.getDefaultStateId(), new RouteParams() );
@@ -153,9 +241,10 @@ class Router
 
 
 // Generated by CoffeeScript 1.10.0
-function UrlPattern() {
+
+function UP() {
     var slice = [].slice;
-    var P, UP, astNodeContainsSegmentsForProvidedParams, astNodeToNames, astNodeToRegexString, baseAstNodeToRegexString, concatMap, defaultOptions, escapeForRegex, getParam, keysAndValuesToObject, newParser, regexGroupCount, stringConcatMap, stringify;
+    var P, UrlPattern, astNodeContainsSegmentsForProvidedParams, astNodeToNames, astNodeToRegexString, baseAstNodeToRegexString, concatMap, defaultOptions, escapeForRegex, getParam, keysAndValuesToObject, newParser, regexGroupCount, stringConcatMap, stringify;
     escapeForRegex = function(string) {
         return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     };
@@ -484,9 +573,9 @@ function UrlPattern() {
                 }
         }
     };
-    UP = function(arg1, arg2) {
+    UrlPattern = function(arg1, arg2) {
         var groupCount, options, parsed, parser, withoutWhitespace;
-        if (arg1 instanceof UP) {
+        if (arg1 instanceof UrlPattern) {
             this.isRegex = arg1.isRegex;
             this.regex = arg1.regex;
             this.ast = arg1.ast;
@@ -539,7 +628,7 @@ function UrlPattern() {
         this.regex = new RegExp(astNodeToRegexString(this.ast, options.segmentValueCharset));
         this.names = astNodeToNames(this.ast);
     };
-    UP.prototype.match = function(url) {
+    UrlPattern.prototype.match = function(url) {
         var groups, match;
         match = this.regex.exec(url);
         if (match == null) {
@@ -552,7 +641,7 @@ function UrlPattern() {
             return groups;
         }
     };
-    UP.prototype.stringify = function(params) {
+    UrlPattern.prototype.stringify = function(params) {
         if (params == null) {
             params = {};
         }
@@ -564,20 +653,20 @@ function UrlPattern() {
         }
         return stringify(this.ast, params, {});
     };
-    UP.escapeForRegex = escapeForRegex;
-    UP.concatMap = concatMap;
-    UP.stringConcatMap = stringConcatMap;
-    UP.regexGroupCount = regexGroupCount;
-    UP.keysAndValuesToObject = keysAndValuesToObject;
-    UP.P = P;
-    UP.newParser = newParser;
-    UP.defaultOptions = defaultOptions;
-    UP.astNodeToRegexString = astNodeToRegexString;
-    UP.astNodeToNames = astNodeToNames;
-    UP.getParam = getParam;
-    UP.astNodeContainsSegmentsForProvidedParams = astNodeContainsSegmentsForProvidedParams;
-    UP.stringify = stringify;
-    return UP;
+    UrlPattern.escapeForRegex = escapeForRegex;
+    UrlPattern.concatMap = concatMap;
+    UrlPattern.stringConcatMap = stringConcatMap;
+    UrlPattern.regexGroupCount = regexGroupCount;
+    UrlPattern.keysAndValuesToObject = keysAndValuesToObject;
+    UrlPattern.P = P;
+    UrlPattern.newParser = newParser;
+    UrlPattern.defaultOptions = defaultOptions;
+    UrlPattern.astNodeToRegexString = astNodeToRegexString;
+    UrlPattern.astNodeToNames = astNodeToNames;
+    UrlPattern.getParam = getParam;
+    UrlPattern.astNodeContainsSegmentsForProvidedParams = astNodeContainsSegmentsForProvidedParams;
+    UrlPattern.stringify = stringify;
+    return UrlPattern;
 };
 
 export { Router };

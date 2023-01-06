@@ -14,10 +14,13 @@ for Frontfire build tool
 
 - [X] Rename Api to Http (Client)
 - [x] Move Http to Util
-- [ ] Rethink PropertyObject -> maybe just a simple set/get method that interacts with [this] instance properties
+- [x] Rethink PropertyObject -> maybe just a simple set/get method that interacts with [this] instance properties
 - [x] Move RouteParams/UrlPattern into Router/Controller
 - [ ] Work on non-hash-based actions
-- [ ] Add Front.js observables
+- [x] Add Front.js observables
 - [ ] Think about own wrapper of HTMLElements using custom attributes like if-bind
-- [ ] Implement Brunos Singleton pattern
+- [ ] ??? Implement Brunos Singleton pattern ???
 - [x] Wrap Functions to static Helper class
+- [ ] Remove is_default state because it does not make sense, use route array instead
+- [ ] Examples, XX - States Transition, XX - States
+- [ ] Add util.Device or maybe better util.Environment isMobile, isTouch, isLocalhost, isDevelopment etc...

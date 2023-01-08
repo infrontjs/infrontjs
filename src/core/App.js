@@ -1,5 +1,3 @@
-import { Helper } from "../util/Helper.js";
-
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
 import { ViewManager } from "./ViewManager.js";
@@ -8,8 +6,11 @@ import { L18n } from "./L18n.js";
 
 import { DefaultState } from "../base/DefaultState.js";
 
+import { Helper } from "../util/Helper.js";
+import { PathObject } from "../util/PathObject.js";
 
-const VERSION = '0.8.0';
+
+const VERSION = '0.8.1';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -68,7 +69,7 @@ class App
             this.uid = Helper.createUid();
         }
 
-        this.settings = { ...DEFAULT_SETTINGS, settings };
+        this.settings = new PathObject( { ...DEFAULT_SETTINGS, settings } );
 
         if ( !this.uid )
         {
@@ -97,7 +98,7 @@ class App
         //apps[ this.uid ] = this;
         App.POOL[ this.uid ] = this;
 
-        if ( true === this.settings.sayHello && console )
+        if ( true === this.settings.get( 'sayHello' ) && console )
         {
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }

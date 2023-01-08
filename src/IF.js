@@ -10,3 +10,4 @@ export { ViewManager } from "./core/ViewManager.js";
 
 export { Helper } from "./util/Helper.js";
 export { Http } from "./util/Http.js";
+export { PathObject } from "./util/PathObject.js";

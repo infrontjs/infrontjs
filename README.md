@@ -10,6 +10,13 @@ Check
 https://www.npmjs.com/package/nollup
 for Frontfire build tool
 
+
+## Stuff included
+
+- Lodash _.get / _.set functionality wrapped into PathObject
+- UrlPattern
+- 
+
 ## ToDos
 
 - [X] Rename Api to Http (Client)

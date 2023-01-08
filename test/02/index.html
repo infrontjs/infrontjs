@@ -55,7 +55,7 @@
         getRedirectTo()
         {
             const app = IF.App.get();
-            return app.router.createUrl( HomeState.ROUTE );
+            return app.router.createUrl( HomeState.ROUTE[ 0 ] );
         }
     }
 

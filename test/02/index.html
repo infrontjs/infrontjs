@@ -14,8 +14,7 @@
 
     class HomeState extends IF.State
     {
-      static ID = 'home';
-      static ROUTE = '/';
+      static ROUTE = [ '/', '/home' ];
 
       enter()
       {
@@ -32,21 +31,19 @@
 
     class AnotherState extends IF.State
     {
-      static ID = 'another';
       static ROUTE = '/another';
 
       enter()
       {
         this.app.container.innerHTML =  `
         <h1>Another State</h1>
-        <a href="${this.app.router.createUrl(HomeState.ROUTE)}">Back Home</a>
+        <a href="${this.app.router.createUrl(HomeState.ROUTE[ 1 ])}">Back Home</a>
         `;
       }
     }
 
     class ForbiddenState extends IF.State
     {
-        static ID = 'forbidden';
         static ROUTE = '/forbidden';
 
         canEnter()

@@ -84,6 +84,16 @@ class TemplateManager
         return _template( tmpl, data );
     }
 
+    renderHtml( htmlElement, tmpl, data = {} )
+    {
+        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
+        {
+            throw new Error( 'First parameter is no valid HTMLElement.' );
+        }
+
+        htmlElement.innerHTML = this.getHtml( tmpl, data );
+    }
+
     async get( templateUrl, useCache = true )
     {
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;

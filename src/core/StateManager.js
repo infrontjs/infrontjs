@@ -21,11 +21,13 @@ class StateManager
         // Throw an error if ID is null or already taken
         if ( false === Helper.isString( stateClass.ID ) )
         {
-            throw new Error( 'Given stateClass does not have a valid static ID' );
+            stateClass.ID = Helper.createUid();
+            // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
         }
 
         if ( true === this._states.hasOwnProperty( stateClass.ID ) )
         {
+            // @todo Show warning ...
             return false;
         }
 
@@ -37,7 +39,7 @@ class StateManager
         }
         else if ( Helper.isArray( stateClass.ROUTE ) )
         {
-            for ( let route in stateClass.ROUTE )
+            for ( let route of stateClass.ROUTE )
             {
                 this.app.router.addRoute( route, stateClass );
             }

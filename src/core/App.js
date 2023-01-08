@@ -19,7 +19,9 @@ const DEFAULT_PROPS = {
 };
 
 const DEFAULT_SETTINGS = {
-    "sayHello" : true,
+    "app" : {
+        "sayHello" : true,
+    },
     "l18n" : {
         "defaultLanguage" : "en"
     },
@@ -95,10 +97,9 @@ class App
         this.initRouter();
 
         // Add app to global app pool
-        //apps[ this.uid ] = this;
         App.POOL[ this.uid ] = this;
 
-        if ( true === this.settings.get( 'sayHello' ) && console )
+        if ( true === this.settings.get( 'app.sayHello' ) && console )
         {
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }

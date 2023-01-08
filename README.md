@@ -15,7 +15,7 @@ for Frontfire build tool
 
 - Lodash _.get / _.set functionality wrapped into PathObject
 - UrlPattern
-- 
+- microtemplate 
 
 ## ToDos
 

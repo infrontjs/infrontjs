@@ -1,7 +1,10 @@
 import { Helper } from "../util/Helper.js";
+import { DefaultState } from "../base/DefaultState.js";
 
 class StateManager
 {
+    static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
+
     constructor( appInstance )
     {
         this._states =  {};
@@ -45,12 +48,6 @@ class StateManager
             }
         }
 
-        if ( stateClass.IS_DEFAULT )
-        {
-            // @todo Add warning if defaultState is already set and not of the same ID
-            this.defaultStateId = stateClass.ID;
-        }
-
         return true;
     }
 
@@ -62,13 +59,12 @@ class StateManager
         {
             stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
+        else if ( stateId === StateManager.DEFAULT_STATE_ID )
+        {
+            stateInstance = new DefaultState( this.app, routeParams );
+        }
 
         return stateInstance;
-    }
-
-    getDefaultStateId()
-    {
-        return this.defaultStateId;
     }
 
     async switchTo( newState )

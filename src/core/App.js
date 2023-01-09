@@ -164,6 +164,7 @@ class App
         this.router.enable();
         if ( route )
         {
+            // @todo Fix this for "url" router mode
             this.router.redirect( route, ( this.router.resolveRoute( route ) === this.router.resolveRoute( location.hash ) ) );
         }
         else

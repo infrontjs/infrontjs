@@ -16,6 +16,7 @@ for Frontfire build tool
 - Lodash _.get / _.set functionality wrapped into PathObject
 - UrlPattern
 - microtemplate 
+- https://www.shadertoy.com/view/wlSSD3
 
 ## ToDos
 
@@ -23,11 +24,9 @@ for Frontfire build tool
 - [x] Move Http to Util
 - [x] Rethink PropertyObject -> maybe just a simple set/get method that interacts with [this] instance properties
 - [x] Move RouteParams/UrlPattern into Router/Controller
-- [ ] Work on non-hash-based actions
+- [x] Work on non-hash-based actions
 - [x] Add Front.js observables
 - [ ] Think about own wrapper of HTMLElements using custom attributes like if-bind
-- [ ] ??? Implement Brunos Singleton pattern ???
 - [x] Wrap Functions to static Helper class
-- [ ] Remove is_default state because it does not make sense, use route array instead
-- [ ] Examples, XX - States Transition, XX - States
-- [ ] Add util.Device or maybe better util.Environment isMobile, isTouch, isLocalhost, isDevelopment etc...
+- [x] Remove is_default state because it does not make sense, use route array instead
+- [ ] Examples, XX - States Transition, XX - States, Routing, Templates, Components, DataBinding, VirtualDom

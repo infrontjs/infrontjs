@@ -1,7 +1,6 @@
 class State
 {
     static ID = null;
-    static IS_DEFAULT = false;
 
     /**
      * Route(s) which trigger this state

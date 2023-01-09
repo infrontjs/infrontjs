@@ -1,15 +1,14 @@
 import { RouteParams } from "./RouteParams.js";
 import { Helper } from "../util/Helper.js";
+import { StateManager } from "./StateManager.js";
 
 const UrlPattern = new UP();
 class Router
 {
-    static ACTION_TYPE_FUNCTION = "function";
-    static ACTION_TYPE_STATE = "state";
-
     constructor( appInstance )
     {
         // @todo Implement auto
+        this.isInitialized = false;
         this.mode = 'url';  // url, hash, auto
         this._routeActions = [];
         this.app = appInstance;
@@ -23,18 +22,14 @@ class Router
     // Add third optional param called isIndexAction to be triggered, when route is empty
     addRoute( route, action )
     {
-        let sRoute = Helper.trim( route, '/' ),
-            type = Router.ACTION_TYPE_FUNCTION;
-
+        let sRoute = Helper.trim( route, '/' );
         sRoute = '/' + sRoute;
 
         if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            type = Router.ACTION_TYPE_STATE
             this.app.stateManager.addState( action );
             this._routeActions.push(
                 {
-                    "type" : type,
                     "action" : action.ID,
                     "route" : new UrlPattern( sRoute )
                 }
@@ -43,7 +38,7 @@ class Router
         // else: check if object and if object has an enter and exit method
         else
         {
-            throw new Error( 'Invalid action type.' );
+            throw new Error( 'Invalid action.' );
         }
     }
 
@@ -67,11 +62,24 @@ class Router
             if ( params )
             {
                 routeData = {
-                    "routeActionData" : this._routeActions[ si ],
+                    "routeAction" : this._routeActions[ si ].action,
                     "routeParams" : new RouteParams( params, query )
                 };
                 break;
             }
+        }
+
+        // If it is default route
+        if ( null === routeData && route === '/' )
+        {
+            routeData = {
+                "routeAction" : StateManager.DEFAULT_STATE_ID,
+                "routeParams" : null
+            };
+        }
+        else
+        {
+            // 404
         }
 
         return routeData;
@@ -162,7 +170,6 @@ class Router
             this.previousRoute = this.currentRoute;
             this.currentRoute = route;
 
-            console.log( route );
             const actionData = this.resolveActionDataByRoute( route );
             if ( actionData )
             {
@@ -211,24 +218,13 @@ class Router
         // Get view call
         try
         {
-            if ( actionData && actionData.hasOwnProperty( 'routeActionData' ) && actionData.hasOwnProperty( 'routeParams' ) )
+            if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                switch( actionData.routeActionData.type )
-                {
-                    case Router.ACTION_TYPE_STATE:
-                        let stateInstance = this.app.stateManager.createState(
-                            actionData.routeActionData.action,
-                            actionData.routeParams
-                        );
-                        await this.app.stateManager.switchTo( stateInstance );
-                    break;
-                }
-            }
-            // @todo Change this to 404 state
-            else if ( null === actionData && null !== this.app.stateManager.getDefaultStateId() )
-            {
-                const defaultStateInstance = this.app.stateManager.createState( this.app.stateManager.getDefaultStateId(), new RouteParams() );
-                await this.app.stateManager.switchTo( defaultStateInstance );
+                let stateInstance = this.app.stateManager.createState(
+                    actionData.routeAction,
+                    actionData.routeParams
+                );
+                await this.app.stateManager.switchTo( stateInstance );
             }
         }
         catch( e )

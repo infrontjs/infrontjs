@@ -1,7 +1,6 @@
 class State
 {
     static ID = null;
-    static IS_DEFAULT = false;
 
     /**
      * Route(s) which trigger this state
@@ -978,15 +977,244 @@ class Helper
     }
 }
 
-const UrlPattern = new UP();
-class Router
+class DefaultState extends State
 {
-    static ACTION_TYPE_FUNCTION = "function";
-    static ACTION_TYPE_STATE = "state";
+    static ID = 'INFRONT_DEFAULT_INDEX_STATE';
+
+    static VERTEX_SHADER = `
+attribute vec2 inPos;
+
+void main() 
+{
+    gl_Position = vec4(inPos, 0.0, 1.0);
+}
+`;
+    static FRAGMENT_SHADER = `
+precision mediump float;
+
+uniform vec2 iResolution;
+uniform vec2 iMouse;
+uniform float iTime;
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    vec2 fc = fragCoord;
+    
+    vec3 col = vec3(0.0);
+    for(int j=-4;j<=4;j++){
+        for(int k=-4;k<=4;k++){
+            vec2 uv = (fc)/iResolution.xy;
+            uv += sin(uv.x*(2.0+sin(iTime*0.39))+iTime*0.12)*vec2(j,k)*13.0/iResolution.xy;
+
+            //float i = iTime*0.08+float(j)*0.03;
+            float i = iTime*0.08+float(j)*0.03;
+            uv.x *= 0.8;
+            
+            float y = sin(uv.x*3.0+uv.x*sin(uv.x+i*0.37)*1.0+i*2.0+cos(uv.x*0.6+i*0.71)*0.75)*0.25+uv.y-0.5;
+            float ys = sign(y);
+			col += abs(vec3(max((1.0-pow(y,0.13+sin(uv.x+iTime*0.21)*0.1))*vec3(1.1,0.6,0.15),(1.0-pow(-y,0.13))*vec3(0.9,0.2,0.2))));
+        }
+    }
+	col /= 25.0;
+    // Output to screen
+    fragColor = vec4(col,1.0);
+}
+
+void main() 
+{
+    mainImage( gl_FragColor, gl_FragCoord.xy );
+}
+`;
+
+    async enter( params = {} )
+    {
+        this.app.container.innerHTML = '<style>* { margin: 0; padding: 0;overflow: hidden }</style><canvas id="ds"></canvas>';
+        this.canvas = null;
+        this.gl = null;
+        this.vp_size = null;
+        this.progDraw = null;
+        this.bufObj = {};
+        this.mousepos = [0,0];
+        console.log( "Hello" );
+        this.initScene();
+    }
+
+    initScene()
+    {
+        this.canvas = document.getElementById( "ds" );
+        this.gl = this.canvas.getContext( "experimental-webgl" );
+        if ( !this.gl )
+            return;
+
+        this.canvas.addEventListener( 'mousemove', ( e ) =>
+        {
+            this.mousepos = [ e.clientX, e.clientY ];
+        } );
+
+        this.progDraw = this.gl.createProgram();
+        for ( let i = 0; i < 2; ++i )
+        {
+            let source = i == 0 ? DefaultState.VERTEX_SHADER : DefaultState.FRAGMENT_SHADER;
+            let shaderObj = this.gl.createShader( i == 0 ? this.gl.VERTEX_SHADER : this.gl.FRAGMENT_SHADER );
+            this.gl.shaderSource( shaderObj, source );
+            this.gl.compileShader( shaderObj );
+            let status = this.gl.getShaderParameter( shaderObj, this.gl.COMPILE_STATUS );
+            if ( !status ) alert( this.gl.getShaderInfoLog( shaderObj ) );
+            this.gl.attachShader( this.progDraw, shaderObj );
+            this.gl.linkProgram( this.progDraw );
+        }
+        const status = this.gl.getProgramParameter( this.progDraw, this.gl.LINK_STATUS );
+        if ( !status ) alert( this.gl.getProgramInfoLog( this.progDraw ) );
+        this.progDraw.inPos = this.gl.getAttribLocation( this.progDraw, "inPos" );
+        this.progDraw.iTime = this.gl.getUniformLocation( this.progDraw, "iTime" );
+        this.progDraw.iMouse = this.gl.getUniformLocation( this.progDraw, "iMouse" );
+        this.progDraw.iResolution = this.gl.getUniformLocation( this.progDraw, "iResolution" );
+        this.gl.useProgram( this.progDraw );
+
+        let pos = [ -1, -1, 1, -1, 1, 1, -1, 1 ];
+        let inx = [ 0, 1, 2, 0, 2, 3 ];
+        this.bufObj.pos = this.gl.createBuffer();
+        this.gl.bindBuffer( this.gl.ARRAY_BUFFER, this.bufObj.pos );
+        this.gl.bufferData( this.gl.ARRAY_BUFFER, new Float32Array( pos ), this.gl.STATIC_DRAW );
+        this.bufObj.inx = this.gl.createBuffer();
+        this.bufObj.inx.len = inx.length;
+        this.gl.bindBuffer( this.gl.ELEMENT_ARRAY_BUFFER, this.bufObj.inx );
+        this.gl.bufferData( this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array( inx ), this.gl.STATIC_DRAW );
+        this.gl.enableVertexAttribArray( this.progDraw.inPos );
+        this.gl.vertexAttribPointer( this.progDraw.inPos, 2, this.gl.FLOAT, false, 0, 0 );
+
+        this.gl.enable( this.gl.DEPTH_TEST );
+        this.gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
+
+        window.onresize = this.resize.bind( this );
+        this.resize();
+        requestAnimationFrame( this.render.bind( this ) );
+    }
+
+    resize() {
+        //vp_size = [gl.drawingBufferWidth, gl.drawingBufferHeight];
+        //this.vp_size = [window.innerWidth, window.innerHeight];
+        this.vp_size = [512, 512];
+        this.canvas.width = this.vp_size[0];
+        this.canvas.height = this.vp_size[1];
+        this.canvas.style.width = "100vw";
+        this.canvas.style.height = "100vh";
+    }
+
+    render(deltaMS) {
+
+        this.gl.viewport( 0, 0, this.canvas.width, this.canvas.height );
+        this.gl.clear( this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT );
+
+        this.gl.uniform1f(this.progDraw.iTime, deltaMS/1000.0);
+        this.gl.uniform2f(this.progDraw.iResolution, this.canvas.width, this.canvas.height);
+        this.gl.uniform2f(this.progDraw.iMouse, this.mousepos[0], this.mousepos[1]);
+        this.gl.drawElements( this.gl.TRIANGLES, this.bufObj.inx.len, this.gl.UNSIGNED_SHORT, 0 );
+
+        requestAnimationFrame(this.render.bind( this ));
+    }
+
+}
+
+class StateManager
+{
+    static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
 
     constructor( appInstance )
     {
+        this._states =  {};
+        this.app = appInstance;
+        this.currentState = null;
+        this.defaultStateId = null;
+    }
+
+    addState( stateClass )
+    {
+        // @todo Fix this, only check for function or class
+        if ( false === Helper.isClass( stateClass ) )
+        {
+            throw new Error( 'StateManager.addState expects a class/subclass of State.' );
+        }
+
+        // Throw an error if ID is null or already taken
+        if ( false === Helper.isString( stateClass.ID ) )
+        {
+            stateClass.ID = Helper.createUid();
+            // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
+        }
+
+        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
+        {
+            // @todo Show warning ...
+            return false;
+        }
+
+        this._states[ stateClass.ID ] = stateClass;
+
+        if ( Helper.isString( stateClass.ROUTE ) )
+        {
+            this.app.router.addRoute( stateClass.ROUTE, stateClass );
+        }
+        else if ( Helper.isArray( stateClass.ROUTE ) )
+        {
+            for ( let route of stateClass.ROUTE )
+            {
+                this.app.router.addRoute( route, stateClass );
+            }
+        }
+
+        return true;
+    }
+
+    createState( stateId, routeParams )
+    {
+        let stateInstance = null;
+
+        if ( this._states.hasOwnProperty( stateId ) )
+        {
+            stateInstance = new this._states[ stateId ]( this.app, routeParams );
+        }
+        else if ( stateId === StateManager.DEFAULT_STATE_ID )
+        {
+            stateInstance = new DefaultState( this.app, routeParams );
+        }
+
+        return stateInstance;
+    }
+
+    async switchTo( newState )
+    {
+        if ( false === newState.canEnter() )
+        {
+            const redirectTo = newState.getRedirectTo();
+            if ( redirectTo )
+            {
+                this.app.router.redirect( redirectTo );
+                return false;
+            }
+
+            throw Error( 'Forbidden to enter new state:' + newState.getId() );
+        }
+
+        if ( this.currentState )
+        {
+            await this.currentState.exit();
+            delete this.currentState;
+        }
+
+        this.currentState = newState;
+        await newState.enter();
+    }
+
+}
+
+const UrlPattern = new UP();
+class Router
+{
+    constructor( appInstance )
+    {
         // @todo Implement auto
+        this.isInitialized = false;
         this.mode = 'url';  // url, hash, auto
         this._routeActions = [];
         this.app = appInstance;
@@ -1000,18 +1228,14 @@ class Router
     // Add third optional param called isIndexAction to be triggered, when route is empty
     addRoute( route, action )
     {
-        let sRoute = Helper.trim( route, '/' ),
-            type = Router.ACTION_TYPE_FUNCTION;
-
+        let sRoute = Helper.trim( route, '/' );
         sRoute = '/' + sRoute;
 
         if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            type = Router.ACTION_TYPE_STATE;
             this.app.stateManager.addState( action );
             this._routeActions.push(
                 {
-                    "type" : type,
                     "action" : action.ID,
                     "route" : new UrlPattern( sRoute )
                 }
@@ -1020,7 +1244,7 @@ class Router
         // else: check if object and if object has an enter and exit method
         else
         {
-            throw new Error( 'Invalid action type.' );
+            throw new Error( 'Invalid action.' );
         }
     }
 
@@ -1044,11 +1268,20 @@ class Router
             if ( params )
             {
                 routeData = {
-                    "routeActionData" : this._routeActions[ si ],
+                    "routeAction" : this._routeActions[ si ].action,
                     "routeParams" : new RouteParams( params, query )
                 };
                 break;
             }
+        }
+
+        // If it is default route
+        if ( null === routeData && route === '/' )
+        {
+            routeData = {
+                "routeAction" : StateManager.DEFAULT_STATE_ID,
+                "routeParams" : null
+            };
         }
 
         return routeData;
@@ -1139,7 +1372,6 @@ class Router
             this.previousRoute = this.currentRoute;
             this.currentRoute = route;
 
-            console.log( route );
             const actionData = this.resolveActionDataByRoute( route );
             if ( actionData )
             {
@@ -1188,24 +1420,13 @@ class Router
         // Get view call
         try
         {
-            if ( actionData && actionData.hasOwnProperty( 'routeActionData' ) && actionData.hasOwnProperty( 'routeParams' ) )
+            if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                switch( actionData.routeActionData.type )
-                {
-                    case Router.ACTION_TYPE_STATE:
-                        let stateInstance = this.app.stateManager.createState(
-                            actionData.routeActionData.action,
-                            actionData.routeParams
-                        );
-                        await this.app.stateManager.switchTo( stateInstance );
-                    break;
-                }
-            }
-            // @todo Change this to 404 state
-            else if ( null === actionData && null !== this.app.stateManager.getDefaultStateId() )
-            {
-                const defaultStateInstance = this.app.stateManager.createState( this.app.stateManager.getDefaultStateId(), new RouteParams() );
-                await this.app.stateManager.switchTo( defaultStateInstance );
+                let stateInstance = this.app.stateManager.createState(
+                    actionData.routeAction,
+                    actionData.routeParams
+                );
+                await this.app.stateManager.switchTo( stateInstance );
             }
         }
         catch( e )
@@ -1646,101 +1867,6 @@ function UP() {
     return UrlPattern;
 }
 
-class StateManager
-{
-    constructor( appInstance )
-    {
-        this._states =  {};
-        this.app = appInstance;
-        this.currentState = null;
-        this.defaultStateId = null;
-    }
-
-    addState( stateClass )
-    {
-        // @todo Fix this, only check for function or class
-        if ( false === Helper.isClass( stateClass ) )
-        {
-            throw new Error( 'StateManager.addState expects a class/subclass of State.' );
-        }
-
-        // Throw an error if ID is null or already taken
-        if ( false === Helper.isString( stateClass.ID ) )
-        {
-            throw new Error( 'Given stateClass does not have a valid static ID' );
-        }
-
-        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
-        {
-            return false;
-        }
-
-        this._states[ stateClass.ID ] = stateClass;
-
-        if ( Helper.isString( stateClass.ROUTE ) )
-        {
-            this.app.router.addRoute( stateClass.ROUTE, stateClass );
-        }
-        else if ( Helper.isArray( stateClass.ROUTE ) )
-        {
-            for ( let route in stateClass.ROUTE )
-            {
-                this.app.router.addRoute( route, stateClass );
-            }
-        }
-
-        if ( stateClass.IS_DEFAULT )
-        {
-            // @todo Add warning if defaultState is already set and not of the same ID
-            this.defaultStateId = stateClass.ID;
-        }
-
-        return true;
-    }
-
-    createState( stateId, routeParams )
-    {
-        let stateInstance = null;
-
-        if ( this._states.hasOwnProperty( stateId ) )
-        {
-            stateInstance = new this._states[ stateId ]( this.app, routeParams );
-        }
-
-        return stateInstance;
-    }
-
-    getDefaultStateId()
-    {
-        return this.defaultStateId;
-    }
-
-    async switchTo( newState )
-    {
-        if ( false === newState.canEnter() )
-        {
-            const redirectTo = newState.getRedirectTo();
-            if ( redirectTo )
-            {
-                this.app.router.redirect( redirectTo );
-                return false;
-            }
-
-            throw Error( 'Forbidden to enter new state:' + newState.getId() );
-        }
-
-        if ( this.currentState )
-        {
-            await this.currentState.exit();
-            delete this.currentState;
-        }
-
-        this.currentState = newState;
-        await newState.enter();
-    }
-
-}
-
 class ViewManager
 {
     constructor( appInstance )
@@ -1848,6 +1974,16 @@ class TemplateManager
     getHtml( tmpl, data = {} )
     {
         return _template( tmpl, data );
+    }
+
+    renderHtml( htmlElement, tmpl, data = {} )
+    {
+        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
+        {
+            throw new Error( 'First parameter is no valid HTMLElement.' );
+        }
+
+        htmlElement.innerHTML = this.getHtml( tmpl, data );
     }
 
     async get( templateUrl, useCache = true )
@@ -1958,6 +2094,34 @@ class PathObject
         return get( this._props, path, defaultValue );
     }
 
+    /**
+     * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
+     * it's created. Arrays are created for missing index properties while objects
+     * are created for all other missing properties. Use `_.setWith` to customize
+     * `path` creation.
+     *
+     * **Note:** This method mutates `object`.
+     *
+     * @static
+     * @memberOf _
+     * @since 3.7.0
+     * @category Object
+     * @param {Object} object The object to modify.
+     * @param {Array|string} path The path of the property to set.
+     * @param {*} value The value to set.
+     * @returns {Object} Returns `object`.
+     * @example
+     *
+     * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+     *
+     * _.set(object, 'a[0].b.c', 4);
+     * console.log(object.a[0].b.c);
+     * // => 4
+     *
+     * _.set(object, ['x', '0', 'y', 'z'], 5);
+     * console.log(object.x[0].y.z);
+     * // => 5
+     */
     set( path, value )
     {
         return set( this._props, path, value );
@@ -3039,7 +3203,9 @@ const DEFAULT_PROPS = {
 };
 
 const DEFAULT_SETTINGS = {
-    "sayHello" : true,
+    "app" : {
+        "sayHello" : true,
+    },
     "l18n" : {
         "defaultLanguage" : "en"
     },
@@ -3115,10 +3281,9 @@ class App
         this.initRouter();
 
         // Add app to global app pool
-        //apps[ this.uid ] = this;
         App.POOL[ this.uid ] = this;
 
-        if ( true === this.settings.get( 'sayHello' ) && console )
+        if ( true === this.settings.get( 'app.sayHello' ) && console )
         {
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
@@ -3183,6 +3348,7 @@ class App
         this.router.enable();
         if ( route )
         {
+            // @todo Fix this for "url" router mode
             this.router.redirect( route, ( this.router.resolveRoute( route ) === this.router.resolveRoute( location.hash ) ) );
         }
         else
@@ -3194,57 +3360,6 @@ class App
     async destroy()
     {
         // @todo Implement logic, set innerHTML to zero ... etc
-    }
-}
-
-class PropertyObject
-{
-    constructor( props = {} )
-    {
-        if ( false === Helper.isPlainObject( props ) )
-        {
-            throw new Error( 'PropertyObject expects a plain object.' );
-        }
-
-        this._props = props;
-
-        for ( let field in this._props )
-        {
-            Object.defineProperty(
-                this,
-                field,
-                {
-                    get : function()
-                    {
-                        return this._props[ field ];
-                    },
-                    set : function( newValue )
-                    {
-                        // @todo Trigger propertyChange event
-                        this._props[ field ] = newValue;
-                    }
-                }
-            );
-        }
-    }
-
-    getPropertyValue( key, defValue = null )
-    {
-        if ( -1 < key.indexOf( '.') )
-        {
-            return key.split('.').reduce(function(prev, curr) {
-                return prev ? prev[curr] : defValue
-            }, this._props );
-        }
-
-        else if ( this._props.hasOwnProperty( key ) )
-        {
-            return this._props[ key ];
-        }
-        else
-        {
-            return defValue;
-        }
     }
 }
 
@@ -3328,4 +3443,4 @@ class Http
     }
 }
 
-export { App, Helper, Http, L18n, PathObject, PropertyObject, Router, State, StateManager, TemplateManager, ViewManager };
+export { App, Helper, Http, L18n, PathObject, Router, State, StateManager, TemplateManager, ViewManager };

@@ -30,3 +30,5 @@ for Frontfire build tool
 - [x] Wrap Functions to static Helper class
 - [x] Remove is_default state because it does not make sense, use route array instead
 - [ ] Examples, XX - States Transition, XX - States, Routing, Templates, Components, DataBinding, VirtualDom
+- [ ] JSDoc
+- [ ] infront-cli

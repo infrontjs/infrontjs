@@ -31,4 +31,6 @@ for Frontfire build tool
 - [x] Remove is_default state because it does not make sense, use route array instead
 - [ ] Examples, XX - States Transition, XX - States, Routing, Templates, Components, DataBinding, VirtualDom
 - [ ] JSDoc
+- [ ] TemplateManager diffDomTree
 - [ ] infront-cli
+- [ ] Add tests

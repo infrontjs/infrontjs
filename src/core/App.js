@@ -10,7 +10,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.8.1';
+const VERSION = '0.8.2';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -147,6 +147,11 @@ class App
         {
             return defVal;
         }
+    }
+
+    getVersion()
+    {
+        return VERSION;
     }
 
     async run( route = null )

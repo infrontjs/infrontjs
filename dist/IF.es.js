@@ -1001,13 +1001,13 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     vec2 fc = fragCoord;
     
     vec3 col = vec3(0.0);
-    for(int j=-4;j<=4;j++){
-        for(int k=-4;k<=4;k++){
+    for(int j=-2;j<=2;j++){
+        for(int k=-2;k<=2;k++){
             vec2 uv = (fc)/iResolution.xy;
             uv += sin(uv.x*(2.0+sin(iTime*0.39))+iTime*0.12)*vec2(j,k)*13.0/iResolution.xy;
 
             //float i = iTime*0.08+float(j)*0.03;
-            float i = iTime*0.08+float(j)*0.03;
+            float i = iTime*0.16+float(j)*0.03;
             uv.x *= 0.8;
             
             float y = sin(uv.x*3.0+uv.x*sin(uv.x+i*0.37)*1.0+i*2.0+cos(uv.x*0.6+i*0.71)*0.75)*0.25+uv.y-0.5;
@@ -1015,9 +1015,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 			col += abs(vec3(max((1.0-pow(y,0.13+sin(uv.x+iTime*0.21)*0.1))*vec3(1.1,0.6,0.15),(1.0-pow(-y,0.13))*vec3(0.9,0.2,0.2))));
         }
     }
-	col /= 25.0;
+	col /= 15.0;
     // Output to screen
-    fragColor = vec4(col,1.0);
+    fragColor = vec4(col.r / 2.9, col.r / 1.2, col.r/ 1.9,1.0);
 }
 
 void main() 
@@ -1028,14 +1028,36 @@ void main()
 
     async enter( params = {} )
     {
-        this.app.container.innerHTML = '<style>* { margin: 0; padding: 0;overflow: hidden }</style><canvas id="ds"></canvas>';
+        this.app.container.innerHTML = `
+        <style>
+            * { margin: 0; padding: 0;overflow: hidden;}
+        </style>
+        <canvas id="ds" style="position: fixed; top:0; left:0; z-index: 2;"></canvas>;
+
+            <div style="position: fixed;
+                        z-index: 9; 
+                        top: 50%; 
+                        left: 50%; 
+                        transform: translate(-50%, -50%);
+                        text-align: center;;
+                        font-family: Tahoma; 
+                        font-size: 4em;
+                        font-weight: bolder;
+                        padding: .5em; 
+                        background-color: white; 
+                        color: black;
+                        mix-blend-mode: screen;
+                        display: inline-block;">
+                        I<span style="font-size: 0.8em">NFRONT</span>JS
+                        <h2 style="font-family: 'Courier New'; background-color: black; color: white; margin-top: 0px; font-size: 0.3em;padding: 3px">Version ${this.app.getVersion()}</h2>
+            </div>        
+        `;
         this.canvas = null;
         this.gl = null;
         this.vp_size = null;
         this.progDraw = null;
         this.bufObj = {};
         this.mousepos = [0,0];
-        console.log( "Hello" );
         this.initScene();
     }
 
@@ -1059,12 +1081,13 @@ void main()
             this.gl.shaderSource( shaderObj, source );
             this.gl.compileShader( shaderObj );
             let status = this.gl.getShaderParameter( shaderObj, this.gl.COMPILE_STATUS );
-            if ( !status ) alert( this.gl.getShaderInfoLog( shaderObj ) );
+            if ( !status ) { console.error( this.gl.getShaderInfoLog( shaderObj ) ); continue; }
             this.gl.attachShader( this.progDraw, shaderObj );
             this.gl.linkProgram( this.progDraw );
         }
         const status = this.gl.getProgramParameter( this.progDraw, this.gl.LINK_STATUS );
-        if ( !status ) alert( this.gl.getProgramInfoLog( this.progDraw ) );
+        //if ( !status ) alert( this.gl.getProgramInfoLog( this.progDraw ) );
+        if ( !status ) { console.error( this.gl.getProgramInfoLog( this.progDraw ) ); return; }
         this.progDraw.inPos = this.gl.getAttribLocation( this.progDraw, "inPos" );
         this.progDraw.iTime = this.gl.getUniformLocation( this.progDraw, "iTime" );
         this.progDraw.iMouse = this.gl.getUniformLocation( this.progDraw, "iMouse" );
@@ -1223,6 +1246,13 @@ class Router
         this.currentRoute = null;
         // @todo only use window.location.pathname if nothing is set in settings and mode is equal to url
         this.basePath = Helper.trim( window.location.pathname, '/' );
+        const lastPathPart = this.basePath.split( "/" ).pop();
+        if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
+        {
+            this.basePath = this.basePath.replace( lastPathPart, '' );
+            this.basePath = Helper.trim( this.basePath, '/' );
+            window.history.replaceState( null, null, `/${this.basePath}/` );
+        }
     }
 
     // Add third optional param called isIndexAction to be triggered, when route is empty
@@ -1338,6 +1368,7 @@ class Router
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
+        console.log( route );
         this.execute(  this.resolveActionDataByRoute( route ) );
     }
 
@@ -1366,11 +1397,12 @@ class Router
             event.preventDefault();
             //this.redirect(url);
             let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
-            console.log( route );
             route = '/' + Helper.trim( route, '/' );
 
             this.previousRoute = this.currentRoute;
             this.currentRoute = route;
+
+            console.log( route );
 
             const actionData = this.resolveActionDataByRoute( route );
             if ( actionData )
@@ -1971,11 +2003,21 @@ class TemplateManager
         }
     }
 
+    // rename to compile
     getHtml( tmpl, data = {} )
     {
         return _template( tmpl, data );
     }
 
+//
+//https://www.npmjs.com/package/virtual-dom
+//https://www.npmjs.com/package/preact
+    render( htmlElement, tmpl, date = {} )
+    {
+        render( this.getHtml( tmpl, data ), htmlElement );
+    }
+
+    // rename to render
     renderHtml( htmlElement, tmpl, data = {} )
     {
         if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
@@ -1992,6 +2034,10 @@ class TemplateManager
         if ( !tmplHtml )
         {
             const response = await fetch( templateUrl );
+            if ( response.status > 399 )
+            {
+                throw new Error( `${response.status}: ${response.statusText}`);
+            }
             tmplHtml = await response.text();
             this._cache.push(
                 {
@@ -3194,7 +3240,7 @@ function set(object, path, value) {
     return object == null ? object : baseSet(object, path, value);
 }
 
-const VERSION = '0.8.1';
+const VERSION = '0.8.2';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -3331,6 +3377,11 @@ class App
         {
             return defVal;
         }
+    }
+
+    getVersion()
+    {
+        return VERSION;
     }
 
     async run( route = null )

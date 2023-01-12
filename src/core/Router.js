@@ -17,6 +17,13 @@ class Router
         this.currentRoute = null;
         // @todo only use window.location.pathname if nothing is set in settings and mode is equal to url
         this.basePath = Helper.trim( window.location.pathname, '/' );
+        const lastPathPart = this.basePath.split( "/" ).pop();
+        if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
+        {
+            this.basePath = this.basePath.replace( lastPathPart, '' );
+            this.basePath = Helper.trim( this.basePath, '/' );
+            window.history.replaceState( null, null, `/${this.basePath}/` );
+        }
     }
 
     // Add third optional param called isIndexAction to be triggered, when route is empty
@@ -136,6 +143,7 @@ class Router
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
+        console.log( route );
         this.execute(  this.resolveActionDataByRoute( route ) );
     }
 
@@ -164,11 +172,12 @@ class Router
             event.preventDefault();
             //this.redirect(url);
             let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
-            console.log( route );
             route = '/' + Helper.trim( route, '/' );
 
             this.previousRoute = this.currentRoute;
             this.currentRoute = route;
+
+            console.log( route );
 
             const actionData = this.resolveActionDataByRoute( route );
             if ( actionData )

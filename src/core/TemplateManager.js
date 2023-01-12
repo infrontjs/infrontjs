@@ -79,11 +79,21 @@ class TemplateManager
         }
     }
 
+    // rename to compile
     getHtml( tmpl, data = {} )
     {
         return _template( tmpl, data );
     }
 
+//
+//https://www.npmjs.com/package/virtual-dom
+//https://www.npmjs.com/package/preact
+    render( htmlElement, tmpl, date = {} )
+    {
+        render( this.getHtml( tmpl, data ), htmlElement );
+    }
+
+    // rename to render
     renderHtml( htmlElement, tmpl, data = {} )
     {
         if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
@@ -100,6 +110,10 @@ class TemplateManager
         if ( !tmplHtml )
         {
             const response = await fetch( templateUrl );
+            if ( response.status > 399 )
+            {
+                throw new Error( `${response.status}: ${response.statusText}`);
+            }
             tmplHtml = await response.text();
             this._cache.push(
                 {

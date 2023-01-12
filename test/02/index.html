@@ -8,6 +8,7 @@
 
 <script type="module">
   import * as IF from "./../../src/IF.js";
+
   window.onload = function()
   {
       window.po = new IF.PathObject( { a : 'hello', b : { c : 'World' } } );
@@ -16,15 +17,22 @@
     {
       static ROUTE = [ '/', '/home' ];
 
-      enter()
+      async enter()
       {
+        const tmpl = await this.app.templateManager.get( "./../layout.html" );
+        console.log( tmpl );
         this.app.container.innerHTML = `
         <ul>
             <li><a href="${this.app.router.createUrl(AnotherState.ROUTE)}">Another State</a></li>
             <li><a href="${this.app.router.createUrl(ForbiddenState.ROUTE)}">Forbidden State</a></li>
             <li><a href="${this.app.router.createUrl('does-not-exists')}">404</a></li>
         </ul>
+        <div id="test"></div>
         `;
+
+
+        this.app.templateManager.render( this.app.container.getElementById( 'test' ), tmpl );
+
       }
 
     }

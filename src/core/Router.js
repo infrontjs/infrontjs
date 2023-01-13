@@ -87,6 +87,7 @@ class Router
         else
         {
             // 404
+            console.error( 404 );
         }
 
         return routeData;
@@ -131,6 +132,14 @@ class Router
     disable()
     {
         this.isEnabled = false;
+        if ( this.mode === 'url' )
+        {
+            document.removeEventListener( 'click', this.processUrl.bind( this ) );
+        }
+        else if ( this.mode = 'hash' )
+        {
+            window.removeEventListener( 'hashchange', this.processHash.bind( this ) );
+        }
     }
 
     processHash()
@@ -143,7 +152,6 @@ class Router
 
         this.previousRoute = this.currentRoute;
         this.currentRoute = route;
-        console.log( route );
         this.execute(  this.resolveActionDataByRoute( route ) );
     }
 
@@ -176,8 +184,6 @@ class Router
 
             this.previousRoute = this.currentRoute;
             this.currentRoute = route;
-
-            console.log( route );
 
             const actionData = this.resolveActionDataByRoute( route );
             if ( actionData )

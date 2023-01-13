@@ -80,8 +80,36 @@ void main()
         this.vp_size = null;
         this.progDraw = null;
         this.bufObj = {};
-        this.mousepos = [0,0];
         this.initScene();
+    }
+
+    async exit()
+    {
+        this.destroyScene();
+        this.app.container.innerHTML = '';
+    }
+
+    destroyScene()
+    {
+        if ( this.RAF_ID )
+        {
+            cancelAnimationFrame( this.RAF_ID );
+        }
+        if ( !this.gl )
+        {
+            return;
+        }
+
+        if ( this.FRAG_ID )
+        {
+            this.gl.deleteShader( this.FRAG_ID );
+        }
+
+        if ( this.VERTEX_ID )
+        {
+            this.gl.deleteShader( this.VERTEX_ID );
+        }
+
     }
 
     initScene()
@@ -91,16 +119,19 @@ void main()
         if ( !this.gl )
             return;
 
-        this.canvas.addEventListener( 'mousemove', ( e ) =>
-        {
-            this.mousepos = [ e.clientX, e.clientY ];
-        } );
-
         this.progDraw = this.gl.createProgram();
         for ( let i = 0; i < 2; ++i )
         {
             let source = i == 0 ? DefaultState.VERTEX_SHADER : DefaultState.FRAGMENT_SHADER;
             let shaderObj = this.gl.createShader( i == 0 ? this.gl.VERTEX_SHADER : this.gl.FRAGMENT_SHADER );
+            if ( i === 0 )
+            {
+                this.VERTEX_ID = shaderObj;
+            }
+            else
+            {
+                this.FRAG_ID = shaderObj;
+            }
             this.gl.shaderSource( shaderObj, source );
             this.gl.compileShader( shaderObj );
             let status = this.gl.getShaderParameter( shaderObj, this.gl.COMPILE_STATUS );
@@ -134,7 +165,7 @@ void main()
 
         window.onresize = this.resize.bind( this );
         this.resize();
-        requestAnimationFrame( this.render.bind( this ) );
+        this.RAF_ID = requestAnimationFrame( this.render.bind( this ) );
     }
 
     resize() {
@@ -154,10 +185,9 @@ void main()
 
         this.gl.uniform1f(this.progDraw.iTime, deltaMS/1000.0);
         this.gl.uniform2f(this.progDraw.iResolution, this.canvas.width, this.canvas.height);
-        this.gl.uniform2f(this.progDraw.iMouse, this.mousepos[0], this.mousepos[1]);
         this.gl.drawElements( this.gl.TRIANGLES, this.bufObj.inx.len, this.gl.UNSIGNED_SHORT, 0 );
 
-        requestAnimationFrame(this.render.bind( this ));
+        this.RAF_ID = requestAnimationFrame(this.render.bind( this ));
     }
 
 }

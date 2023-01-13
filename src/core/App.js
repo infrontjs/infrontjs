@@ -8,7 +8,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.8.2';
+const VERSION = '0.8.3';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -75,9 +75,12 @@ class App
         if ( Helper.isString( this.container ) )
         {
             this.container = document.querySelector( this.container );
+            if ( false === this.container instanceof HTMLElement )
+            {
+                throw new Error( 'Invalid app container.' );
+            }
         }
-
-        if ( !this.container || false === this.container instanceof HTMLElement )
+        else
         {
             this.container = document.querySelector( 'body' );
         }

@@ -79,15 +79,17 @@ class Router
         // If it is default route
         if ( null === routeData && route === '/' )
         {
-            routeData = {
-                "routeAction" : StateManager.DEFAULT_STATE_ID,
-                "routeParams" : null
-            };
-        }
-        else
-        {
-            // 404
-            console.error( 404 );
+            if ( route === '/' )
+            {
+                routeData = {
+                    "routeAction" : StateManager.DEFAULT_STATE_ID,
+                    "routeParams" : null
+                };
+            }
+            else
+            {
+                console.error( 404 );
+            }
         }
 
         return routeData;
@@ -142,6 +144,18 @@ class Router
         }
     }
 
+    process()
+    {
+        if ( this.mode === 'url' )
+        {
+            this.processUrl()
+        }
+        else if ( this.mode = 'hash' )
+        {
+            this.processHash();
+        }
+    }
+
     processHash()
     {
         const hash = location.hash || '#';
@@ -155,16 +169,23 @@ class Router
         this.execute(  this.resolveActionDataByRoute( route ) );
     }
 
-    processUrl( event )
+    processUrl( event = null )
     {
-        const target = event.target.closest('a');
+        let url = window.location.href;
 
-        // we are interested only in anchor tag clicks
-        if (!target) {
-            return;
+        if ( event )
+        {
+            const target = event.target.closest('a');
+
+            // we are interested only in anchor tag clicks
+            if ( !target || target.hostname !== location.hostname ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            url = target.getAttribute('href');
         }
-
-        const url = target.getAttribute('href');
 
         // we don't care about example.com#hash or
         // example.com/#hash links
@@ -172,28 +193,18 @@ class Router
             return;
         }
 
-        // if the link is leading to other page we
-        // need to disable default browser behavior
-        // to avoid page refresh
-        if ( target.hostname === location.hostname )
+        let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
+        route = '/' + Helper.trim( route, '/' );
+
+        this.previousRoute = this.currentRoute;
+        this.currentRoute = route;
+
+        const actionData = this.resolveActionDataByRoute( route );
+        if ( actionData )
         {
-            event.preventDefault();
-            //this.redirect(url);
-            let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
-            route = '/' + Helper.trim( route, '/' );
-
-            this.previousRoute = this.currentRoute;
-            this.currentRoute = route;
-
-            const actionData = this.resolveActionDataByRoute( route );
-            if ( actionData )
-            {
-                window.history.pushState( null, null, url );
-            }
-            this.execute( actionData );
+            window.history.pushState( null, null, url );
         }
-
-        // otherwise go to the given destination
+        this.execute( actionData );
     }
 
     redirect( url, forceReload = false )

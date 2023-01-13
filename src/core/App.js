@@ -8,7 +8,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.8.4';
+const VERSION = '0.8.5';
 
 const DEFAULT_PROPS = {
     "uid" : null,
@@ -71,17 +71,16 @@ class App
 
         this.settings = new PathObject( { ...DEFAULT_SETTINGS, settings } );
 
+        console.log( this.container );
+
         // If container property is a string, check if it is a querySelector
-        if ( Helper.isString( this.container ) )
+        if ( false === this.container instanceof HTMLElement )
         {
-            this.container = document.querySelector( this.container );
-            if ( false === this.container instanceof HTMLElement )
-            {
-                throw new Error( 'Invalid app container.' );
-            }
+            throw new Error( 'Invalid app container.' );
         }
         else
         {
+            console.warn( 'No container set. Using document.body by default.' );
             this.container = document.querySelector( 'body' );
         }
 

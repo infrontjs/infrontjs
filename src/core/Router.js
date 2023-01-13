@@ -7,16 +7,24 @@ class Router
 {
     constructor( appInstance )
     {
-        // @todo Implement auto
-        this.isInitialized = false;
-        this.mode = 'url';  // url, hash, auto
-        this._routeActions = [];
         this.app = appInstance;
+
+        this.mode = this.app.settings.get( 'router.mode', 'url' );
+        this.basePath = this.app.settings.get( 'router.basePath', null );
+
+        this._routeActions = [];
         this.isEnabled = false;
         this.previousRoute = null;
         this.currentRoute = null;
-        // @todo only use window.location.pathname if nothing is set in settings and mode is equal to url
-        this.basePath = Helper.trim( window.location.pathname, '/' );
+
+        if ( null === this.basePath )
+        {
+            // Try "best guess"
+            this.basePath = Helper.trim( window.location.pathname, '/' );
+        }
+        this.basePath = Helper.trim( this.basePath, '/' );
+
+        // Remove any index.html, index.php etc from url
         const lastPathPart = this.basePath.split( "/" ).pop();
         if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
         {
@@ -24,6 +32,7 @@ class Router
             this.basePath = Helper.trim( this.basePath, '/' );
             window.history.replaceState( null, null, `/${this.basePath}/` );
         }
+
     }
 
     // Add third optional param called isIndexAction to be triggered, when route is empty

@@ -68,7 +68,7 @@
 
     async function run()
     {
-      const app = new IF.App();
+      const app = new IF.App( { container : document.getElementById( 'app' ) } );
       app.stateManager.add( HomeState );
       app.stateManager.add( AnotherState );
       app.stateManager.add( ForbiddenState );

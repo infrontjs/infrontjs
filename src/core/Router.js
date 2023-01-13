@@ -34,7 +34,7 @@ class Router
 
         if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            this.app.stateManager.addState( action );
+            this.app.stateManager.add( action );
             this._routeActions.push(
                 {
                     "action" : action.ID,
@@ -229,7 +229,7 @@ class Router
         {
             if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = this.app.stateManager.createState(
+                let stateInstance = this.app.stateManager.create(
                     actionData.routeAction,
                     actionData.routeParams
                 );

@@ -79,29 +79,35 @@ class TemplateManager
         }
     }
 
-    // rename to compile
-    getHtml( tmpl, data = {} )
+    compile( tmpl, data = {} )
     {
         return _template( tmpl, data );
     }
 
+    /*
 //
 //https://www.npmjs.com/package/virtual-dom
 //https://www.npmjs.com/package/preact
     render( htmlElement, tmpl, date = {} )
     {
-        render( this.getHtml( tmpl, data ), htmlElement );
+        //render( this.getHtml( tmpl, data ), htmlElement );
     }
+     */
 
     // rename to render
-    renderHtml( htmlElement, tmpl, data = {} )
+    render( htmlElement, tmpl, data = {} )
+    {
+        this.renderHtml(htmlElement, this.compile( tmpl, data ) );
+    }
+
+    renderHtml( htmlElement, html )
     {
         if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
         {
             throw new Error( 'First parameter is no valid HTMLElement.' );
         }
 
-        htmlElement.innerHTML = this.getHtml( tmpl, data );
+        htmlElement.innerHTML = html;
     }
 
     async get( templateUrl, useCache = true )

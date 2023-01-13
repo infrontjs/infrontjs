@@ -4,8 +4,6 @@ import { ViewManager } from "./ViewManager.js";
 import { TemplateManager } from "./TemplateManager.js";
 import { L18n } from "./L18n.js";
 
-import { DefaultState } from "../base/DefaultState.js";
-
 import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
@@ -73,11 +71,6 @@ class App
 
         this.settings = new PathObject( { ...DEFAULT_SETTINGS, settings } );
 
-        if ( !this.uid )
-        {
-            this.uid = Helper.createUid();
-        }
-
         // If container property is a string, check if it is a querySelector
         if ( Helper.isString( this.container ) )
         {
@@ -130,25 +123,6 @@ class App
         this.templateManager = new TemplateManager( this );
     }
 
-    /**
-     * Get setting of key
-     * @param {string} key Setting property
-     * @param {*} defVal Default return value. Default is null.
-     * @returns {*|null}
-     */
-    getSetting( key, defVal = null )
-    {
-        // @todo Fix, add nested tree logic
-        if ( this.settings.hasOwnProperty( key ) )
-        {
-            return this.settings[ key ];
-        }
-        else
-        {
-            return defVal;
-        }
-    }
-
     getVersion()
     {
         return VERSION;
@@ -160,11 +134,6 @@ class App
         {
             this.viewManager.setWindowTitle( this.title );
         }
-
-        // @todo Check if default state is set
-        // @todo Check if DefaultStates are allowed by setting configuration
-
-        //this.stateManager.addState( DefaultState );
 
         this.router.enable();
         if ( route )

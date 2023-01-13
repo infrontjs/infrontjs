@@ -13,7 +13,7 @@ class StateManager
         this.defaultStateId = null;
     }
 
-    addState( stateClass )
+    add( stateClass )
     {
         // @todo Fix this, only check for function or class
         if ( false === Helper.isClass( stateClass ) )
@@ -51,7 +51,7 @@ class StateManager
         return true;
     }
 
-    createState( stateId, routeParams )
+    create( stateId, routeParams )
     {
         let stateInstance = null;
 

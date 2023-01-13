@@ -1151,7 +1151,7 @@ class StateManager
         this.defaultStateId = null;
     }
 
-    addState( stateClass )
+    add( stateClass )
     {
         // @todo Fix this, only check for function or class
         if ( false === Helper.isClass( stateClass ) )
@@ -1189,7 +1189,7 @@ class StateManager
         return true;
     }
 
-    createState( stateId, routeParams )
+    create( stateId, routeParams )
     {
         let stateInstance = null;
 
@@ -1263,7 +1263,7 @@ class Router
 
         if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            this.app.stateManager.addState( action );
+            this.app.stateManager.add( action );
             this._routeActions.push(
                 {
                     "action" : action.ID,
@@ -1454,7 +1454,7 @@ class Router
         {
             if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = this.app.stateManager.createState(
+                let stateInstance = this.app.stateManager.create(
                     actionData.routeAction,
                     actionData.routeParams
                 );
@@ -2003,29 +2003,35 @@ class TemplateManager
         }
     }
 
-    // rename to compile
-    getHtml( tmpl, data = {} )
+    compile( tmpl, data = {} )
     {
         return _template( tmpl, data );
     }
 
+    /*
 //
 //https://www.npmjs.com/package/virtual-dom
 //https://www.npmjs.com/package/preact
     render( htmlElement, tmpl, date = {} )
     {
-        render( this.getHtml( tmpl, data ), htmlElement );
+        //render( this.getHtml( tmpl, data ), htmlElement );
     }
+     */
 
     // rename to render
-    renderHtml( htmlElement, tmpl, data = {} )
+    render( htmlElement, tmpl, data = {} )
+    {
+        this.renderHtml(htmlElement, this.compile( tmpl, data ) );
+    }
+
+    renderHtml( htmlElement, html )
     {
         if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
         {
             throw new Error( 'First parameter is no valid HTMLElement.' );
         }
 
-        htmlElement.innerHTML = this.getHtml( tmpl, data );
+        htmlElement.innerHTML = html;
     }
 
     async get( templateUrl, useCache = true )
@@ -3303,11 +3309,6 @@ class App
 
         this.settings = new PathObject( { ...DEFAULT_SETTINGS, settings } );
 
-        if ( !this.uid )
-        {
-            this.uid = Helper.createUid();
-        }
-
         // If container property is a string, check if it is a querySelector
         if ( Helper.isString( this.container ) )
         {
@@ -3360,25 +3361,6 @@ class App
         this.templateManager = new TemplateManager( this );
     }
 
-    /**
-     * Get setting of key
-     * @param {string} key Setting property
-     * @param {*} defVal Default return value. Default is null.
-     * @returns {*|null}
-     */
-    getSetting( key, defVal = null )
-    {
-        // @todo Fix, add nested tree logic
-        if ( this.settings.hasOwnProperty( key ) )
-        {
-            return this.settings[ key ];
-        }
-        else
-        {
-            return defVal;
-        }
-    }
-
     getVersion()
     {
         return VERSION;
@@ -3390,11 +3372,6 @@ class App
         {
             this.viewManager.setWindowTitle( this.title );
         }
-
-        // @todo Check if default state is set
-        // @todo Check if DefaultStates are allowed by setting configuration
-
-        //this.stateManager.addState( DefaultState );
 
         this.router.enable();
         if ( route )

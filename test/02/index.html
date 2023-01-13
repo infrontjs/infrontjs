@@ -30,8 +30,7 @@
         <div id="test"></div>
         `;
 
-
-        this.app.templateManager.render( this.app.container.getElementById( 'test' ), tmpl );
+        this.app.templateManager.render( document.getElementById( 'test' ), tmpl );
 
       }
 
@@ -70,9 +69,9 @@
     async function run()
     {
       const app = new IF.App();
-      app.stateManager.addState( HomeState );
-      app.stateManager.addState( AnotherState );
-      app.stateManager.addState( ForbiddenState );
+      app.stateManager.add( HomeState );
+      app.stateManager.add( AnotherState );
+      app.stateManager.add( ForbiddenState );
       app.run();
     }
 

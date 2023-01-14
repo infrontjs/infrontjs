@@ -20,7 +20,6 @@
       async enter()
       {
         const tmpl = await this.app.templateManager.load( "./../layout.html" );
-        console.log( tmpl );
         this.app.container.innerHTML = `
         <ul>
             <li><a href="${this.app.router.createUrl(AnotherState.ROUTE)}">Another State</a></li>
@@ -31,7 +30,7 @@
         `;
 
         this.app.templateManager.render( document.getElementById( 'test' ), tmpl );
-
+        this.app.templateManager.render( document.getElementById( 'test' ), tmpl );
       }
 
     }

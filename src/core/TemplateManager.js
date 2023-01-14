@@ -1,3 +1,5 @@
+import { DiffDOM, nodeToObj, stringToObj } from './../_external/diffDOM/index.js';
+
 const _extendedFunctions = {};
 
 function _template( html, data )
@@ -54,6 +56,7 @@ class TemplateManager
     {
         this.app = appInstance;
         this._cache = [];
+        this.dd = new DiffDOM();
     }
 
     _getTemplateFromCache( templateUrl )
@@ -84,20 +87,15 @@ class TemplateManager
         return _template( tmpl, data );
     }
 
-    /*
-//
-//https://www.npmjs.com/package/virtual-dom
-//https://www.npmjs.com/package/preact
-    render( htmlElement, tmpl, date = {} )
-    {
-        //render( this.getHtml( tmpl, data ), htmlElement );
-    }
-     */
-
     // rename to render
     render( htmlElement, tmpl, data = {} )
     {
-        this.renderHtml(htmlElement, this.compile( tmpl, data ) );
+        const obj1 = nodeToObj( htmlElement );
+        const obj2 = stringToObj( this.compile( tmpl, data ) );
+        const diff = this.dd.diff( obj1, obj2 );
+        console.log( diff );
+        this.dd.apply( htmlElement, diff );
+        //this.renderHtml(htmlElement, this.compile( tmpl, data ) );
     }
 
     renderHtml( htmlElement, html )

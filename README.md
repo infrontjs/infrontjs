@@ -2,20 +2,12 @@
 
 The aim of this project is to provide a fast, unobstrusive and lightweight Vanilla Javascript Frontend framework.
 
-## Dependencies
-
-- observable-slim for watchables
-
-Check
-https://www.npmjs.com/package/nollup
-for Frontfire build tool
-
-
 ## Stuff included
 
 - Lodash _.get / _.set functionality wrapped into PathObject
 - UrlPattern
-- microtemplate 
+- microtemplate
+- observable-slim for watchables
 - https://www.shadertoy.com/view/wlSSD3
 
 ## ToDos

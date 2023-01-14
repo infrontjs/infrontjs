@@ -17,21 +17,26 @@ class Router
         this.previousRoute = null;
         this.currentRoute = null;
 
+        // Remove any index.html, index.php etc from url
+        // Note: the query string (ie. window.location.search) gets also elimated here.
+        const lastPathPart = window.location.href.split( "/" ).pop();
+        if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
+        {
+            let cleanPath = window.location.href.replace( lastPathPart, '' );
+            cleanPath = cleanPath.replace( window.location.origin, '' );
+            cleanPath = Helper.trim( cleanPath, '/' );
+            if ( cleanPath.length > 0 )
+            {
+                window.history.replaceState( null, null, `/${cleanPath}/` );
+            }
+        }
+
         if ( null === this.basePath )
         {
             // Try "best guess"
             this.basePath = Helper.trim( window.location.pathname, '/' );
         }
         this.basePath = Helper.trim( this.basePath, '/' );
-
-        // Remove any index.html, index.php etc from url
-        const lastPathPart = this.basePath.split( "/" ).pop();
-        if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
-        {
-            this.basePath = this.basePath.replace( lastPathPart, '' );
-            this.basePath = Helper.trim( this.basePath, '/' );
-            window.history.replaceState( null, null, `/${this.basePath}/` );
-        }
 
     }
 

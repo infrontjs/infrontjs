@@ -47,8 +47,8 @@
           async enter()
           {
               console.log( "Hello from TestState Two" );
-              const tmpl = await this.app.templateManager.get( 'tmpl.html' );
-              const includeTmpl = await this.app.templateManager.get( 'includeTmpl.html' );
+              const tmpl = await this.app.templateManager.load( 'tmpl.html' );
+              const includeTmpl = await this.app.templateManager.load( 'includeTmpl.html' );
               const html = this.app.templateManager.getHtml( tmpl, { includeTmpl : includeTmpl, crap : '123' } );
               console.log( html );
           }

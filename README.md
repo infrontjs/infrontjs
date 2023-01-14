@@ -21,7 +21,7 @@ for Frontfire build tool
 ## ToDos
 
 - [ ] JSDoc
-- [ ] TemplateManager diffDomTree
+- [ ] TemplateManager diffDomTree, alt. https://github.com/developit/htm
 - [ ] infront-cli
 - [ ] Add tests
 - [ ] Add verbose mode and/or logger

@@ -19,7 +19,7 @@
 
       async enter()
       {
-        const tmpl = await this.app.templateManager.get( "./../layout.html" );
+        const tmpl = await this.app.templateManager.load( "./../layout.html" );
         console.log( tmpl );
         this.app.container.innerHTML = `
         <ul>
@@ -68,7 +68,7 @@
 
     async function run()
     {
-      const app = new IF.App( { container : document.getElementById( 'app' ) } );
+      const app = new IF.App( { container : document.getElementById( 'app' ) }, { "router" : { "basePath" : "/infrontjs-infrontjs/test/02/" } } );
       app.stateManager.add( HomeState );
       app.stateManager.add( AnotherState );
       app.stateManager.add( ForbiddenState );

@@ -110,7 +110,7 @@ class TemplateManager
         htmlElement.innerHTML = html;
     }
 
-    async get( templateUrl, useCache = true )
+    async load( templateUrl, useCache = true )
     {
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
         if ( !tmplHtml )

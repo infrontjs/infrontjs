@@ -13,7 +13,7 @@
   {
     async function run()
     {
-      const app = new IF.App();
+      const app = new IF.App( {}, { router : { "basePath" : '/infrontjs-infrontjs/test/01/' } } );
       app.run();
     }
 

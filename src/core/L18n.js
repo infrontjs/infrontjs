@@ -1,9 +1,11 @@
 class L18n
 {
+    static LANG_EN = 'en';
+
     constructor( appInstance )
     {
         this.app = appInstance;
-        this.defaultLanguage = 'en';
+        this.defaultLanguage = L18n.LANG_EN;
         this.currentLanguage = this.defaultLanguage;
 
         this.dictionary = {};
@@ -15,6 +17,11 @@ class L18n
         {
             window[ fnName ] = this.getLocale.bind( this );
         }
+    }
+
+    setDictionary( dict = {} )
+    {
+        this.dictionary = dict;
     }
 
     getLocale( key, params )

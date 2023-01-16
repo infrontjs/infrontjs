@@ -25,15 +25,15 @@ const DEFAULT_SETTINGS = {
     },
     "router" : {
         "isEnabled" : true,
-        "basePath" : "/"
+        "basePath" : null
     },
     "stateManager" : {
-        "rootPath" : ""
+        "basePath" : ""
     },
     "viewManager" : {
     },
     "templateManager" : {
-        "rootPath" : ""
+        "basePath" : "./../"
     }
 };
 
@@ -83,11 +83,11 @@ class App
         }
 
         // Init core components
+        this.initRouter();
         this.initL18n();
         this.initStateManager();
         this.initViewManager();
         this.initTemplateManager();
-        this.initRouter();
 
         // Add app to global app pool
         App.POOL[ this.uid ] = this;

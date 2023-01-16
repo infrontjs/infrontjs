@@ -12,13 +12,14 @@ The aim of this project is to provide a fast, unobstrusive and lightweight Vanil
 
 ## ToDos
 
+**Version 1.0**
+
 - [ ] JSDoc
-- [ ] TemplateManager diffDomTree, alt. https://github.com/developit/htm
 - [ ] infront-cli
 - [ ] Add tests
-- [ ] Add verbose mode and/or logger
-- [ ] Investigate on Typescript support
+- [ ] UserGuid
 - [ ] Examples, XX - States Transition, XX - States, Routing, Templates, Components, DataBinding, VirtualDom
+- [x] TemplateManager diffDomTree, alt. https://github.com/developit/htm
 - [X] Rename Api to Http (Client)
 - [x] Move Http to Util
 - [x] Rethink PropertyObject -> maybe just a simple set/get method that interacts with [this] instance properties
@@ -27,3 +28,8 @@ The aim of this project is to provide a fast, unobstrusive and lightweight Vanil
 - [x] Add Front.js observables
 - [x] Wrap Functions to static Helper class
 - [x] Remove is_default state because it does not make sense, use route array instead
+
+**Version 2.0**
+
+- [ ] Add verbose mode and/or logger
+- [ ] Investigate on Typescript support

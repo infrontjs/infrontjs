@@ -19,7 +19,7 @@
 
       async enter()
       {
-        const tmpl = await this.app.templateManager.load( "./../layout.html" );
+        const tmpl = await this.app.templateManager.load( "layout.html" );
         this.app.container.innerHTML = `
         <ul>
             <li><a href="${this.app.router.createUrl(AnotherState.ROUTE)}">Another State</a></li>

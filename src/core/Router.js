@@ -37,7 +37,6 @@ class Router
             this.basePath = Helper.trim( window.location.pathname, '/' );
         }
         this.basePath = Helper.trim( this.basePath, '/' );
-
     }
 
     // Add third optional param called isIndexAction to be triggered, when route is empty

@@ -1,12 +1,22 @@
 import { DiffDOM, nodeToObj } from './../_external/diffDOM/index.js';
 import { _template, _extendedFunctions } from "../_external/micro-template/micro-template.js";
+import { Helper } from "../util/Helper.js";
 
 class TemplateManager
 {
-    // @todo Think about a templateRootDirectory
     constructor( appInstance )
     {
         this.app = appInstance;
+        this.basePath = this.app.settings.get( "templateManager.basePath", null );
+        if ( null !== this.basePath )
+        {
+            this.basePath = this.app.router.basePath + "/" + Helper.trim( this.basePath, "/" );
+        }
+        else
+        {
+            this.basePath = this.app.router.basePath;
+        }
+
         this._cache = [];
         this.dd = new DiffDOM();
     }
@@ -88,7 +98,7 @@ class TemplateManager
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
         if ( !tmplHtml )
         {
-            const response = await fetch( templateUrl );
+            const response = await fetch( null === this.basePath ? templateUrl : `/${this.basePath}/${Helper.trim( templateUrl, '/' )}` );
             if ( response.status > 399 )
             {
                 throw new Error( `${response.status}: ${response.statusText}`);

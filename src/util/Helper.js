@@ -1,4 +1,4 @@
-import { ObservableSlim } from "../core/Internals.js";
+import { ObservableSlim } from "../_external/observableSlim/ObservableSlim.js";
 
 class Helper
 {

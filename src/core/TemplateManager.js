@@ -88,14 +88,37 @@ class TemplateManager
     }
 
     // rename to render
-    render( htmlElement, tmpl, data = {} )
+    render( htmlElement, tmpl, data = {}, forceRepaint = false )
     {
-        const obj1 = nodeToObj( htmlElement );
-        const obj2 = stringToObj( this.compile( tmpl, data ) );
-        const diff = this.dd.diff( obj1, obj2 );
-        console.log( diff );
-        this.dd.apply( htmlElement, diff );
-        //this.renderHtml(htmlElement, this.compile( tmpl, data ) );
+        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
+        {
+            throw new Error( 'First parameter is no valid HTMLElement.' );
+        }
+
+        if ( true === forceRepaint )
+        {
+            htmlElement.innerHTML = this.compile( tmpl, data );
+        }
+        else
+        {
+            let outDiv = htmlElement.querySelector( 'div:first-child' );
+            if ( !outDiv )
+            {
+                htmlElement.innerHTML = '<div></div>';
+                outDiv = htmlElement.querySelector( 'div:first-child' );
+            }
+
+            const newDiv = document.createElement( 'div' );
+            newDiv.innerHTML = this.compile( tmpl, data );
+
+            this.dd.apply(
+                outDiv,
+                this.dd.diff(
+                    nodeToObj( outDiv ),
+                    nodeToObj( newDiv )
+                )
+            );
+        }
     }
 
     renderHtml( htmlElement, html )

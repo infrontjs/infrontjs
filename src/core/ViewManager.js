@@ -3,7 +3,6 @@ class ViewManager
     constructor( appInstance )
     {
         this.app = appInstance;
-        this.rootContainer = this.app.container;
     }
 
     setWindowTitle( title )
@@ -12,12 +11,6 @@ class ViewManager
         {
             window.document.title = title;
         }
-    }
-
-    render( html, element = null )
-    {
-        const targetContainer = element instanceof HTMLElement ? element : this.rootContainer;
-        targetContainer.innerHTML = html;
     }
 }
 

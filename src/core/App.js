@@ -77,7 +77,7 @@ class App
         {
             throw new Error( 'Invalid app container.' );
         }
-        else
+        else if ( this.container === null )
         {
             this.container = document.querySelector( 'body' );
         }

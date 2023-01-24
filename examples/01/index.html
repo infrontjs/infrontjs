@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>[01] Hello InfrontJS</title>
 </head>
-<body>
+<body style="margin: 0;">
+
+<div id="app" style="width: 100vw; height: 100vh;"></div>
 
 <script type="module">
   import * as IF from "./../../src/IF.js";
@@ -13,7 +15,7 @@
   {
     async function run()
     {
-      const app = new IF.App( {}, { router : { "basePath" : '/infrontjs-infrontjs/examples/01/' } } );
+      const app = new IF.App( { container: document.getElementById( 'app' ) }, { router : { "basePath" : '/infrontjs-infrontjs/examples/01/' } } );
       app.run();
     }
 

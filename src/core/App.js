@@ -19,6 +19,7 @@ const DEFAULT_PROPS = {
 const DEFAULT_SETTINGS = {
     "app" : {
         "sayHello" : true,
+        "environment" : "development"
     },
     "l18n" : {
         "defaultLanguage" : "en"

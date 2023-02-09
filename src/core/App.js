@@ -8,7 +8,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.25';
+const VERSION = '0.9.26';
 
 const DEFAULT_PROPS = {
     "uid" : null,

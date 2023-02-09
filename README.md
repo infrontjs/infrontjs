@@ -19,7 +19,11 @@ The aim of this project is to provide a fast, unobstrusive and lightweight Vanil
 - [ ] Add tests
 - [ ] UserGuide
 - [ ] 404 State
-- [ ] Examples, XX - States Transition, XX - States, Routing, Templates, Components, DataBinding, VirtualDom
+- [ ] Exmaple: ToDoList (refer to simple version of preact) (DataBindung, DOMDiffing, Templating)
+- [ ] Example: States & Routiing
+- [ ] Example: Advanvced ... SaaS Skeleton -> Login -> Logout
+- [ ] Example: Simple
+- [ ] Example: (Web) Component
 - [x] TemplateManager diffDomTree, alt. https://github.com/developit/htm
 - [X] Rename Api to Http (Client)
 - [x] Move Http to Util

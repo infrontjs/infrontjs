@@ -136,7 +136,7 @@ class Router
 
         if ( this.mode === 'url' )
         {
-            document.addEventListener( 'click', this.processUrl.bind( this ), false);
+            this.app.container.addEventListener( 'click', this.processUrl.bind( this ), false);
         }
         else if ( this.mode = 'hash' )
         {

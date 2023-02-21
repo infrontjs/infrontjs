@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>[01] Hello InfrontJS</title>
+  <title>InfrontJS - Shameless Plug</title>
 </head>
-<body style="margin: 0;">
+<body style="margin: 0;padding: 0; width: 100vw; height: 100vh">
 
+<!--
 <div id="app" style="width: 100vw; height: 100vh;"></div>
-
+-->
 <script type="module">
   import * as IF from "./../../src/IF.js";
+  window.IF = IF;
   window.onload = function()
   {
     async function run()
@@ -19,7 +21,7 @@
       app.run();
     }
 
-    run();
+    //run();
   };
 </script>
 

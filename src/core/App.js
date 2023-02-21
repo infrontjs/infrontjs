@@ -8,16 +8,12 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.27';
-
-const DEFAULT_PROPS = {
-    "uid" : null,
-    "title" : null,
-    "container" : null
-};
+const VERSION = '0.9.31';
 
 const DEFAULT_SETTINGS = {
     "app" : {
+        "id" : null,
+        "title" : null,
         "sayHello" : true,
         "environment" : "development"
     },
@@ -58,20 +54,9 @@ class App
         }
     }
 
-    constructor( props = {}, settings = {} )
+    constructor( container = null, settings = {} )
     {
-        props = { ...DEFAULT_PROPS, ...props };
-        for ( let prop in props )
-        {
-            this[ prop ] = props[ prop ];
-        }
-
-        if ( !this.uid )
-        {
-            this.uid = Helper.createUid();
-        }
-
-        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
+        this.container = container;
 
         // If container property is a string, check if it is a querySelector
         if ( this.container !== null && false === this.container instanceof HTMLElement )
@@ -81,6 +66,12 @@ class App
         else if ( this.container === null )
         {
             this.container = document.querySelector( 'body' );
+        }
+
+        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
+        if ( null === this.settings.get( 'app.id', null ) )
+        {
+            this.settings.set( 'app.id', Helper.createUid() );
         }
 
         // Init core components
@@ -131,9 +122,9 @@ class App
 
     async run( route = null )
     {
-        if ( this.title )
+        if ( this.settings.get( 'app.title' ) )
         {
-            this.viewManager.setWindowTitle( this.title );
+            this.viewManager.setWindowTitle( this.settings.get( 'app.title' ) );
         }
 
         this.router.enable();

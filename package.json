@@ -1,8 +1,7 @@
 {
   "name": "infrontjs",
-  "version": "0.9.27",
+  "version": "0.9.31",
   "description": "A frontend framework",
-  "type" : "module",
   "main": "src/IF.js",
   "scripts": {
     "build": "rollup -c",

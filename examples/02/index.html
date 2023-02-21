@@ -69,7 +69,7 @@
 
     async function run()
     {
-      const app = new IF.App( { container : document.getElementById( 'app' ) }, { "router" : { "basePath" : "/infrontjs-infrontjs/examples/02/" } } );
+      const app = new IF.App( document.getElementById( 'app' ), { "router" : { "basePath" : "/infrontjs-infrontjs/examples/02/" } } );
       app.stateManager.add( HomeState );
       app.stateManager.add( AnotherState );
       app.stateManager.add( ForbiddenState );

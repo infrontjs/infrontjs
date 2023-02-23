@@ -34,6 +34,9 @@ const DEFAULT_SETTINGS = {
     }
 };
 
+/**
+ * The App class is the logical core unit of every InfrontJS application.
+ */
 class App
 {
     static POOL = {};
@@ -54,6 +57,15 @@ class App
         }
     }
 
+    /**
+     * Create an app instance
+     * @param {HTMLElement} [container=document.body] - The root container of the application.
+     * @param {object=} settings - Application settings object.
+     * @param {object=} settings.app - App settings.
+     * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
+     * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
+     * @param {string|null} [settings.app.environment=development] - Environment variable.
+     */
     constructor( container = null, settings = {} )
     {
         this.container = container;

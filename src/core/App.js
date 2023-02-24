@@ -41,6 +41,11 @@ class App
 {
     static POOL = {};
 
+    /**
+     *
+     * @param {string|null} uid - Get instance by given uid. If no uid is given, the first app from pool is returned.
+     * @returns {(App|null)}
+     */
     static get( uid = null )
     {
         if ( uid && App.POOL.hasOwnProperty( uid ) )
@@ -127,11 +132,24 @@ class App
         this.templateManager = new TemplateManager( this );
     }
 
+    /**
+     * Get InfrontJS version
+     *
+     * @returns {string} - Version string
+     */
     getVersion()
     {
         return VERSION;
     }
 
+    /**
+     * Run application logic. This activates the InfrontJS application logic.
+     * Note:
+     * This is an asynchronous function providing the possibility to e.g. loading assets etc.
+     *
+     * @param {string|null} [route=null] - If route is set, this route is set initially.
+     * @returns {Promise<void>}
+     */
     async run( route = null )
     {
         if ( this.settings.get( 'app.title' ) )
@@ -151,6 +169,10 @@ class App
         }
     }
 
+    /**
+     * Destorys InfrontJS application instance
+     * @returns {Promise<void>}
+     */
     async destroy()
     {
         // @todo Implement logic, set innerHTML to zero ... etc

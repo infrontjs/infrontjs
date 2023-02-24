@@ -1,5 +1,26 @@
+/**
+ * State class. Parent state class. Extend this class for your state logic.
+ *
+ * @example
+ * Create a state called MyState with is executed when the url 'my-state' is called. When executed,
+ * it prints 'Hello from MyState' to the console.
+ *
+ * class MyState extends State
+ * {
+ *     static ID = 'my-state';
+ *
+ *     asnyc enter()
+ *     {
+ *         console.log( "Hello from MyState" );
+ *     }
+ * }
+ */
 class State
 {
+    /**
+     * ID of state. Should be an unique identifier. If not set it will be auto-generated.
+     * @type {string|null}
+     */
     static ID = null;
 
     /**
@@ -8,36 +29,66 @@ class State
      */
     static ROUTE = null;
 
+    /**
+     *
+     * @param {App} app - App instance
+     * @param {RouteParams} routeParams - Current route params
+     */
     constructor( app, routeParams )
     {
         this.app = app;
         this.routeParams = routeParams;
     }
 
+    /**
+     * Return current ID
+     *
+     * @returns {string}
+     */
     getId()
     {
         return this.constructor.ID;
     }
 
+    /**
+     * Called by StateManager before entering state.
+     * @returns {boolean}
+     */
     canEnter()
     {
         return true;
     }
 
+    /**
+     * Called by StateManager before exiting state.
+     * @returns {boolean}
+     */
     canExit()
     {
         return true;
     }
 
+    /**
+     * Called by StateManager when canEnter() function returns false.
+     * @returns {string|null} - Return redirect route.
+     */
     getRedirectTo()
     {
         return null;
     }
 
+    /**
+     * Called by StateManager when entering scene and after canEnter() call returned true.
+     * @returns {Promise<void>}
+     */
     async enter()
     {
     }
 
+    /**
+     * Called by StateManager when exiting scene and after canExit() call return true.
+     * @returns {Promise<void>}
+     */
     async exit()
     {
     }

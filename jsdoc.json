@@ -1,0 +1,24 @@
+{
+  "source": {
+    "include": ["src/base", "src/core", "src/util", "src/IF.js"],
+    "includePattern": ".js$",
+    "exclude" : ["src/_external/"],
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "encoding": "utf8",
+    "readme": "./README-DOC.md",
+    "destination": "./docs/",
+    "recurse": true,
+    "verbose": true,
+    "template": "./node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "default_theme": "light"
+    }
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  }
+}

@@ -995,24 +995,25 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     vec2 fc = fragCoord;
     
-    vec3 col = vec3(0.0);
+    vec3 col = vec3(0.8, 0.2, 0.1);
     for(int j=-2;j<=2;j++){
         for(int k=-2;k<=2;k++){
             vec2 uv = (fc)/iResolution.xy;
             uv += sin(uv.x*(2.0+sin(iTime*0.39))+iTime*0.12)*vec2(j,k)*13.0/iResolution.xy;
 
-            //float i = iTime*0.08+float(j)*0.03;
-            float i = iTime*0.16+float(j)*0.03;
-            uv.x *= 0.8;
+            //float i = iTime*0.4+float(j)*0.03;
+            float i = iTime*0.1+float(j)*0.03;
+            uv.x *= 0.8;            
             
             float y = sin(uv.x*3.0+uv.x*sin(uv.x+i*0.37)*1.0+i*2.0+cos(uv.x*0.6+i*0.71)*0.75)*0.25+uv.y-0.5;
             float ys = sign(y);
 			col += abs(vec3(max((1.0-pow(y,0.13+sin(uv.x+iTime*0.21)*0.1))*vec3(1.1,0.6,0.15),(1.0-pow(-y,0.13))*vec3(0.9,0.2,0.2))));
         }
     }
-	col /= 15.0;
+	//col /= 3.0;
     // Output to screen
-    fragColor = vec4(col.r / 2.9, col.r / 1.2, col.r/ 1.9,1.0);
+    //fragColor = vec4(col.r / 2.9, col.r / 1.2, col.r/ 1.9,1.0);
+    fragColor = vec4(col.r * 0.125, col.r * 0.027, col.r * 0.22 ,1.0);
 }
 
 void main() 
@@ -1024,27 +1025,12 @@ void main()
     async enter( params = {} )
     {
         this.app.container.innerHTML = `
-        <style>
-            * { margin: 0; padding: 0;overflow: hidden;}
-        </style>
-        <canvas id="ds" style="position: fixed; top:0; left:0; z-index: 2;"></canvas>;
-
-            <div style="position: fixed;
-                        z-index: 9; 
-                        top: 50%; 
-                        left: 50%; 
-                        transform: translate(-50%, -50%);
-                        text-align: center;;
-                        font-family: Tahoma; 
-                        font-size: 4em;
-                        font-weight: bolder;
-                        padding: .5em; 
-                        background-color: white; 
-                        color: black;
-                        mix-blend-mode: screen;
-                        display: inline-block;">
-                        I<span style="font-size: 0.8em">NFRONT</span>JS
-                        <h2 style="font-family: 'Courier New'; background-color: black; color: white; margin-top: 0px; font-size: 0.3em;padding: 3px">Version ${this.app.getVersion()}</h2>
+            <div style="margin: 0; padding: 0; width: 100%; height: 100%; min-height: 200px;position: relative">
+                <canvas id="ds" style="margin: 0; padding: 0; width: 100%; height: 100%;position: absolute; top: 0; left: 0; z-index: 1"></canvas>;
+                <div style="position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 36%; min-width: 360px; display: inline-block">
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 504.23 181.11" style="max-width: 100%; max-height: 100%"><path fill="#ffffff" d="M493.78,10.44V170.66H10.44V10.44H493.78m2-1.95H8.49V172.62H495.73V8.49Z"/><path fill="#ffffff" d="M242.48,97.68A12.92,12.92,0,1,0,229.57,84.8,12.94,12.94,0,0,0,242.48,97.68Z"/><path fill="#ffffff" d="M193.13,79.86a4.31,4.31,0,0,0,3.79-4c0-1.51-2-2.73-4.42-2.73h-3.68V79.9h3.71Z"/><path fill="#ffffff" d="M489.88,14.35H14.35V166.76H489.88V14.35ZM373.34,94.23a10.06,10.06,0,0,0,6.47,2.2h.27a11.26,11.26,0,0,0,11-11.19L391,57.49H374.55V43.05h33.38v1l.2,41.21a27.91,27.91,0,0,1-28,28.11h-.41A28.34,28.34,0,0,1,364,108.56l-2.82-2,8.77-15.29Zm-47.9-35.4h39.4V73.27h-12.5v38.88H337.93V73.27H325.44Zm-50.21-1.49h3.28L305,82.73V58h14.41v54.12h-3.24L289.61,86.71V111.4H275.23Zm-32.72.06a27.38,27.38,0,1,1-27.38,27.46A27.46,27.46,0,0,1,242.51,57.4ZM174.4,58.77h17.93c10.6,0,19.23,8.27,19.23,18.43a17.37,17.37,0,0,1-7.37,14.16l15.11,20.79H201.5l-12.45-17.9h-.23v17.9H174.41V58.77Zm-40.27,0h33V73.12H148.46l-.07,6.78h18.72V94.25H148.38l.16,17.9H134.13ZM82.77,57.34h3.28l26.49,25.39V58H127v54.12h-3.24L97.15,86.71V111.4H82.77ZM43.05,99h9.06V57.49H43.05V43.05H76.43V57.49H67.37V99h9.06v14.43H43.05Zm418.13,38.39H43.05V122.11H461.18Zm-5.87-29.58c-4.57,3.62-10.89,5.62-17.79,5.62-11,0-20.13-5.14-24.39-13.77l-1.41-2.85,13.49-9.65,2.06,3.6c2,3.55,5.8,5.58,10.36,5.58s8.25-1.87,8.25-4.18c0-3.1-7.6-6.38-12.63-8.54l-.19-.09c-6.91-3.07-17.3-7.69-17.3-19.83,0-11.76,10-20.63,23.3-20.63,10.14,0,18.05,5,21.15,13.29l1,2.73-13.15,9.09-1.86-4a7.58,7.58,0,0,0-7.08-4.23c-3.76,0-6.29,2.08-6.29,4,0,1.57,3.08,3,8.14,5.08l2.6,1.09c8.46,3.72,17.41,8.49,19.07,18.47v6.82A19.79,19.79,0,0,1,455.31,107.79Z"/></svg>
+                </div>
             </div>        
         `;
         this.canvas = null;
@@ -1146,8 +1132,6 @@ void main()
         this.vp_size = [512, 512];
         this.canvas.width = this.vp_size[0];
         this.canvas.height = this.vp_size[1];
-        this.canvas.style.width = "100vw";
-        this.canvas.style.height = "100vh";
     }
 
     render(deltaMS) {
@@ -1291,7 +1275,6 @@ class Router
             this.basePath = Helper.trim( window.location.pathname, '/' );
         }
         this.basePath = Helper.trim( this.basePath, '/' );
-
     }
 
     // Add third optional param called isIndexAction to be triggered, when route is empty
@@ -1391,7 +1374,7 @@ class Router
 
         if ( this.mode === 'url' )
         {
-            document.addEventListener( 'click', this.processUrl.bind( this ), false);
+            this.app.container.addEventListener( 'click', this.processUrl.bind( this ), false);
         }
         else if ( this.mode = 'hash' )
         {
@@ -1964,7 +1947,6 @@ class ViewManager
     constructor( appInstance )
     {
         this.app = appInstance;
-        this.rootContainer = this.app.container;
     }
 
     setWindowTitle( title )
@@ -1973,12 +1955,6 @@ class ViewManager
         {
             window.document.title = title;
         }
-    }
-
-    render( html, element = null )
-    {
-        const targetContainer = element instanceof HTMLElement ? element : this.rootContainer;
-        targetContainer.innerHTML = html;
     }
 }
 
@@ -4149,10 +4125,19 @@ function _template( html, data )
 
 class TemplateManager
 {
-    // @todo Think about a templateRootDirectory
     constructor( appInstance )
     {
         this.app = appInstance;
+        this.basePath = this.app.settings.get( "templateManager.basePath", null );
+        if ( null !== this.basePath )
+        {
+            this.basePath = this.app.router.basePath + "/" + Helper.trim( this.basePath, "/" );
+        }
+        else
+        {
+            this.basePath = this.app.router.basePath;
+        }
+
         this._cache = [];
         this.dd = new DiffDOM();
     }
@@ -4234,7 +4219,7 @@ class TemplateManager
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
         if ( !tmplHtml )
         {
-            const response = await fetch( templateUrl );
+            const response = await fetch( null === this.basePath ? templateUrl : `/${this.basePath}/${Helper.trim( templateUrl, '/' )}` );
             if ( response.status > 399 )
             {
                 throw new Error( `${response.status}: ${response.statusText}`);
@@ -4253,10 +4238,12 @@ class TemplateManager
 
 class L18n
 {
+    static LANG_EN = 'en';
+
     constructor( appInstance )
     {
         this.app = appInstance;
-        this.defaultLanguage = 'en';
+        this.defaultLanguage = L18n.LANG_EN;
         this.currentLanguage = this.defaultLanguage;
 
         this.dictionary = {};
@@ -4268,6 +4255,11 @@ class L18n
         {
             window[ fnName ] = this.getLocale.bind( this );
         }
+    }
+
+    setDictionary( dict = {} )
+    {
+        this.dictionary = dict;
     }
 
     getLocale( key, params )
@@ -4304,77 +4296,6 @@ class L18n
         }
     }
 }
-
-class PathObject
-{
-    constructor( properties = {} )
-    {
-        this._props = properties;
-    }
-
-    /**
-     * Taken from lodash.
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/4.17.15/lodash.js#L13126
-     *
-     * Gets the value at `path` of `object`. If the resolved value is
-     * `undefined`, the `defaultValue` is returned in its place.
-     *
-     * @param {Array|string} path The path of the property to get.
-     * @param {*} [defaultValue] The value returned for `undefined` resolved values. Default is null
-     * @returns {*} Returns the resolved value.
-     * @example
-     *
-     * const pathObject = new PathObject( { 'a': [{ 'b': { 'c': 3 } }] } );
-     *
-     * pathObject.get('a[0].b.c');
-     * // => 3
-     *
-     * pathObject.get(['a', '0', 'b', 'c']);
-     * // => 3
-     *
-     * pathObject.get('a.b.c', 'default');
-     * // => 'default'
-     */
-    get( path, defaultValue = null )
-    {
-        return get( this._props, path, defaultValue );
-    }
-
-    /**
-     * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
-     * it's created. Arrays are created for missing index properties while objects
-     * are created for all other missing properties. Use `_.setWith` to customize
-     * `path` creation.
-     *
-     * **Note:** This method mutates `object`.
-     *
-     * @static
-     * @memberOf _
-     * @since 3.7.0
-     * @category Object
-     * @param {Object} object The object to modify.
-     * @param {Array|string} path The path of the property to set.
-     * @param {*} value The value to set.
-     * @returns {Object} Returns `object`.
-     * @example
-     *
-     * var object = { 'a': [{ 'b': { 'c': 3 } }] };
-     *
-     * _.set(object, 'a[0].b.c', 4);
-     * console.log(object.a[0].b.c);
-     * // => 4
-     *
-     * _.set(object, ['x', '0', 'y', 'z'], 5);
-     * console.log(object.x[0].y.z);
-     * // => 5
-     */
-    set( path, value )
-    {
-        return set( this._props, path, value );
-    }
-}
-
 
 /**
  * lodash (Custom Build) <https://lodash.com/>
@@ -5441,35 +5362,105 @@ function set(object, path, value) {
     return object == null ? object : baseSet(object, path, value);
 }
 
-const VERSION = '0.8.6 ';
+class PathObject
+{
+    constructor( properties = {} )
+    {
+        this._props = properties;
+    }
 
-const DEFAULT_PROPS = {
-    "uid" : null,
-    "title" : null,
-    "container" : null
-};
+    /**
+     * Taken from lodash.
+     * Refer to:
+     * https://github.com/lodash/lodash/blob/4.17.15/lodash.js#L13126
+     *
+     * Gets the value at `path` of `object`. If the resolved value is
+     * `undefined`, the `defaultValue` is returned in its place.
+     *
+     * @param {Array|string} path The path of the property to get.
+     * @param {*} [defaultValue] The value returned for `undefined` resolved values. Default is null
+     * @returns {*} Returns the resolved value.
+     * @example
+     *
+     * const pathObject = new PathObject( { 'a': [{ 'b': { 'c': 3 } }] } );
+     *
+     * pathObject.get('a[0].b.c');
+     * // => 3
+     *
+     * pathObject.get(['a', '0', 'b', 'c']);
+     * // => 3
+     *
+     * pathObject.get('a.b.c', 'default');
+     * // => 'default'
+     */
+    get( path, defaultValue = null )
+    {
+        return get( this._props, path, defaultValue );
+    }
+
+    /**
+     * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
+     * it's created. Arrays are created for missing index properties while objects
+     * are created for all other missing properties. Use `_.setWith` to customize
+     * `path` creation.
+     *
+     * **Note:** This method mutates `object`.
+     *
+     * @static
+     * @memberOf _
+     * @since 3.7.0
+     * @category Object
+     * @param {Object} object The object to modify.
+     * @param {Array|string} path The path of the property to set.
+     * @param {*} value The value to set.
+     * @returns {Object} Returns `object`.
+     * @example
+     *
+     * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+     *
+     * _.set(object, 'a[0].b.c', 4);
+     * console.log(object.a[0].b.c);
+     * // => 4
+     *
+     * _.set(object, ['x', '0', 'y', 'z'], 5);
+     * console.log(object.x[0].y.z);
+     * // => 5
+     */
+    set( path, value )
+    {
+        return set( this._props, path, value );
+    }
+}
+
+const VERSION = '0.9.31';
 
 const DEFAULT_SETTINGS = {
     "app" : {
+        "id" : null,
+        "title" : null,
         "sayHello" : true,
+        "environment" : "development"
     },
     "l18n" : {
         "defaultLanguage" : "en"
     },
     "router" : {
         "isEnabled" : true,
-        "basePath" : "/"
+        "basePath" : null
     },
     "stateManager" : {
-        "rootPath" : ""
+        "basePath" : ""
     },
     "viewManager" : {
     },
     "templateManager" : {
-        "rootPath" : ""
+        "basePath" : "./../"
     }
 };
 
+/**
+ * The App class is the logical core unit of every InfrontJS application.
+ */
 class App
 {
     static POOL = {};
@@ -5490,37 +5481,41 @@ class App
         }
     }
 
-    constructor( props = {}, settings = {} )
+    /**
+     * Create an app instance
+     * @param {HTMLElement} [container=document.body] - The root container of the application.
+     * @param {object=} settings - Application settings object.
+     * @param {object=} settings.app - App settings.
+     * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
+     * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
+     * @param {string|null} [settings.app.environment=development] - Environment variable.
+     */
+    constructor( container = null, settings = {} )
     {
-        props = { ...DEFAULT_PROPS, ...props };
-        for ( let prop in props )
-        {
-            this[ prop ] = props[ prop ];
-        }
-
-        if ( !this.uid )
-        {
-            this.uid = Helper.createUid();
-        }
-
-        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
+        this.container = container;
 
         // If container property is a string, check if it is a querySelector
         if ( this.container !== null && false === this.container instanceof HTMLElement )
         {
             throw new Error( 'Invalid app container.' );
         }
-        else
+        else if ( this.container === null )
         {
             this.container = document.querySelector( 'body' );
         }
 
+        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
+        if ( null === this.settings.get( 'app.id', null ) )
+        {
+            this.settings.set( 'app.id', Helper.createUid() );
+        }
+
         // Init core components
+        this.initRouter();
         this.initL18n();
         this.initStateManager();
         this.initViewManager();
         this.initTemplateManager();
-        this.initRouter();
 
         // Add app to global app pool
         App.POOL[ this.uid ] = this;
@@ -5563,9 +5558,9 @@ class App
 
     async run( route = null )
     {
-        if ( this.title )
+        if ( this.settings.get( 'app.title' ) )
         {
-            this.viewManager.setWindowTitle( this.title );
+            this.viewManager.setWindowTitle( this.settings.get( 'app.title' ) );
         }
 
         this.router.enable();

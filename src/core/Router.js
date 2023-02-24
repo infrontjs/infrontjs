@@ -3,8 +3,16 @@ import { Helper } from "../util/Helper.js";
 import { StateManager } from "./StateManager.js";
 
 const UrlPattern = new UP();
+
+/**
+ * Router for handling routing events (ie. changes of the URL) and resolving and triggering corresponding states.
+ */
 class Router
 {
+    /**
+     * Constructor
+     * @param {App} appInstance - Instance of app
+     */
     constructor( appInstance )
     {
         this.app = appInstance;
@@ -39,18 +47,23 @@ class Router
         this.basePath = Helper.trim( this.basePath, '/' );
     }
 
-    // Add third optional param called isIndexAction to be triggered, when route is empty
-    addRoute( route, action )
+    /**
+     * Adds route and action
+     *
+     * @param {string} route - Route pattern
+     * @param {State} stateClass - State class which belongs to route pattern
+     */
+    addRoute( route, stateClass )
     {
         let sRoute = Helper.trim( route, '/' );
         sRoute = '/' + sRoute;
 
-        if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
+        if ( true === Helper.isClass( stateClass ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            this.app.stateManager.add( action );
+            this.app.stateManager.add( stateClass );
             this._routeActions.push(
                 {
-                    "action" : action.ID,
+                    "action" : stateClass.ID,
                     "route" : new UrlPattern( sRoute )
                 }
             );
@@ -126,6 +139,10 @@ class Router
         const startsWithHash = regEx.test(string);
         return Boolean(startsWithHash);
     }
+
+    /**
+     * Enables router logic
+     */
     enable()
     {
         if ( true === this.isEnabled )
@@ -144,6 +161,9 @@ class Router
         }
     }
 
+    /**
+     * Disables router logic
+     */
     disable()
     {
         this.isEnabled = false;
@@ -157,6 +177,9 @@ class Router
         }
     }
 
+    /**
+     * @private
+     */
     process()
     {
         if ( this.mode === 'url' )

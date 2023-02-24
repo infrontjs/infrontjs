@@ -1,5 +1,8 @@
 import { ObservableSlim } from "../_external/observableSlim/ObservableSlim.js";
 
+/**
+ * Helper class provides static helper functions.
+ */
 class Helper
 {
     /**

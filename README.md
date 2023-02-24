@@ -14,18 +14,14 @@ The aim of this project is to provide a fast, unobstrusive and lightweight Vanil
 
 **Version 1.0**
 
+- [ ] Remove TemplateManager
+- [ ] Rename ViewManager to View
+- [ ] Add engine property and by default, set it to "ejs"
 - [ ] JSDoc
 - [ ] infront-cli
 - [ ] Add tests
 - [ ] UserGuide
 - [ ] 404 State
-- [x] Example: Simple
-- [x] Exmaple: ToDoList (refer to simple version of preact) (DataBindung, DOMDiffing, Templating)
-- [ ] Example: States
-- [ ] Example: TemplateManager
-- [ ] Example: (Web) Component
-- [ ] Example: Advanvced ... SaaS Skeleton -> Login -> Logout
-- [x] TemplateManager diffDomTree, alt. https://github.com/developit/htm
 - [X] Rename Api to Http (Client)
 - [x] Move Http to Util
 - [x] Rethink PropertyObject -> maybe just a simple set/get method that interacts with [this] instance properties

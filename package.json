@@ -5,6 +5,7 @@
   "main": "src/IF.js",
   "scripts": {
     "build": "rollup -c",
+    "generate-docs": "jsdoc --configure jsdoc.json --verbose",
     "test": "mocha --recursive ./test/*.test.js"
   },
   "repository": {
@@ -27,6 +28,8 @@
     "@babel/preset-env": "^7.19.1",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.2",
+    "clean-jsdoc-theme": "^4.2.6",
+    "jsdoc": "^4.0.2",
     "mocha": "^10.2.0",
     "rollup": "^2.79.0"
   }

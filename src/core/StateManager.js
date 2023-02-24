@@ -1,10 +1,18 @@
 import { Helper } from "../util/Helper.js";
 import { DefaultState } from "../base/DefaultState.js";
 
+/**
+ * StateManager. An instance is created by each InfrontJS application itself.
+ * You can create multiple StateManager instances in your application logic, e.g. for dealing with sub-states etc.
+ */
 class StateManager
 {
     static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
 
+    /**
+     * Constructor
+     * @param {App} appInstance - Instance of app
+     */
     constructor( appInstance )
     {
         this._states =  {};
@@ -13,6 +21,13 @@ class StateManager
         this.defaultStateId = null;
     }
 
+    /**
+     * Add state class
+     *
+     * @param {BaseState} stateClass - State class to be added.
+     * @throws {Error}  - Throws an error when adding state is not possible
+     * @returns {boolean} - Returns wheter or not adding was successful
+     */
     add( stateClass )
     {
         // @todo Fix this, only check for function or class
@@ -51,6 +66,13 @@ class StateManager
         return true;
     }
 
+    /**
+     * Create an instance of given state id
+     *
+     * @param {string} stateId - The state id to be instantiated
+     * @param {RouteParams} routeParams - Current RouteParams
+     * @returns {null}
+     */
     create( stateId, routeParams )
     {
         let stateInstance = null;
@@ -67,6 +89,12 @@ class StateManager
         return stateInstance;
     }
 
+    /**
+     * Switch to given state
+     * @param {BaseState} newState - Instance of state to switch to
+     * @throws {Error} - Throws an error if given state cannot be entered or if enter() function throws an error.
+     * @returns {Promise<boolean>}
+     */
     async switchTo( newState )
     {
         if ( false === newState.canEnter() )

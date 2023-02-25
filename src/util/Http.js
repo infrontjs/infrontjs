@@ -1,10 +1,38 @@
 import { Helper } from "../util/Helper.js";
+
+/**
+ * Http
+ * Simple helper class for http client requests.
+ *
+ * Note: All http verb functions support callback and await mode.
+ *
+ * @example <caption>Using callbacks</caption>
+ * const apiClient = new Http( 'https://api.example.com' );
+ * apiClient.get( '/books', function( err, result ) { } );
+ *
+ * @example <caption>Using await</caption>
+ * const apiClient = new Http( 'https://api.example.com' );
+ * try
+ * {
+ *     const result = apiClient.get( '/books' );
+ * }
+ * catch( e )
+ * {
+ *     // Handle error
+ * }
+ *
+ */
 class Http
 {
-    constructor( endpoint = '', headers = {} )
+    /**
+     * Construcotr
+     * @param {string} url - Base url
+     * @param {object=} headers - Header data.
+     */
+    constructor( url = '', headers = {} )
     {
-        this.endpoint = Helper.trim( endpoint, '/' );
-        if ( this.endpoint.length <= 1 )
+        this.url = Helper.trim( url, '/' );
+        if ( this.url.length <= 1 )
         {
             throw new Error( 'No endpoint set.' );
         }
@@ -12,39 +40,72 @@ class Http
         this.headers = new Headers( headers );
     }
 
-    async get( route, cb = null )
+    /**
+     * GET call
+     * @param {string} endpoint - API endpoint
+     * @param {function=} [cb=null] - Callback function
+     * @returns {Promise<any|undefined>}
+     */
+    async get( endpoint, cb = null )
     {
-        let r = Helper.trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
+        let r = Helper.trim( endpoint, "/" ),
+            req = new Request( this.url + '/' + r, this._createFetchOptions( "GET" ) );
 
         return await this._fetch( req, cb );
     }
 
-    async post( route, data = {}, cb = null )
+    /**
+     * POST call
+     * @param {string} endpoint - API endpoint
+     * @param {object=} [data={}] - Post data
+     * @param {function=} [cb=null] - Callback function
+     * @returns {Promise<any|undefined>}
+     */
+    async post( endpoint, data = {}, cb = null )
     {
-        let r = Helper.trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
+        let r = Helper.trim( endpoint, "/" ),
+            req = new Request( this.url + '/' + r, this._createFetchOptions( "POST", data ) );
         return await this._fetch( req, cb );
     }
 
-    async delete( route, cb = null )
+    /**
+     * DELETE call
+     * @param {string} endpoint - API endpoint
+     * @param {function=} [cb=null] - Callback function
+     * @returns {Promise<any|undefined>}
+     */
+    async delete( endpoint, cb = null )
     {
-        let r = Helper.trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
+        let r = Helper.trim( endpoint, "/" ),
+            req = new Request( this.url + '/' + r,  this._createFetchOptions( "DELETE" ) );
         return await this._fetch( req, cb );
     }
 
-    async put( route, data = {}, cb = null )
+    /**
+     * PUT call
+     * @param {string} endpoint - API endpoint
+     * @param {object=} [data={}] - PUT data
+     * @param {function=} [cb=null] - Callback function
+     * @returns {Promise<any|undefined>}
+     */
+    async put( endpoint, data = {}, cb = null )
     {
-        let r = Helper.trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
+        let r = Helper.trim( endpoint, "/" ),
+            req = new Request( this.url + '/' + r, this._createFetchOptions( "PUT", data )  );
         return await this._fetch( req, cb );
     }
 
-    async patch( route, data = {}, cb = null )
+    /**
+     * PATCH call
+     * @param {string} endpoint - API endpoint
+     * @param {object=} [data={}] - Patch data
+     * @param {function=} [cb=null] - Callback function
+     * @returns {Promise<any|undefined>}
+     */
+    async patch( endpoint, data = {}, cb = null )
     {
-        let r = Helper.trim( route, "/" ),
-            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
+        let r = Helper.trim( endpoint, "/" ),
+            req = new Request( this.url + '/' + r, this._createFetchOptions( "PATCH", data ) );
         return await this._fetch( req, cb );
     }
 

@@ -9,7 +9,7 @@
   "opts": {
     "encoding": "utf8",
     "readme": "./README-DOC.md",
-    "destination": "./docs/",
+    "destination": "./apidocs/",
     "recurse": true,
     "verbose": true,
     "template": "./node_modules/clean-jsdoc-theme",

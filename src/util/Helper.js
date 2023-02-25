@@ -31,8 +31,8 @@ class Helper
 
     /**
      * Serialize given from
-     * @param form
-     * @returns {{}}
+     * @param {HTMLFormElement} form - The form element to serialize
+     * @returns {object} - Plain javascript object containing the name and value of given form.
      */
     static serializeForm( form )
     {
@@ -70,7 +70,7 @@ class Helper
     /**
      * Checks if given value is string
      *
-     * @param {*} v Value to check
+     * @param {*} v - Value to check
      * @returns {boolean}
      */
     static isString( v )
@@ -81,7 +81,7 @@ class Helper
     /**
      * Checks if given value is an array or not
      *
-     * @param {*} v Value to check
+     * @param {*} v - Value to check
      * @returns {boolean}
      */
     static isArray( v )
@@ -90,8 +90,9 @@ class Helper
     }
 
     /**
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/master/isPlainObject.js
+     * Checks if given value is a plain object
+     *
+     * @see {@link https://github.com/lodash/lodash/blob/master/isPlainObject.js}
      * @param value
      * @returns {boolean}
      */
@@ -118,8 +119,8 @@ class Helper
 
     /**
      * Checks if given value is a class constructor
-     * Refer:
-     * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
+     *
+     * @see {@link https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration}
      * @param v
      * @returns {boolean}
      */
@@ -131,9 +132,9 @@ class Helper
     /**
      * Create an observable object
      *
-     * @param {function} onChange Optional callback triggered on change. Default is undefined.
-     * @param {object} objReference Optional referenced object which will be transformed to an observable. Default is an empty new object.
-     * @param {boolean} batchUpDelay Optional flag defining if change events are batched up for 10ms before being triggered. Default is true.
+     * @param {function=} onChange - Callback triggered on change. Default is undefined.
+     * @param {object=} objReference - Referenced object which will be transformed to an observable. Default is an empty new object.
+     * @param {boolean=} batchUpDelay - Flag defining if change events are batched up for 10ms before being triggered. Default is true.
      * @returns {ProxyConstructor}
      */
     static createObservable( onChange = undefined, objReference = {}, batchUpDelay = true )
@@ -145,25 +146,16 @@ class Helper
         );
     }
 
-    /**
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/master/isObjectLike.js
-     *
-     * @param value
-     * @returns {boolean}
-     */
+    // Refer to:
+    // https://github.com/lodash/lodash/blob/master/isObjectLike.js
     static _isObjectLike( value )
     {
         return typeof value === 'object' && value !== null
     }
 
-    /**
-     * Refer to:
-     * https://github.com/lodash/lodash/blob/master/.internal/getTag.js
-     *
-     * @param value
-     * @returns {string|string}
-     */
+
+    // Refer to:
+    // https://github.com/lodash/lodash/blob/master/.internal/getTag.js
     static _getTag( value )
     {
         if ( value == null )

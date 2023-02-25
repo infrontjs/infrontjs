@@ -8,7 +8,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.31';
+const VERSION = '0.9.32';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS = {
 };
 
 /**
+ * App
  * The App class is the logical core unit of every InfrontJS application.
  */
 class App

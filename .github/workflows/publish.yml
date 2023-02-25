@@ -5,17 +5,36 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Setup Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
+
       - name: Install dependencies and build 🔧
-        run: npm install && npm run build
+        run: npm install && npm run build && npm run generate-docs
+
       - name: Publish package on NPM 📦
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'dummy-value'
+
+      - name: Adding Known Hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT}} -H ${{ secrets.SSH_HOST }}  >> ~/.ssh/known_hosts
+
+      - name: Deploy client with rsync
+        run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./apidocs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/www/htdocs/w01d08f6/projects/apidocs.infrontjs.com
+

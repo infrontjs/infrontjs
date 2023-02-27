@@ -51,7 +51,7 @@ class State
     }
 
     /**
-     * Called by StateManager before entering state.
+     * Called before entering state.
      * @returns {boolean}
      */
     canEnter()
@@ -60,7 +60,7 @@ class State
     }
 
     /**
-     * Called by StateManager before exiting state.
+     * Called before exiting state.
      * @returns {boolean}
      */
     canExit()
@@ -69,7 +69,7 @@ class State
     }
 
     /**
-     * Called by StateManager when canEnter() function returns false.
+     * Called when canEnter() function returns false.
      * @returns {string|null} - Return redirect route.
      */
     getRedirectTo()
@@ -78,7 +78,7 @@ class State
     }
 
     /**
-     * Called by StateManager when entering scene and after canEnter() call returned true.
+     * Called when entering scene and after canEnter() call returned true.
      * @returns {Promise<void>}
      */
     async enter()
@@ -86,7 +86,7 @@ class State
     }
 
     /**
-     * Called by StateManager when exiting scene and after canExit() call return true.
+     * Called when exiting scene and after canExit() call return true.
      * @returns {Promise<void>}
      */
     async exit()

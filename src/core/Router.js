@@ -1,6 +1,6 @@
 import { RouteParams } from "./RouteParams.js";
 import { Helper } from "../util/Helper.js";
-import { StateManager } from "./StateManager.js";
+import { States } from "./States.js";
 
 const UrlPattern = new UP();
 
@@ -60,7 +60,7 @@ class Router
 
         if ( true === Helper.isClass( stateClass ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            this.app.stateManager.add( stateClass );
+            this.app.states.add( stateClass );
             this._routeActions.push(
                 {
                     "action" : stateClass.ID,
@@ -108,7 +108,7 @@ class Router
             if ( route === '/' )
             {
                 routeData = {
-                    "routeAction" : StateManager.DEFAULT_STATE_ID,
+                    "routeAction" : States.DEFAULT_STATE_ID,
                     "routeParams" : null
                 };
             }
@@ -282,11 +282,11 @@ class Router
         {
             if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = this.app.stateManager.create(
+                let stateInstance = this.app.states.create(
                     actionData.routeAction,
                     actionData.routeParams
                 );
-                await this.app.stateManager.switchTo( stateInstance );
+                await this.app.states.switchTo( stateInstance );
             }
         }
         catch( e )

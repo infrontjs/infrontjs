@@ -51,7 +51,7 @@ class State
     }
 
     /**
-     * Called by StateManager before entering state.
+     * Called before entering state.
      * @returns {boolean}
      */
     canEnter()
@@ -60,7 +60,7 @@ class State
     }
 
     /**
-     * Called by StateManager before exiting state.
+     * Called before exiting state.
      * @returns {boolean}
      */
     canExit()
@@ -69,7 +69,7 @@ class State
     }
 
     /**
-     * Called by StateManager when canEnter() function returns false.
+     * Called when canEnter() function returns false.
      * @returns {string|null} - Return redirect route.
      */
     getRedirectTo()
@@ -78,7 +78,7 @@ class State
     }
 
     /**
-     * Called by StateManager when entering scene and after canEnter() call returned true.
+     * Called when entering scene and after canEnter() call returned true.
      * @returns {Promise<void>}
      */
     async enter()
@@ -86,7 +86,7 @@ class State
     }
 
     /**
-     * Called by StateManager when exiting scene and after canExit() call return true.
+     * Called when exiting scene and after canExit() call return true.
      * @returns {Promise<void>}
      */
     async exit()
@@ -1195,10 +1195,10 @@ void main()
 }
 
 /**
- * StateManager. An instance is created by each InfrontJS application itself.
- * You can create multiple StateManager instances in your application logic, e.g. for dealing with sub-states etc.
+ * States - The state manager.
+ * You can create multiple States instances in your application logic, e.g. for dealing with sub-states etc.
  */
-class StateManager
+class States
 {
     static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
 
@@ -1226,7 +1226,7 @@ class StateManager
         // @todo Fix this, only check for function or class
         if ( false === Helper.isClass( stateClass ) )
         {
-            throw new Error( 'StateManager.addState expects a class/subclass of State.' );
+            throw new Error( 'States.addState expects a class/subclass of State.' );
         }
 
         // Throw an error if ID is null or already taken
@@ -1274,7 +1274,7 @@ class StateManager
         {
             stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
-        else if ( stateId === StateManager.DEFAULT_STATE_ID )
+        else if ( stateId === States.DEFAULT_STATE_ID )
         {
             stateInstance = new DefaultState( this.app, routeParams );
         }
@@ -1420,7 +1420,7 @@ class Router
             if ( route === '/' )
             {
                 routeData = {
-                    "routeAction" : StateManager.DEFAULT_STATE_ID,
+                    "routeAction" : States.DEFAULT_STATE_ID,
                     "routeParams" : null
                 };
             }
@@ -2039,22 +2039,6 @@ function UP() {
     return UrlPattern;
 }
 
-class ViewManager
-{
-    constructor( appInstance )
-    {
-        this.app = appInstance;
-    }
-
-    setWindowTitle( title )
-    {
-        if ( window && window.document && window.document.title )
-        {
-            window.document.title = title;
-        }
-    }
-}
-
 /*
  * EJS Embedded JavaScript templates
  * Copyright 2112 Matthew Eernisse (mde@fleegix.org)
@@ -2284,7 +2268,7 @@ var path = {};
 
 var scopeOptionWarned = false;
 /** @type {string} */
-var _VERSION_STRING = require('../package.json').version;
+var _VERSION_STRING = 0;//require('../package.json').version;
 var _DEFAULT_OPEN_DELIMITER = '<';
 var _DEFAULT_CLOSE_DELIMITER = '>';
 var _DEFAULT_DELIMITER = '%';
@@ -3184,8 +3168,8 @@ if (typeof window != 'undefined') {
     window.ejs = exports;
 }
 
-exports.compile;
-exports.render;
+const compile = exports.compile;
+const render = exports.render;
 
 function objToNode(objNode, insideSvg, options) {
     let node;
@@ -5304,59 +5288,17 @@ class DiffDOM {
     }
 }
 
-const _extendedFunctions = {};
-
-function _template( html, data )
-{
-    var me = _template;
-
-    return (function ()
-    {
-        var name = html,
-            string = (name = 'template(string)', html); // no warnings
-
-        // Add replaces in here
-        string = string.
-        replace(/<%/g, '\x11').replace(/%>/g, '\x13'). // if you want other tag, just edit this line
-            replace(/'(?![^\x11\x13]+?\x13)/g, '\\x27').
-            replace(/^\s*|\s*$/g, '').
-            replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
-            replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
-            replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '").
-            replace(/\x11=tmpl(.+?)\x13/g, "' + this.tmpl($1) + '");
-
-
-        Object.keys( _extendedFunctions ).forEach( (v) =>
-        {
-            string = string.replace( new RegExp( '\\x11=' + v + '(.+?)\\x13', 'g' ), "' + this.extFunc[ '" + v + "' ]($1) + '" );
-        });
-
-        string = string.
-        replace(/\x11=(.+?)\x13/g, "' + this.escapeHTML($1) + '").
-        replace(/\x11(.+?)\x13/g, "'; $1; this.ret += '");
-
-        var line = 1, body = (
-            "try { " +
-            (me.variable ?  "var " + me.variable + " = this.stash;" : "with (this.stash) { ") +
-            "this.ret += '"  + string +
-            "'; " + (me.variable ? "" : "}") + "return this.ret;" +
-            "} catch (e) { throw 'TemplateError: ' + e + ' (on " + name + "' + ' line ' + this.line + ')'; } " +
-            "//@ sourceURL=" + name + "\n" // source map
-        ).replace(/this\.ret \+= '';/g, '');
-        var func = new Function(body);
-        var map  = { '&' : '&amp;', '<' : '&lt;', '>' : '&gt;', '\x22' : '&#x22;', '\x27' : '&#x27;' };
-        var escapeHTML = function (string) { return (''+string).replace(/[&<>\'\"]/g, function (_) { return map[_] }) };
-        var nl2br = function(string) { return escapeHTML(string).replace(/(?:\ r\n|\r|\n)/g, '<br>')};
-        var tmpl = function(d) { return _template( d[0], d[1] ); };
-        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, tmpl: tmpl, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
-    })()(data);
-}
-
-class TemplateManager
+/**
+ * View
+ * Provides management and rendering of ejs templates including DOM diffing.
+ * @namespace core
+ */
+class View
 {
     constructor( appInstance )
     {
         this.app = appInstance;
+
         this.basePath = this.app.settings.get( "templateManager.basePath", null );
         if ( null !== this.basePath )
         {
@@ -5371,76 +5313,61 @@ class TemplateManager
         this.dd = new DiffDOM();
     }
 
-    _getTemplateFromCache( templateUrl )
+    setWindowTitle( title )
     {
-        const cachedTemplate =  this._cache.find( tmpl => tmpl.url === templateUrl );
-        if ( cachedTemplate )
+        if ( window && window.document && window.document.title )
         {
-            return cachedTemplate.html;
+            window.document.title = title;
         }
     }
 
-    addTemplateFunction( name, fn )
+    compile( template, opts )
     {
-        // @todo Add Check of type function
-        _extendedFunctions[ name ] = fn;
+        return compile( template, opts );
     }
 
-    removeTemplateFunction( name )
+    /**
+     *
+     * @param {HTMLElement|null} container - Container in which template should be rendered
+     * @param {string} tmpl - EJS template string
+     * @param {object=} [data={}] - Template data.
+     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
+     * @returns {undefined|string} - If container is undefined|null, the rendered html is returned.
+     */
+    render( container, tmpl, data = {}, forceRepaint = false )
     {
-        if ( _extendedFunctions.hasOwnProperty( name ) )
+        const html = render( tmpl, data );
+        if ( !container || false === ( container instanceof HTMLElement ) )
         {
-            delete _extendedFunctions[ name ];
-        }
-    }
-
-    compile( tmpl, data = {} )
-    {
-        return _template( tmpl, data );
-    }
-
-    // rename to render
-    render( htmlElement, tmpl, data = {}, forceRepaint = false )
-    {
-        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
-        {
-            throw new Error( 'First parameter is no valid HTMLElement.' );
-        }
-
-        if ( true === forceRepaint )
-        {
-            htmlElement.innerHTML = this.compile( tmpl, data );
+            return html;
         }
         else
         {
-            let outDiv = htmlElement.querySelector( 'div:first-child' );
-            if ( !outDiv )
+            if ( true === forceRepaint )
             {
-                htmlElement.innerHTML = '<div></div>';
-                outDiv = htmlElement.querySelector( 'div:first-child' );
+                container.innerHTML = html;
             }
+            else
+            {
+                let outDiv = container.querySelector( 'div:first-child' );
+                if ( !outDiv )
+                {
+                    container.innerHTML = '<div></div>';
+                    outDiv = container.querySelector( 'div:first-child' );
+                }
 
-            const newDiv = document.createElement( 'div' );
-            newDiv.innerHTML = this.compile( tmpl, data );
+                const newDiv = document.createElement( 'div' );
+                newDiv.innerHTML = html;
 
-            this.dd.apply(
-                outDiv,
-                this.dd.diff(
-                    nodeToObj( outDiv ),
-                    nodeToObj( newDiv )
-                )
-            );
+                this.dd.apply(
+                    outDiv,
+                    this.dd.diff(
+                        nodeToObj( outDiv ),
+                        nodeToObj( newDiv )
+                    )
+                );
+            }
         }
-    }
-
-    renderHtml( htmlElement, html )
-    {
-        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
-        {
-            throw new Error( 'First parameter is no valid HTMLElement.' );
-        }
-
-        htmlElement.innerHTML = html;
     }
 
     async load( templateUrl, useCache = true )
@@ -5462,6 +5389,15 @@ class TemplateManager
             );
         }
         return tmplHtml;
+    }
+
+    _getTemplateFromCache( templateUrl )
+    {
+        const cachedTemplate =  this._cache.find( tmpl => tmpl.url === templateUrl );
+        if ( cachedTemplate )
+        {
+            return cachedTemplate.html;
+        }
     }
 }
 
@@ -6677,12 +6613,10 @@ const DEFAULT_SETTINGS = {
         "isEnabled" : true,
         "basePath" : null
     },
-    "stateManager" : {
+    "states" : {
         "basePath" : ""
     },
-    "viewManager" : {
-    },
-    "templateManager" : {
+    "view" : {
         "basePath" : "./../"
     }
 };
@@ -6748,9 +6682,8 @@ class App
         // Init core components
         this.initRouter();
         this.initL18n();
-        this.initStateManager();
-        this.initViewManager();
-        this.initTemplateManager();
+        this.initStates();
+        this.initView();
 
         // Add app to global app pool
         App.POOL[ this.uid ] = this;
@@ -6766,9 +6699,9 @@ class App
         this.l18n = new L18n( this );
 
     }
-    initStateManager()
+    initStates()
     {
-        this.stateManager = new StateManager( this );
+        this.states = new States( this );
     }
 
     initRouter()
@@ -6776,14 +6709,9 @@ class App
         this.router = new Router( this );
     }
 
-    initViewManager()
+    initView()
     {
-        this.viewManager = new ViewManager( this );
-    }
-
-    initTemplateManager()
-    {
-        this.templateManager = new TemplateManager( this );
+        this.view = new View( this );
     }
 
     /**
@@ -6973,4 +6901,4 @@ class Http
     }
 }
 
-export { App, Helper, Http, L18n, PathObject, Router, State, StateManager, TemplateManager, ViewManager };
+export { App, Helper, Http, L18n, PathObject, Router, State, States, View };

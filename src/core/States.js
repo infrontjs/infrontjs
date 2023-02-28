@@ -2,10 +2,10 @@ import { Helper } from "../util/Helper.js";
 import { DefaultState } from "../base/DefaultState.js";
 
 /**
- * StateManager. An instance is created by each InfrontJS application itself.
- * You can create multiple StateManager instances in your application logic, e.g. for dealing with sub-states etc.
+ * States - The state manager.
+ * You can create multiple States instances in your application logic, e.g. for dealing with sub-states etc.
  */
-class StateManager
+class States
 {
     static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
 
@@ -33,7 +33,7 @@ class StateManager
         // @todo Fix this, only check for function or class
         if ( false === Helper.isClass( stateClass ) )
         {
-            throw new Error( 'StateManager.addState expects a class/subclass of State.' );
+            throw new Error( 'States.addState expects a class/subclass of State.' );
         }
 
         // Throw an error if ID is null or already taken
@@ -81,7 +81,7 @@ class StateManager
         {
             stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
-        else if ( stateId === StateManager.DEFAULT_STATE_ID )
+        else if ( stateId === States.DEFAULT_STATE_ID )
         {
             stateInstance = new DefaultState( this.app, routeParams );
         }
@@ -121,4 +121,4 @@ class StateManager
 
 }
 
-export { StateManager };
+export { States };

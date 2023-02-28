@@ -1,8 +1,9 @@
 {
   "name": "infrontjs",
-  "version": "0.9.32",
+  "version": "0.9.4",
   "description": "A frontend framework",
   "main": "src/IF.js",
+  "type" : "module",
   "scripts": {
     "build": "rollup -c",
     "generate-docs": "jsdoc --configure jsdoc.json --verbose",

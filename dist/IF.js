@@ -4,8 +4,29 @@
 	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.IF = {}));
 })(this, (function (exports) { 'use strict';
 
+	/**
+	 * State class. Parent state class. Extend this class for your state logic.
+	 *
+	 * @example
+	 * Create a state called MyState with is executed when the url 'my-state' is called. When executed,
+	 * it prints 'Hello from MyState' to the console.
+	 *
+	 * class MyState extends State
+	 * {
+	 *     static ID = 'my-state';
+	 *
+	 *     asnyc enter()
+	 *     {
+	 *         console.log( "Hello from MyState" );
+	 *     }
+	 * }
+	 */
 	class State
 	{
+	    /**
+	     * ID of state. Should be an unique identifier. If not set it will be auto-generated.
+	     * @type {string|null}
+	     */
 	    static ID = null;
 
 	    /**
@@ -14,36 +35,66 @@
 	     */
 	    static ROUTE = null;
 
+	    /**
+	     *
+	     * @param {App} app - App instance
+	     * @param {RouteParams} routeParams - Current route params
+	     */
 	    constructor( app, routeParams )
 	    {
 	        this.app = app;
 	        this.routeParams = routeParams;
 	    }
 
+	    /**
+	     * Return current ID
+	     *
+	     * @returns {string}
+	     */
 	    getId()
 	    {
 	        return this.constructor.ID;
 	    }
 
+	    /**
+	     * Called before entering state.
+	     * @returns {boolean}
+	     */
 	    canEnter()
 	    {
 	        return true;
 	    }
 
+	    /**
+	     * Called before exiting state.
+	     * @returns {boolean}
+	     */
 	    canExit()
 	    {
 	        return true;
 	    }
 
+	    /**
+	     * Called when canEnter() function returns false.
+	     * @returns {string|null} - Return redirect route.
+	     */
 	    getRedirectTo()
 	    {
 	        return null;
 	    }
 
+	    /**
+	     * Called when entering scene and after canEnter() call returned true.
+	     * @returns {Promise<void>}
+	     */
 	    async enter()
 	    {
 	    }
 
+	    /**
+	     * Called when exiting scene and after canExit() call return true.
+	     * @returns {Promise<void>}
+	     */
 	    async exit()
 	    {
 	    }
@@ -807,6 +858,9 @@
 	    };
 	})();
 
+	/**
+	 * Helper class provides static helper functions.
+	 */
 	class Helper
 	{
 	    /**
@@ -835,8 +889,8 @@
 
 	    /**
 	     * Serialize given from
-	     * @param form
-	     * @returns {{}}
+	     * @param {HTMLFormElement} form - The form element to serialize
+	     * @returns {object} - Plain javascript object containing the name and value of given form.
 	     */
 	    static serializeForm( form )
 	    {
@@ -874,7 +928,7 @@
 	    /**
 	     * Checks if given value is string
 	     *
-	     * @param {*} v Value to check
+	     * @param {*} v - Value to check
 	     * @returns {boolean}
 	     */
 	    static isString( v )
@@ -885,7 +939,7 @@
 	    /**
 	     * Checks if given value is an array or not
 	     *
-	     * @param {*} v Value to check
+	     * @param {*} v - Value to check
 	     * @returns {boolean}
 	     */
 	    static isArray( v )
@@ -894,8 +948,9 @@
 	    }
 
 	    /**
-	     * Refer to:
-	     * https://github.com/lodash/lodash/blob/master/isPlainObject.js
+	     * Checks if given value is a plain object
+	     *
+	     * @see {@link https://github.com/lodash/lodash/blob/master/isPlainObject.js}
 	     * @param value
 	     * @returns {boolean}
 	     */
@@ -922,8 +977,8 @@
 
 	    /**
 	     * Checks if given value is a class constructor
-	     * Refer:
-	     * https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration
+	     *
+	     * @see {@link https://stackoverflow.com/questions/30758961/how-to-check-if-a-variable-is-an-es6-class-declaration}
 	     * @param v
 	     * @returns {boolean}
 	     */
@@ -935,9 +990,9 @@
 	    /**
 	     * Create an observable object
 	     *
-	     * @param {function} onChange Optional callback triggered on change. Default is undefined.
-	     * @param {object} objReference Optional referenced object which will be transformed to an observable. Default is an empty new object.
-	     * @param {boolean} batchUpDelay Optional flag defining if change events are batched up for 10ms before being triggered. Default is true.
+	     * @param {function=} onChange - Callback triggered on change. Default is undefined.
+	     * @param {object=} objReference - Referenced object which will be transformed to an observable. Default is an empty new object.
+	     * @param {boolean=} batchUpDelay - Flag defining if change events are batched up for 10ms before being triggered. Default is true.
 	     * @returns {ProxyConstructor}
 	     */
 	    static createObservable( onChange = undefined, objReference = {}, batchUpDelay = true )
@@ -949,25 +1004,16 @@
 	        );
 	    }
 
-	    /**
-	     * Refer to:
-	     * https://github.com/lodash/lodash/blob/master/isObjectLike.js
-	     *
-	     * @param value
-	     * @returns {boolean}
-	     */
+	    // Refer to:
+	    // https://github.com/lodash/lodash/blob/master/isObjectLike.js
 	    static _isObjectLike( value )
 	    {
 	        return typeof value === 'object' && value !== null
 	    }
 
-	    /**
-	     * Refer to:
-	     * https://github.com/lodash/lodash/blob/master/.internal/getTag.js
-	     *
-	     * @param value
-	     * @returns {string|string}
-	     */
+
+	    // Refer to:
+	    // https://github.com/lodash/lodash/blob/master/.internal/getTag.js
 	    static _getTag( value )
 	    {
 	        if ( value == null )
@@ -1154,10 +1200,18 @@ void main()
 
 	}
 
-	class StateManager
+	/**
+	 * States - The state manager.
+	 * You can create multiple States instances in your application logic, e.g. for dealing with sub-states etc.
+	 */
+	class States
 	{
 	    static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
 
+	    /**
+	     * Constructor
+	     * @param {App} appInstance - Instance of app
+	     */
 	    constructor( appInstance )
 	    {
 	        this._states =  {};
@@ -1166,12 +1220,19 @@ void main()
 	        this.defaultStateId = null;
 	    }
 
+	    /**
+	     * Add state class
+	     *
+	     * @param {BaseState} stateClass - State class to be added.
+	     * @throws {Error}  - Throws an error when adding state is not possible
+	     * @returns {boolean} - Returns wheter or not adding was successful
+	     */
 	    add( stateClass )
 	    {
 	        // @todo Fix this, only check for function or class
 	        if ( false === Helper.isClass( stateClass ) )
 	        {
-	            throw new Error( 'StateManager.addState expects a class/subclass of State.' );
+	            throw new Error( 'States.addState expects a class/subclass of State.' );
 	        }
 
 	        // Throw an error if ID is null or already taken
@@ -1204,6 +1265,13 @@ void main()
 	        return true;
 	    }
 
+	    /**
+	     * Create an instance of given state id
+	     *
+	     * @param {string} stateId - The state id to be instantiated
+	     * @param {RouteParams} routeParams - Current RouteParams
+	     * @returns {null}
+	     */
 	    create( stateId, routeParams )
 	    {
 	        let stateInstance = null;
@@ -1212,7 +1280,7 @@ void main()
 	        {
 	            stateInstance = new this._states[ stateId ]( this.app, routeParams );
 	        }
-	        else if ( stateId === StateManager.DEFAULT_STATE_ID )
+	        else if ( stateId === States.DEFAULT_STATE_ID )
 	        {
 	            stateInstance = new DefaultState( this.app, routeParams );
 	        }
@@ -1220,6 +1288,12 @@ void main()
 	        return stateInstance;
 	    }
 
+	    /**
+	     * Switch to given state
+	     * @param {BaseState} newState - Instance of state to switch to
+	     * @throws {Error} - Throws an error if given state cannot be entered or if enter() function throws an error.
+	     * @returns {Promise<boolean>}
+	     */
 	    async switchTo( newState )
 	    {
 	        if ( false === newState.canEnter() )
@@ -1247,8 +1321,16 @@ void main()
 	}
 
 	const UrlPattern = new UP();
+
+	/**
+	 * Router for handling routing events (ie. changes of the URL) and resolving and triggering corresponding states.
+	 */
 	class Router
 	{
+	    /**
+	     * Constructor
+	     * @param {App} appInstance - Instance of app
+	     */
 	    constructor( appInstance )
 	    {
 	        this.app = appInstance;
@@ -1283,18 +1365,23 @@ void main()
 	        this.basePath = Helper.trim( this.basePath, '/' );
 	    }
 
-	    // Add third optional param called isIndexAction to be triggered, when route is empty
-	    addRoute( route, action )
+	    /**
+	     * Adds route and action
+	     *
+	     * @param {string} route - Route pattern
+	     * @param {State} stateClass - State class which belongs to route pattern
+	     */
+	    addRoute( route, stateClass )
 	    {
 	        let sRoute = Helper.trim( route, '/' );
 	        sRoute = '/' + sRoute;
 
-	        if ( true === Helper.isClass( action ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
+	        if ( true === Helper.isClass( stateClass ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
 	        {
-	            this.app.stateManager.add( action );
+	            this.app.states.add( stateClass );
 	            this._routeActions.push(
 	                {
-	                    "action" : action.ID,
+	                    "action" : stateClass.ID,
 	                    "route" : new UrlPattern( sRoute )
 	                }
 	            );
@@ -1339,7 +1426,7 @@ void main()
 	            if ( route === '/' )
 	            {
 	                routeData = {
-	                    "routeAction" : StateManager.DEFAULT_STATE_ID,
+	                    "routeAction" : States.DEFAULT_STATE_ID,
 	                    "routeParams" : null
 	                };
 	            }
@@ -1370,6 +1457,10 @@ void main()
 	        const startsWithHash = regEx.test(string);
 	        return Boolean(startsWithHash);
 	    }
+
+	    /**
+	     * Enables router logic
+	     */
 	    enable()
 	    {
 	        if ( true === this.isEnabled )
@@ -1388,6 +1479,9 @@ void main()
 	        }
 	    }
 
+	    /**
+	     * Disables router logic
+	     */
 	    disable()
 	    {
 	        this.isEnabled = false;
@@ -1401,6 +1495,9 @@ void main()
 	        }
 	    }
 
+	    /**
+	     * @private
+	     */
 	    process()
 	    {
 	        if ( this.mode === 'url' )
@@ -1503,11 +1600,11 @@ void main()
 	        {
 	            if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
 	            {
-	                let stateInstance = this.app.stateManager.create(
+	                let stateInstance = this.app.states.create(
 	                    actionData.routeAction,
 	                    actionData.routeParams
 	                );
-	                await this.app.stateManager.switchTo( stateInstance );
+	                await this.app.states.switchTo( stateInstance );
 	            }
 	        }
 	        catch( e )
@@ -1948,21 +2045,1137 @@ void main()
 	    return UrlPattern;
 	}
 
-	class ViewManager
-	{
-	    constructor( appInstance )
-	    {
-	        this.app = appInstance;
-	    }
+	/*
+	 * EJS Embedded JavaScript templates
+	 * Copyright 2112 Matthew Eernisse (mde@fleegix.org)
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 *         http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	*/
 
-	    setWindowTitle( title )
-	    {
-	        if ( window && window.document && window.document.title )
-	        {
-	            window.document.title = title;
+	var regExpChars = /[|\\{}()[\]^$+*?.]/g;
+	var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
+	var hasOwn = function (obj, key) { return hasOwnProperty$1.apply(obj, [key]); };
+
+	/**
+	 * Escape characters reserved in regular expressions.
+	 *
+	 * If `string` is `undefined` or `null`, the empty string is returned.
+	 *
+	 * @param {String} string Input string
+	 * @return {String} Escaped string
+	 * @static
+	 * @private
+	 */
+	const escapeRegExpChars = function (string) {
+	    // istanbul ignore if
+	    if (!string) {
+	        return '';
+	    }
+	    return String(string).replace(regExpChars, '\\$&');
+	};
+
+	var _ENCODE_HTML_RULES = {
+	    '&': '&amp;',
+	    '<': '&lt;',
+	    '>': '&gt;',
+	    '"': '&#34;',
+	    "'": '&#39;'
+	};
+	var _MATCH_HTML = /[&<>'"]/g;
+
+	function encode_char(c) {
+	    return _ENCODE_HTML_RULES[c] || c;
+	}
+
+	/**
+	 * Stringified version of constants used by {@link module:utils.escapeXML}.
+	 *
+	 * It is used in the process of generating {@link ClientFunction}s.
+	 *
+	 * @readonly
+	 * @type {String}
+	 */
+
+	var escapeFuncStr =
+	    'var _ENCODE_HTML_RULES = {\n'
+	    + '      "&": "&amp;"\n'
+	    + '    , "<": "&lt;"\n'
+	    + '    , ">": "&gt;"\n'
+	    + '    , \'"\': "&#34;"\n'
+	    + '    , "\'": "&#39;"\n'
+	    + '    }\n'
+	    + '  , _MATCH_HTML = /[&<>\'"]/g;\n'
+	    + 'function encode_char(c) {\n'
+	    + '  return _ENCODE_HTML_RULES[c] || c;\n'
+	    + '};\n';
+
+	/**
+	 * Escape characters reserved in XML.
+	 *
+	 * If `markup` is `undefined` or `null`, the empty string is returned.
+	 *
+	 * @implements {EscapeCallback}
+	 * @param {String} markup Input string
+	 * @return {String} Escaped string
+	 * @static
+	 * @private
+	 */
+
+	const escapeXML = function (markup) {
+	    return markup == undefined
+	        ? ''
+	        : String(markup)
+	            .replace(_MATCH_HTML, encode_char);
+	};
+	escapeXML.toString = function () {
+	    return Function.prototype.toString.call(this) + ';\n' + escapeFuncStr;
+	};
+
+	/**
+	 * Naive copy of properties from one object to another.
+	 * Does not recurse into non-scalar properties
+	 * Does not check to see if the property has a value before copying
+	 *
+	 * @param  {Object} to   Destination object
+	 * @param  {Object} from Source object
+	 * @return {Object}      Destination object
+	 * @static
+	 * @private
+	 */
+	const shallowCopy = function (to, from) {
+	    from = from || {};
+	    if ((to !== null) && (to !== undefined)) {
+	        for (var p in from) {
+	            if (!hasOwn(from, p)) {
+	                continue;
+	            }
+	            if (p === '__proto__' || p === 'constructor') {
+	                continue;
+	            }
+	            to[p] = from[p];
 	        }
 	    }
+	    return to;
+	};
+
+	/**
+	 * Naive copy of a list of key names, from one object to another.
+	 * Only copies property if it is actually defined
+	 * Does not recurse into non-scalar properties
+	 *
+	 * @param  {Object} to   Destination object
+	 * @param  {Object} from Source object
+	 * @param  {Array} list List of properties to copy
+	 * @return {Object}      Destination object
+	 * @static
+	 * @private
+	 */
+	const shallowCopyFromList = function (to, from, list) {
+	    list = list || [];
+	    from = from || {};
+	    if ((to !== null) && (to !== undefined)) {
+	        for (var i = 0; i < list.length; i++) {
+	            var p = list[i];
+	            if (typeof from[p] != 'undefined') {
+	                if (!hasOwn(from, p)) {
+	                    continue;
+	                }
+	                if (p === '__proto__' || p === 'constructor') {
+	                    continue;
+	                }
+	                to[p] = from[p];
+	            }
+	        }
+	    }
+	    return to;
+	};
+
+	/**
+	 * Simple in-process cache implementation. Does not implement limits of any
+	 * sort.
+	 *
+	 * @implements {Cache}
+	 * @static
+	 * @private
+	 */
+	const cache = {
+	    _data: {},
+	    set: function (key, val) {
+	        this._data[key] = val;
+	    },
+	    get: function (key) {
+	        return this._data[key];
+	    },
+	    remove: function (key) {
+	        delete this._data[key];
+	    },
+	    reset: function () {
+	        this._data = {};
+	    }
+	};
+
+	/**
+	 * Returns a null-prototype object in runtimes that support it
+	 *
+	 * @return {Object} Object, prototype will be set to null where possible
+	 * @static
+	 * @private
+	 */
+	const createNullProtoObjWherePossible = (function () {
+	    if (typeof Object.create == 'function') {
+	        return function () {
+	            return Object.create(null);
+	        };
+	    }
+	    if (!({__proto__: null} instanceof Object)) {
+	        return function () {
+	            return {__proto__: null};
+	        };
+	    }
+	    // Not possible, just pass through
+	    return function () {
+	        return {};
+	    };
+	})();
+
+	/*
+	 * EJS Embedded JavaScript templates
+	 * Copyright 2112 Matthew Eernisse (mde@fleegix.org)
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 *         http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	*/
+
+	const exports$1 = {};
+	var fs = {};
+	var path = {};
+	//var utils = import
+
+	var scopeOptionWarned = false;
+	/** @type {string} */
+	var _VERSION_STRING = 0;//require('../package.json').version;
+	var _DEFAULT_OPEN_DELIMITER = '<';
+	var _DEFAULT_CLOSE_DELIMITER = '>';
+	var _DEFAULT_DELIMITER = '%';
+	var _DEFAULT_LOCALS_NAME = 'locals';
+	var _NAME = 'ejs';
+	var _REGEX_STRING = '(<%%|%%>|<%=|<%-|<%_|<%#|<%|%>|-%>|_%>)';
+	var _OPTS_PASSABLE_WITH_DATA = ['delimiter', 'scope', 'context', 'debug', 'compileDebug',
+	    'client', '_with', 'rmWhitespace', 'strict', 'filename', 'async'];
+	// We don't allow 'cache' option to be passed in the data obj for
+	// the normal `render` call, but this is where Express 2 & 3 put it
+	// so we make an exception for `renderFile`
+	var _OPTS_PASSABLE_WITH_DATA_EXPRESS = _OPTS_PASSABLE_WITH_DATA.concat('cache');
+	var _BOM = /^\uFEFF/;
+	var _JS_IDENTIFIER = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
+
+	/**
+	 * EJS template function cache. This can be a LRU object from lru-cache NPM
+	 * module. By default, it is {@link module:utils.cache}, a simple in-process
+	 * cache that grows continuously.
+	 *
+	 * @type {Cache}
+	 */
+
+	exports$1.cache = cache;
+
+	/**
+	 * Custom file loader. Useful for template preprocessing or restricting access
+	 * to a certain part of the filesystem.
+	 *
+	 * @type {fileLoader}
+	 */
+
+	exports$1.fileLoader = fs.readFileSync;
+
+	/**
+	 * Name of the object containing the locals.
+	 *
+	 * This variable is overridden by {@link Options}`.localsName` if it is not
+	 * `undefined`.
+	 *
+	 * @type {String}
+	 * @public
+	 */
+
+	exports$1.localsName = _DEFAULT_LOCALS_NAME;
+
+	/**
+	 * Promise implementation -- defaults to the native implementation if available
+	 * This is mostly just for testability
+	 *
+	 * @type {PromiseConstructorLike}
+	 * @public
+	 */
+
+	exports$1.promiseImpl = (new Function('return this;'))().Promise;
+
+	/**
+	 * Get the path to the included file from the parent file path and the
+	 * specified path.
+	 *
+	 * @param {String}  name     specified path
+	 * @param {String}  filename parent file path
+	 * @param {Boolean} [isDir=false] whether the parent file path is a directory
+	 * @return {String}
+	 */
+	exports$1.resolveInclude = function(name, filename, isDir) {
+	    var dirname = path.dirname;
+	    var extname = path.extname;
+	    var resolve = path.resolve;
+	    var includePath = resolve(isDir ? filename : dirname(filename), name);
+	    var ext = extname(name);
+	    if (!ext) {
+	        includePath += '.ejs';
+	    }
+	    return includePath;
+	};
+
+	/**
+	 * Try to resolve file path on multiple directories
+	 *
+	 * @param  {String}        name  specified path
+	 * @param  {Array<String>} paths list of possible parent directory paths
+	 * @return {String}
+	 */
+	function resolvePaths(name, paths) {
+	    var filePath;
+	    if (paths.some(function (v) {
+	        filePath = exports$1.resolveInclude(name, v, true);
+	        return fs.existsSync(filePath);
+	    })) {
+	        return filePath;
+	    }
 	}
+
+	/**
+	 * Get the path to the included file by Options
+	 *
+	 * @param  {String}  path    specified path
+	 * @param  {Options} options compilation options
+	 * @return {String}
+	 */
+	function getIncludePath(path, options) {
+	    var includePath;
+	    var filePath;
+	    var views = options.views;
+	    var match = /^[A-Za-z]+:\\|^\//.exec(path);
+
+	    // Abs path
+	    if (match && match.length) {
+	        path = path.replace(/^\/*/, '');
+	        if (Array.isArray(options.root)) {
+	            includePath = resolvePaths(path, options.root);
+	        } else {
+	            includePath = exports$1.resolveInclude(path, options.root || '/', true);
+	        }
+	    }
+	    // Relative paths
+	    else {
+	        // Look relative to a passed filename first
+	        if (options.filename) {
+	            filePath = exports$1.resolveInclude(path, options.filename);
+	            if (fs.existsSync(filePath)) {
+	                includePath = filePath;
+	            }
+	        }
+	        // Then look in any views directories
+	        if (!includePath && Array.isArray(views)) {
+	            includePath = resolvePaths(path, views);
+	        }
+	        if (!includePath && typeof options.includer !== 'function') {
+	            throw new Error('Could not find the include file "' +
+	                options.escapeFunction(path) + '"');
+	        }
+	    }
+	    return includePath;
+	}
+
+	/**
+	 * Get the template from a string or a file, either compiled on-the-fly or
+	 * read from cache (if enabled), and cache the template if needed.
+	 *
+	 * If `template` is not set, the file specified in `options.filename` will be
+	 * read.
+	 *
+	 * If `options.cache` is true, this function reads the file from
+	 * `options.filename` so it must be set prior to calling this function.
+	 *
+	 * @memberof module:ejs-internal
+	 * @param {Options} options   compilation options
+	 * @param {String} [template] template source
+	 * @return {(TemplateFunction|ClientFunction)}
+	 * Depending on the value of `options.client`, either type might be returned.
+	 * @static
+	 */
+
+	function handleCache(options, template) {
+	    var func;
+	    var filename = options.filename;
+	    var hasTemplate = arguments.length > 1;
+
+	    if (options.cache) {
+	        if (!filename) {
+	            throw new Error('cache option requires a filename');
+	        }
+	        func = exports$1.cache.get(filename);
+	        if (func) {
+	            return func;
+	        }
+	        if (!hasTemplate) {
+	            template = fileLoader(filename).toString().replace(_BOM, '');
+	        }
+	    }
+	    else if (!hasTemplate) {
+	        // istanbul ignore if: should not happen at all
+	        if (!filename) {
+	            throw new Error('Internal EJS error: no file name or template '
+	                + 'provided');
+	        }
+	        template = fileLoader(filename).toString().replace(_BOM, '');
+	    }
+	    func = exports$1.compile(template, options);
+	    if (options.cache) {
+	        exports$1.cache.set(filename, func);
+	    }
+	    return func;
+	}
+
+	/**
+	 * Try calling handleCache with the given options and data and call the
+	 * callback with the result. If an error occurs, call the callback with
+	 * the error. Used by renderFile().
+	 *
+	 * @memberof module:ejs-internal
+	 * @param {Options} options    compilation options
+	 * @param {Object} data        template data
+	 * @param {RenderFileCallback} cb callback
+	 * @static
+	 */
+
+	function tryHandleCache(options, data, cb) {
+	    var result;
+	    if (!cb) {
+	        if (typeof exports$1.promiseImpl == 'function') {
+	            return new exports$1.promiseImpl(function (resolve, reject) {
+	                try {
+	                    result = handleCache(options)(data);
+	                    resolve(result);
+	                }
+	                catch (err) {
+	                    reject(err);
+	                }
+	            });
+	        }
+	        else {
+	            throw new Error('Please provide a callback function');
+	        }
+	    }
+	    else {
+	        try {
+	            result = handleCache(options)(data);
+	        }
+	        catch (err) {
+	            return cb(err);
+	        }
+
+	        cb(null, result);
+	    }
+	}
+
+	/**
+	 * fileLoader is independent
+	 *
+	 * @param {String} filePath ejs file path.
+	 * @return {String} The contents of the specified file.
+	 * @static
+	 */
+
+	function fileLoader(filePath){
+	    return exports$1.fileLoader(filePath);
+	}
+
+	/**
+	 * Get the template function.
+	 *
+	 * If `options.cache` is `true`, then the template is cached.
+	 *
+	 * @memberof module:ejs-internal
+	 * @param {String}  path    path for the specified file
+	 * @param {Options} options compilation options
+	 * @return {(TemplateFunction|ClientFunction)}
+	 * Depending on the value of `options.client`, either type might be returned
+	 * @static
+	 */
+
+	function includeFile(path, options) {
+	    var opts = shallowCopy(createNullProtoObjWherePossible(), options);
+	    opts.filename = getIncludePath(path, opts);
+	    if (typeof options.includer === 'function') {
+	        var includerResult = options.includer(path, opts.filename);
+	        if (includerResult) {
+	            if (includerResult.filename) {
+	                opts.filename = includerResult.filename;
+	            }
+	            if (includerResult.template) {
+	                return handleCache(opts, includerResult.template);
+	            }
+	        }
+	    }
+	    return handleCache(opts);
+	}
+
+	/**
+	 * Re-throw the given `err` in context to the `str` of ejs, `filename`, and
+	 * `lineno`.
+	 *
+	 * @implements {RethrowCallback}
+	 * @memberof module:ejs-internal
+	 * @param {Error}  err      Error object
+	 * @param {String} str      EJS source
+	 * @param {String} flnm     file name of the EJS file
+	 * @param {Number} lineno   line number of the error
+	 * @param {EscapeCallback} esc
+	 * @static
+	 */
+
+	function rethrow(err, str, flnm, lineno, esc) {
+	    var lines = str.split('\n');
+	    var start = Math.max(lineno - 3, 0);
+	    var end = Math.min(lines.length, lineno + 3);
+	    var filename = esc(flnm);
+	    // Error context
+	    var context = lines.slice(start, end).map(function (line, i){
+	        var curr = i + start + 1;
+	        return (curr == lineno ? ' >> ' : '    ')
+	            + curr
+	            + '| '
+	            + line;
+	    }).join('\n');
+
+	    // Alter exception message
+	    err.path = filename;
+	    err.message = (filename || 'ejs') + ':'
+	        + lineno + '\n'
+	        + context + '\n\n'
+	        + err.message;
+
+	    throw err;
+	}
+
+	function stripSemi(str){
+	    return str.replace(/;(\s*$)/, '$1');
+	}
+
+	/**
+	 * Compile the given `str` of ejs into a template function.
+	 *
+	 * @param {String}  template EJS template
+	 *
+	 * @param {Options} [opts] compilation options
+	 *
+	 * @return {(TemplateFunction|ClientFunction)}
+	 * Depending on the value of `opts.client`, either type might be returned.
+	 * Note that the return type of the function also depends on the value of `opts.async`.
+	 * @public
+	 */
+
+	exports$1.compile = function compile(template, opts) {
+	    var templ;
+
+	    // v1 compat
+	    // 'scope' is 'context'
+	    // FIXME: Remove this in a future version
+	    if (opts && opts.scope) {
+	        if (!scopeOptionWarned){
+	            console.warn('`scope` option is deprecated and will be removed in EJS 3');
+	            scopeOptionWarned = true;
+	        }
+	        if (!opts.context) {
+	            opts.context = opts.scope;
+	        }
+	        delete opts.scope;
+	    }
+	    templ = new Template(template, opts);
+	    return templ.compile();
+	};
+
+
+	/**
+	 * Render the given `template` of ejs.
+	 *
+	 * If you would like to include options but not data, you need to explicitly
+	 * call this function with `data` being an empty object or `null`.
+	 *
+	 * @param {String}   template EJS template
+	 * @param {Object}  [data={}] template data
+	 * @param {Options} [opts={}] compilation and rendering options
+	 * @return {(String|Promise<String>)}
+	 * Return value type depends on `opts.async`.
+	 * @public
+	 */
+
+	exports$1.render = function (template, d, o) {
+	    var data = d || createNullProtoObjWherePossible();
+	    var opts = o || createNullProtoObjWherePossible();
+
+	    // No options object -- if there are optiony names
+	    // in the data, copy them to options
+	    if (arguments.length == 2) {
+	        shallowCopyFromList(opts, data, _OPTS_PASSABLE_WITH_DATA);
+	    }
+
+	    return handleCache(opts, template)(data);
+	};
+
+	/**
+	 * Render an EJS file at the given `path` and callback `cb(err, str)`.
+	 *
+	 * If you would like to include options but not data, you need to explicitly
+	 * call this function with `data` being an empty object or `null`.
+	 *
+	 * @param {String}             path     path to the EJS file
+	 * @param {Object}            [data={}] template data
+	 * @param {Options}           [opts={}] compilation and rendering options
+	 * @param {RenderFileCallback} cb callback
+	 * @public
+	 */
+
+	exports$1.renderFile = function () {
+	    var args = Array.prototype.slice.call(arguments);
+	    var filename = args.shift();
+	    var cb;
+	    var opts = {filename: filename};
+	    var data;
+	    var viewOpts;
+
+	    // Do we have a callback?
+	    if (typeof arguments[arguments.length - 1] == 'function') {
+	        cb = args.pop();
+	    }
+	    // Do we have data/opts?
+	    if (args.length) {
+	        // Should always have data obj
+	        data = args.shift();
+	        // Normal passed opts (data obj + opts obj)
+	        if (args.length) {
+	            // Use shallowCopy so we don't pollute passed in opts obj with new vals
+	            shallowCopy(opts, args.pop());
+	        }
+	        // Special casing for Express (settings + opts-in-data)
+	        else {
+	            // Express 3 and 4
+	            if (data.settings) {
+	                // Pull a few things from known locations
+	                if (data.settings.views) {
+	                    opts.views = data.settings.views;
+	                }
+	                if (data.settings['view cache']) {
+	                    opts.cache = true;
+	                }
+	                // Undocumented after Express 2, but still usable, esp. for
+	                // items that are unsafe to be passed along with data, like `root`
+	                viewOpts = data.settings['view options'];
+	                if (viewOpts) {
+	                    shallowCopy(opts, viewOpts);
+	                }
+	            }
+	            // Express 2 and lower, values set in app.locals, or people who just
+	            // want to pass options in their data. NOTE: These values will override
+	            // anything previously set in settings  or settings['view options']
+	            shallowCopyFromList(opts, data, _OPTS_PASSABLE_WITH_DATA_EXPRESS);
+	        }
+	        opts.filename = filename;
+	    }
+	    else {
+	        data = createNullProtoObjWherePossible();
+	    }
+
+	    return tryHandleCache(opts, data, cb);
+	};
+
+	/**
+	 * Clear intermediate JavaScript cache. Calls {@link Cache#reset}.
+	 * @public
+	 */
+
+	/**
+	 * EJS template class
+	 * @public
+	 */
+	exports$1.Template = Template;
+
+	exports$1.clearCache = function () {
+	    exports$1.cache.reset();
+	};
+
+	function Template(text, opts) {
+	    opts = opts || createNullProtoObjWherePossible();
+	    var options = createNullProtoObjWherePossible();
+	    this.templateText = text;
+	    /** @type {string | null} */
+	    this.mode = null;
+	    this.truncate = false;
+	    this.currentLine = 1;
+	    this.source = '';
+	    options.client = opts.client || false;
+	    options.escapeFunction = opts.escape || opts.escapeFunction || escapeXML;
+	    options.compileDebug = opts.compileDebug !== false;
+	    options.debug = !!opts.debug;
+	    options.filename = opts.filename;
+	    options.openDelimiter = opts.openDelimiter || exports$1.openDelimiter || _DEFAULT_OPEN_DELIMITER;
+	    options.closeDelimiter = opts.closeDelimiter || exports$1.closeDelimiter || _DEFAULT_CLOSE_DELIMITER;
+	    options.delimiter = opts.delimiter || exports$1.delimiter || _DEFAULT_DELIMITER;
+	    options.strict = opts.strict || false;
+	    options.context = opts.context;
+	    options.cache = opts.cache || false;
+	    options.rmWhitespace = opts.rmWhitespace;
+	    options.root = opts.root;
+	    options.includer = opts.includer;
+	    options.outputFunctionName = opts.outputFunctionName;
+	    options.localsName = opts.localsName || exports$1.localsName || _DEFAULT_LOCALS_NAME;
+	    options.views = opts.views;
+	    options.async = opts.async;
+	    options.destructuredLocals = opts.destructuredLocals;
+	    options.legacyInclude = typeof opts.legacyInclude != 'undefined' ? !!opts.legacyInclude : true;
+
+	    if (options.strict) {
+	        options._with = false;
+	    }
+	    else {
+	        options._with = typeof opts._with != 'undefined' ? opts._with : true;
+	    }
+
+	    this.opts = options;
+
+	    this.regex = this.createRegex();
+	}
+
+	Template.modes = {
+	    EVAL: 'eval',
+	    ESCAPED: 'escaped',
+	    RAW: 'raw',
+	    COMMENT: 'comment',
+	    LITERAL: 'literal'
+	};
+
+	Template.prototype = {
+	    createRegex: function () {
+	        var str = _REGEX_STRING;
+	        var delim = escapeRegExpChars(this.opts.delimiter);
+	        var open = escapeRegExpChars(this.opts.openDelimiter);
+	        var close = escapeRegExpChars(this.opts.closeDelimiter);
+	        str = str.replace(/%/g, delim)
+	            .replace(/</g, open)
+	            .replace(/>/g, close);
+	        return new RegExp(str);
+	    },
+
+	    compile: function () {
+	        /** @type {string} */
+	        var src;
+	        /** @type {ClientFunction} */
+	        var fn;
+	        var opts = this.opts;
+	        var prepended = '';
+	        var appended = '';
+	        /** @type {EscapeCallback} */
+	        var escapeFn = opts.escapeFunction;
+	        /** @type {FunctionConstructor} */
+	        var ctor;
+	        /** @type {string} */
+	        var sanitizedFilename = opts.filename ? JSON.stringify(opts.filename) : 'undefined';
+
+	        if (!this.source) {
+	            this.generateSource();
+	            prepended +=
+	                '  var __output = "";\n' +
+	                '  function __append(s) { if (s !== undefined && s !== null) __output += s }\n';
+	            if (opts.outputFunctionName) {
+	                if (!_JS_IDENTIFIER.test(opts.outputFunctionName)) {
+	                    throw new Error('outputFunctionName is not a valid JS identifier.');
+	                }
+	                prepended += '  var ' + opts.outputFunctionName + ' = __append;' + '\n';
+	            }
+	            if (opts.localsName && !_JS_IDENTIFIER.test(opts.localsName)) {
+	                throw new Error('localsName is not a valid JS identifier.');
+	            }
+	            if (opts.destructuredLocals && opts.destructuredLocals.length) {
+	                var destructuring = '  var __locals = (' + opts.localsName + ' || {}),\n';
+	                for (var i = 0; i < opts.destructuredLocals.length; i++) {
+	                    var name = opts.destructuredLocals[i];
+	                    if (!_JS_IDENTIFIER.test(name)) {
+	                        throw new Error('destructuredLocals[' + i + '] is not a valid JS identifier.');
+	                    }
+	                    if (i > 0) {
+	                        destructuring += ',\n  ';
+	                    }
+	                    destructuring += name + ' = __locals.' + name;
+	                }
+	                prepended += destructuring + ';\n';
+	            }
+	            if (opts._with !== false) {
+	                prepended +=  '  with (' + opts.localsName + ' || {}) {' + '\n';
+	                appended += '  }' + '\n';
+	            }
+	            appended += '  return __output;' + '\n';
+	            this.source = prepended + this.source + appended;
+	        }
+
+	        if (opts.compileDebug) {
+	            src = 'var __line = 1' + '\n'
+	                + '  , __lines = ' + JSON.stringify(this.templateText) + '\n'
+	                + '  , __filename = ' + sanitizedFilename + ';' + '\n'
+	                + 'try {' + '\n'
+	                + this.source
+	                + '} catch (e) {' + '\n'
+	                + '  rethrow(e, __lines, __filename, __line, escapeFn);' + '\n'
+	                + '}' + '\n';
+	        }
+	        else {
+	            src = this.source;
+	        }
+
+	        if (opts.client) {
+	            src = 'escapeFn = escapeFn || ' + escapeFn.toString() + ';' + '\n' + src;
+	            if (opts.compileDebug) {
+	                src = 'rethrow = rethrow || ' + rethrow.toString() + ';' + '\n' + src;
+	            }
+	        }
+
+	        if (opts.strict) {
+	            src = '"use strict";\n' + src;
+	        }
+	        if (opts.debug) {
+	            console.log(src);
+	        }
+	        if (opts.compileDebug && opts.filename) {
+	            src = src + '\n'
+	                + '//# sourceURL=' + sanitizedFilename + '\n';
+	        }
+
+	        try {
+	            if (opts.async) {
+	                // Have to use generated function for this, since in envs without support,
+	                // it breaks in parsing
+	                try {
+	                    ctor = (new Function('return (async function(){}).constructor;'))();
+	                }
+	                catch(e) {
+	                    if (e instanceof SyntaxError) {
+	                        throw new Error('This environment does not support async/await');
+	                    }
+	                    else {
+	                        throw e;
+	                    }
+	                }
+	            }
+	            else {
+	                ctor = Function;
+	            }
+	            fn = new ctor(opts.localsName + ', escapeFn, include, rethrow', src);
+	        }
+	        catch(e) {
+	            // istanbul ignore else
+	            if (e instanceof SyntaxError) {
+	                if (opts.filename) {
+	                    e.message += ' in ' + opts.filename;
+	                }
+	                e.message += ' while compiling ejs\n\n';
+	                e.message += 'If the above error is not helpful, you may want to try EJS-Lint:\n';
+	                e.message += 'https://github.com/RyanZim/EJS-Lint';
+	                if (!opts.async) {
+	                    e.message += '\n';
+	                    e.message += 'Or, if you meant to create an async function, pass `async: true` as an option.';
+	                }
+	            }
+	            throw e;
+	        }
+
+	        // Return a callable function which will execute the function
+	        // created by the source-code, with the passed data as locals
+	        // Adds a local `include` function which allows full recursive include
+	        var returnedFn = opts.client ? fn : function anonymous(data) {
+	            var include = function (path, includeData) {
+	                var d = shallowCopy(createNullProtoObjWherePossible(), data);
+	                if (includeData) {
+	                    d = shallowCopy(d, includeData);
+	                }
+	                return includeFile(path, opts)(d);
+	            };
+	            return fn.apply(opts.context,
+	                [data || createNullProtoObjWherePossible(), escapeFn, include, rethrow]);
+	        };
+	        if (opts.filename && typeof Object.defineProperty === 'function') {
+	            var filename = opts.filename;
+	            var basename = path.basename(filename, path.extname(filename));
+	            try {
+	                Object.defineProperty(returnedFn, 'name', {
+	                    value: basename,
+	                    writable: false,
+	                    enumerable: false,
+	                    configurable: true
+	                });
+	            } catch (e) {/* ignore */}
+	        }
+	        return returnedFn;
+	    },
+
+	    generateSource: function () {
+	        var opts = this.opts;
+
+	        if (opts.rmWhitespace) {
+	            // Have to use two separate replace here as `^` and `$` operators don't
+	            // work well with `\r` and empty lines don't work well with the `m` flag.
+	            this.templateText =
+	                this.templateText.replace(/[\r\n]+/g, '\n').replace(/^\s+|\s+$/gm, '');
+	        }
+
+	        // Slurp spaces and tabs before <%_ and after _%>
+	        this.templateText =
+	            this.templateText.replace(/[ \t]*<%_/gm, '<%_').replace(/_%>[ \t]*/gm, '_%>');
+
+	        var self = this;
+	        var matches = this.parseTemplateText();
+	        var d = this.opts.delimiter;
+	        var o = this.opts.openDelimiter;
+	        var c = this.opts.closeDelimiter;
+
+	        if (matches && matches.length) {
+	            matches.forEach(function (line, index) {
+	                var closing;
+	                // If this is an opening tag, check for closing tags
+	                // FIXME: May end up with some false positives here
+	                // Better to store modes as k/v with openDelimiter + delimiter as key
+	                // Then this can simply check against the map
+	                if ( line.indexOf(o + d) === 0        // If it is a tag
+	                    && line.indexOf(o + d + d) !== 0) { // and is not escaped
+	                    closing = matches[index + 2];
+	                    if (!(closing == d + c || closing == '-' + d + c || closing == '_' + d + c)) {
+	                        throw new Error('Could not find matching close tag for "' + line + '".');
+	                    }
+	                }
+	                self.scanLine(line);
+	            });
+	        }
+
+	    },
+
+	    parseTemplateText: function () {
+	        var str = this.templateText;
+	        var pat = this.regex;
+	        var result = pat.exec(str);
+	        var arr = [];
+	        var firstPos;
+
+	        while (result) {
+	            firstPos = result.index;
+
+	            if (firstPos !== 0) {
+	                arr.push(str.substring(0, firstPos));
+	                str = str.slice(firstPos);
+	            }
+
+	            arr.push(result[0]);
+	            str = str.slice(result[0].length);
+	            result = pat.exec(str);
+	        }
+
+	        if (str) {
+	            arr.push(str);
+	        }
+
+	        return arr;
+	    },
+
+	    _addOutput: function (line) {
+	        if (this.truncate) {
+	            // Only replace single leading linebreak in the line after
+	            // -%> tag -- this is the single, trailing linebreak
+	            // after the tag that the truncation mode replaces
+	            // Handle Win / Unix / old Mac linebreaks -- do the \r\n
+	            // combo first in the regex-or
+	            line = line.replace(/^(?:\r\n|\r|\n)/, '');
+	            this.truncate = false;
+	        }
+	        if (!line) {
+	            return line;
+	        }
+
+	        // Preserve literal slashes
+	        line = line.replace(/\\/g, '\\\\');
+
+	        // Convert linebreaks
+	        line = line.replace(/\n/g, '\\n');
+	        line = line.replace(/\r/g, '\\r');
+
+	        // Escape double-quotes
+	        // - this will be the delimiter during execution
+	        line = line.replace(/"/g, '\\"');
+	        this.source += '    ; __append("' + line + '")' + '\n';
+	    },
+
+	    scanLine: function (line) {
+	        var self = this;
+	        var d = this.opts.delimiter;
+	        var o = this.opts.openDelimiter;
+	        var c = this.opts.closeDelimiter;
+	        var newLineCount = 0;
+
+	        newLineCount = (line.split('\n').length - 1);
+
+	        switch (line) {
+	            case o + d:
+	            case o + d + '_':
+	                this.mode = Template.modes.EVAL;
+	                break;
+	            case o + d + '=':
+	                this.mode = Template.modes.ESCAPED;
+	                break;
+	            case o + d + '-':
+	                this.mode = Template.modes.RAW;
+	                break;
+	            case o + d + '#':
+	                this.mode = Template.modes.COMMENT;
+	                break;
+	            case o + d + d:
+	                this.mode = Template.modes.LITERAL;
+	                this.source += '    ; __append("' + line.replace(o + d + d, o + d) + '")' + '\n';
+	                break;
+	            case d + d + c:
+	                this.mode = Template.modes.LITERAL;
+	                this.source += '    ; __append("' + line.replace(d + d + c, d + c) + '")' + '\n';
+	                break;
+	            case d + c:
+	            case '-' + d + c:
+	            case '_' + d + c:
+	                if (this.mode == Template.modes.LITERAL) {
+	                    this._addOutput(line);
+	                }
+
+	                this.mode = null;
+	                this.truncate = line.indexOf('-') === 0 || line.indexOf('_') === 0;
+	                break;
+	            default:
+	                // In script mode, depends on type of tag
+	                if (this.mode) {
+	                    // If '//' is found without a line break, add a line break.
+	                    switch (this.mode) {
+	                        case Template.modes.EVAL:
+	                        case Template.modes.ESCAPED:
+	                        case Template.modes.RAW:
+	                            if (line.lastIndexOf('//') > line.lastIndexOf('\n')) {
+	                                line += '\n';
+	                            }
+	                    }
+	                    switch (this.mode) {
+	                        // Just executing code
+	                        case Template.modes.EVAL:
+	                            this.source += '    ; ' + line + '\n';
+	                            break;
+	                        // Exec, esc, and output
+	                        case Template.modes.ESCAPED:
+	                            this.source += '    ; __append(escapeFn(' + stripSemi(line) + '))' + '\n';
+	                            break;
+	                        // Exec and output
+	                        case Template.modes.RAW:
+	                            this.source += '    ; __append(' + stripSemi(line) + ')' + '\n';
+	                            break;
+	                        case Template.modes.COMMENT:
+	                            // Do nothing
+	                            break;
+	                        // Literal <%% mode, append as raw output
+	                        case Template.modes.LITERAL:
+	                            this._addOutput(line);
+	                            break;
+	                    }
+	                }
+	                // In string mode, just add the output
+	                else {
+	                    this._addOutput(line);
+	                }
+	        }
+
+	        if (self.opts.compileDebug && newLineCount) {
+	            this.currentLine += newLineCount;
+	            this.source += '    ; __line = ' + this.currentLine + '\n';
+	        }
+	    }
+	};
+
+	/**
+	 * Escape characters reserved in XML.
+	 *
+	 * This is simply an export of {@link module:utils.escapeXML}.
+	 *
+	 * If `markup` is `undefined` or `null`, the empty string is returned.
+	 *
+	 * @param {String} markup Input string
+	 * @return {String} Escaped string
+	 * @public
+	 * @func
+	 * */
+	exports$1.escapeXML = escapeXML;
+
+	/**
+	 * Express.js support.
+	 *
+	 * This is an alias for {@link module:ejs.renderFile}, in order to support
+	 * Express.js out-of-the-box.
+	 *
+	 * @func
+	 */
+
+	exports$1.__express = exports$1.renderFile;
+
+	/**
+	 * Version of EJS.
+	 *
+	 * @readonly
+	 * @type {String}
+	 * @public
+	 */
+
+	exports$1.VERSION = _VERSION_STRING;
+
+	/**
+	 * Name for detection of EJS.
+	 *
+	 * @readonly
+	 * @type {String}
+	 * @public
+	 */
+
+	exports$1.name = _NAME;
+
+	/* istanbul ignore if */
+	if (typeof window != 'undefined') {
+	    window.ejs = exports$1;
+	}
+
+	const compile = exports$1.compile;
+	const render = exports$1.render;
 
 	function objToNode(objNode, insideSvg, options) {
 	    let node;
@@ -4081,59 +5294,17 @@ void main()
 	    }
 	}
 
-	const _extendedFunctions = {};
-
-	function _template( html, data )
-	{
-	    var me = _template;
-
-	    return (function ()
-	    {
-	        var name = html,
-	            string = (name = 'template(string)', html); // no warnings
-
-	        // Add replaces in here
-	        string = string.
-	        replace(/<%/g, '\x11').replace(/%>/g, '\x13'). // if you want other tag, just edit this line
-	            replace(/'(?![^\x11\x13]+?\x13)/g, '\\x27').
-	            replace(/^\s*|\s*$/g, '').
-	            replace(/\n|\r\n/g, function () { return "';\nthis.line = " + (++line) + "; this.ret += '\\n" }).
-	            replace(/\x11=raw(.+?)\x13/g, "' + ($1) + '").
-	            replace(/\x11=nl2br(.+?)\x13/g, "' + this.nl2br($1) + '").
-	            replace(/\x11=tmpl(.+?)\x13/g, "' + this.tmpl($1) + '");
-
-
-	        Object.keys( _extendedFunctions ).forEach( (v) =>
-	        {
-	            string = string.replace( new RegExp( '\\x11=' + v + '(.+?)\\x13', 'g' ), "' + this.extFunc[ '" + v + "' ]($1) + '" );
-	        });
-
-	        string = string.
-	        replace(/\x11=(.+?)\x13/g, "' + this.escapeHTML($1) + '").
-	        replace(/\x11(.+?)\x13/g, "'; $1; this.ret += '");
-
-	        var line = 1, body = (
-	            "try { " +
-	            (me.variable ?  "var " + me.variable + " = this.stash;" : "with (this.stash) { ") +
-	            "this.ret += '"  + string +
-	            "'; " + (me.variable ? "" : "}") + "return this.ret;" +
-	            "} catch (e) { throw 'TemplateError: ' + e + ' (on " + name + "' + ' line ' + this.line + ')'; } " +
-	            "//@ sourceURL=" + name + "\n" // source map
-	        ).replace(/this\.ret \+= '';/g, '');
-	        var func = new Function(body);
-	        var map  = { '&' : '&amp;', '<' : '&lt;', '>' : '&gt;', '\x22' : '&#x22;', '\x27' : '&#x27;' };
-	        var escapeHTML = function (string) { return (''+string).replace(/[&<>\'\"]/g, function (_) { return map[_] }) };
-	        var nl2br = function(string) { return escapeHTML(string).replace(/(?:\ r\n|\r|\n)/g, '<br>')};
-	        var tmpl = function(d) { return _template( d[0], d[1] ); };
-	        return function (stash) { return func.call(me.context = { escapeHTML: escapeHTML, nl2br : nl2br, tmpl: tmpl, extFunc : _extendedFunctions, line: 1, ret : '', stash: stash }) };
-	    })()(data);
-	}
-
-	class TemplateManager
+	/**
+	 * View
+	 * Provides management and rendering of ejs templates including DOM diffing.
+	 * @namespace core
+	 */
+	class View
 	{
 	    constructor( appInstance )
 	    {
 	        this.app = appInstance;
+
 	        this.basePath = this.app.settings.get( "templateManager.basePath", null );
 	        if ( null !== this.basePath )
 	        {
@@ -4148,76 +5319,61 @@ void main()
 	        this.dd = new DiffDOM();
 	    }
 
-	    _getTemplateFromCache( templateUrl )
+	    setWindowTitle( title )
 	    {
-	        const cachedTemplate =  this._cache.find( tmpl => tmpl.url === templateUrl );
-	        if ( cachedTemplate )
+	        if ( window && window.document && window.document.title )
 	        {
-	            return cachedTemplate.html;
+	            window.document.title = title;
 	        }
 	    }
 
-	    addTemplateFunction( name, fn )
+	    compile( template, opts )
 	    {
-	        // @todo Add Check of type function
-	        _extendedFunctions[ name ] = fn;
+	        return compile( template, opts );
 	    }
 
-	    removeTemplateFunction( name )
+	    /**
+	     *
+	     * @param {HTMLElement|null} container - Container in which template should be rendered
+	     * @param {string} tmpl - EJS template string
+	     * @param {object=} [data={}] - Template data.
+	     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
+	     * @returns {undefined|string} - If container is undefined|null, the rendered html is returned.
+	     */
+	    render( container, tmpl, data = {}, forceRepaint = false )
 	    {
-	        if ( _extendedFunctions.hasOwnProperty( name ) )
+	        const html = render( tmpl, data );
+	        if ( !container || false === ( container instanceof HTMLElement ) )
 	        {
-	            delete _extendedFunctions[ name ];
-	        }
-	    }
-
-	    compile( tmpl, data = {} )
-	    {
-	        return _template( tmpl, data );
-	    }
-
-	    // rename to render
-	    render( htmlElement, tmpl, data = {}, forceRepaint = false )
-	    {
-	        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
-	        {
-	            throw new Error( 'First parameter is no valid HTMLElement.' );
-	        }
-
-	        if ( true === forceRepaint )
-	        {
-	            htmlElement.innerHTML = this.compile( tmpl, data );
+	            return html;
 	        }
 	        else
 	        {
-	            let outDiv = htmlElement.querySelector( 'div:first-child' );
-	            if ( !outDiv )
+	            if ( true === forceRepaint )
 	            {
-	                htmlElement.innerHTML = '<div></div>';
-	                outDiv = htmlElement.querySelector( 'div:first-child' );
+	                container.innerHTML = html;
 	            }
+	            else
+	            {
+	                let outDiv = container.querySelector( 'div:first-child' );
+	                if ( !outDiv )
+	                {
+	                    container.innerHTML = '<div></div>';
+	                    outDiv = container.querySelector( 'div:first-child' );
+	                }
 
-	            const newDiv = document.createElement( 'div' );
-	            newDiv.innerHTML = this.compile( tmpl, data );
+	                const newDiv = document.createElement( 'div' );
+	                newDiv.innerHTML = html;
 
-	            this.dd.apply(
-	                outDiv,
-	                this.dd.diff(
-	                    nodeToObj( outDiv ),
-	                    nodeToObj( newDiv )
-	                )
-	            );
+	                this.dd.apply(
+	                    outDiv,
+	                    this.dd.diff(
+	                        nodeToObj( outDiv ),
+	                        nodeToObj( newDiv )
+	                    )
+	                );
+	            }
 	        }
-	    }
-
-	    renderHtml( htmlElement, html )
-	    {
-	        if ( !htmlElement || false === ( htmlElement instanceof HTMLElement ) )
-	        {
-	            throw new Error( 'First parameter is no valid HTMLElement.' );
-	        }
-
-	        htmlElement.innerHTML = html;
 	    }
 
 	    async load( templateUrl, useCache = true )
@@ -4239,6 +5395,15 @@ void main()
 	            );
 	        }
 	        return tmplHtml;
+	    }
+
+	    _getTemplateFromCache( templateUrl )
+	    {
+	        const cachedTemplate =  this._cache.find( tmpl => tmpl.url === templateUrl );
+	        if ( cachedTemplate )
+	        {
+	            return cachedTemplate.html;
+	        }
 	    }
 	}
 
@@ -5438,7 +6603,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '0.9.31';
+	const VERSION = '0.9.4';
 
 	const DEFAULT_SETTINGS = {
 	    "app" : {
@@ -5454,23 +6619,27 @@ void main()
 	        "isEnabled" : true,
 	        "basePath" : null
 	    },
-	    "stateManager" : {
+	    "states" : {
 	        "basePath" : ""
 	    },
-	    "viewManager" : {
-	    },
-	    "templateManager" : {
+	    "view" : {
 	        "basePath" : "./../"
 	    }
 	};
 
 	/**
+	 * App
 	 * The App class is the logical core unit of every InfrontJS application.
 	 */
 	class App
 	{
 	    static POOL = {};
 
+	    /**
+	     *
+	     * @param {string|null} uid - Get instance by given uid. If no uid is given, the first app from pool is returned.
+	     * @returns {(App|null)}
+	     */
 	    static get( uid = null )
 	    {
 	        if ( uid && App.POOL.hasOwnProperty( uid ) )
@@ -5519,9 +6688,8 @@ void main()
 	        // Init core components
 	        this.initRouter();
 	        this.initL18n();
-	        this.initStateManager();
-	        this.initViewManager();
-	        this.initTemplateManager();
+	        this.initStates();
+	        this.initView();
 
 	        // Add app to global app pool
 	        App.POOL[ this.uid ] = this;
@@ -5537,9 +6705,9 @@ void main()
 	        this.l18n = new L18n( this );
 
 	    }
-	    initStateManager()
+	    initStates()
 	    {
-	        this.stateManager = new StateManager( this );
+	        this.states = new States( this );
 	    }
 
 	    initRouter()
@@ -5547,21 +6715,29 @@ void main()
 	        this.router = new Router( this );
 	    }
 
-	    initViewManager()
+	    initView()
 	    {
-	        this.viewManager = new ViewManager( this );
+	        this.view = new View( this );
 	    }
 
-	    initTemplateManager()
-	    {
-	        this.templateManager = new TemplateManager( this );
-	    }
-
+	    /**
+	     * Get InfrontJS version
+	     *
+	     * @returns {string} - Version string
+	     */
 	    getVersion()
 	    {
 	        return VERSION;
 	    }
 
+	    /**
+	     * Run application logic. This activates the InfrontJS application logic.
+	     * Note:
+	     * This is an asynchronous function providing the possibility to e.g. loading assets etc.
+	     *
+	     * @param {string|null} [route=null] - If route is set, this route is set initially.
+	     * @returns {Promise<void>}
+	     */
 	    async run( route = null )
 	    {
 	        if ( this.settings.get( 'app.title' ) )
@@ -5581,18 +6757,49 @@ void main()
 	        }
 	    }
 
+	    /**
+	     * Destorys InfrontJS application instance
+	     * @returns {Promise<void>}
+	     */
 	    async destroy()
 	    {
 	        // @todo Implement logic, set innerHTML to zero ... etc
 	    }
 	}
 
+	/**
+	 * Http
+	 * Simple helper class for http client requests.
+	 *
+	 * Note: All http verb functions support callback and await mode.
+	 *
+	 * @example <caption>Using callbacks</caption>
+	 * const apiClient = new Http( 'https://api.example.com' );
+	 * apiClient.get( '/books', function( err, result ) { } );
+	 *
+	 * @example <caption>Using await</caption>
+	 * const apiClient = new Http( 'https://api.example.com' );
+	 * try
+	 * {
+	 *     const result = apiClient.get( '/books' );
+	 * }
+	 * catch( e )
+	 * {
+	 *     // Handle error
+	 * }
+	 *
+	 */
 	class Http
 	{
-	    constructor( endpoint = '', headers = {} )
+	    /**
+	     * Construcotr
+	     * @param {string} url - Base url
+	     * @param {object=} headers - Header data.
+	     */
+	    constructor( url = '', headers = {} )
 	    {
-	        this.endpoint = Helper.trim( endpoint, '/' );
-	        if ( this.endpoint.length <= 1 )
+	        this.url = Helper.trim( url, '/' );
+	        if ( this.url.length <= 1 )
 	        {
 	            throw new Error( 'No endpoint set.' );
 	        }
@@ -5600,39 +6807,72 @@ void main()
 	        this.headers = new Headers( headers );
 	    }
 
-	    async get( route, cb = null )
+	    /**
+	     * GET call
+	     * @param {string} endpoint - API endpoint
+	     * @param {function=} [cb=null] - Callback function
+	     * @returns {Promise<any|undefined>}
+	     */
+	    async get( endpoint, cb = null )
 	    {
-	        let r = Helper.trim( route, "/" ),
-	            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "GET" ) );
+	        let r = Helper.trim( endpoint, "/" ),
+	            req = new Request( this.url + '/' + r, this._createFetchOptions( "GET" ) );
 
 	        return await this._fetch( req, cb );
 	    }
 
-	    async post( route, data = {}, cb = null )
+	    /**
+	     * POST call
+	     * @param {string} endpoint - API endpoint
+	     * @param {object=} [data={}] - Post data
+	     * @param {function=} [cb=null] - Callback function
+	     * @returns {Promise<any|undefined>}
+	     */
+	    async post( endpoint, data = {}, cb = null )
 	    {
-	        let r = Helper.trim( route, "/" ),
-	            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "POST", data ) );
+	        let r = Helper.trim( endpoint, "/" ),
+	            req = new Request( this.url + '/' + r, this._createFetchOptions( "POST", data ) );
 	        return await this._fetch( req, cb );
 	    }
 
-	    async delete( route, cb = null )
+	    /**
+	     * DELETE call
+	     * @param {string} endpoint - API endpoint
+	     * @param {function=} [cb=null] - Callback function
+	     * @returns {Promise<any|undefined>}
+	     */
+	    async delete( endpoint, cb = null )
 	    {
-	        let r = Helper.trim( route, "/" ),
-	            req = new Request( this.endpoint + '/' + r,  this._createFetchOptions( "DELETE" ) );
+	        let r = Helper.trim( endpoint, "/" ),
+	            req = new Request( this.url + '/' + r,  this._createFetchOptions( "DELETE" ) );
 	        return await this._fetch( req, cb );
 	    }
 
-	    async put( route, data = {}, cb = null )
+	    /**
+	     * PUT call
+	     * @param {string} endpoint - API endpoint
+	     * @param {object=} [data={}] - PUT data
+	     * @param {function=} [cb=null] - Callback function
+	     * @returns {Promise<any|undefined>}
+	     */
+	    async put( endpoint, data = {}, cb = null )
 	    {
-	        let r = Helper.trim( route, "/" ),
-	            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PUT", data )  );
+	        let r = Helper.trim( endpoint, "/" ),
+	            req = new Request( this.url + '/' + r, this._createFetchOptions( "PUT", data )  );
 	        return await this._fetch( req, cb );
 	    }
 
-	    async patch( route, data = {}, cb = null )
+	    /**
+	     * PATCH call
+	     * @param {string} endpoint - API endpoint
+	     * @param {object=} [data={}] - Patch data
+	     * @param {function=} [cb=null] - Callback function
+	     * @returns {Promise<any|undefined>}
+	     */
+	    async patch( endpoint, data = {}, cb = null )
 	    {
-	        let r = Helper.trim( route, "/" ),
-	            req = new Request( this.endpoint + '/' + r, this._createFetchOptions( "PATCH", data ) );
+	        let r = Helper.trim( endpoint, "/" ),
+	            req = new Request( this.url + '/' + r, this._createFetchOptions( "PATCH", data ) );
 	        return await this._fetch( req, cb );
 	    }
 
@@ -5674,9 +6914,8 @@ void main()
 	exports.PathObject = PathObject;
 	exports.Router = Router;
 	exports.State = State;
-	exports.StateManager = StateManager;
-	exports.TemplateManager = TemplateManager;
-	exports.ViewManager = ViewManager;
+	exports.States = States;
+	exports.View = View;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

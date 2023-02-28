@@ -1,14 +1,13 @@
 import { Router } from "./Router.js";
-import { StateManager } from "./StateManager.js";
-import { ViewManager } from "./ViewManager.js";
-import { TemplateManager } from "./TemplateManager.js";
+import { States } from "./States.js";
+import { View } from "./View.js";
 import { L18n } from "./L18n.js";
 
 import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.32';
+const VERSION = '0.9.4';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -24,12 +23,10 @@ const DEFAULT_SETTINGS = {
         "isEnabled" : true,
         "basePath" : null
     },
-    "stateManager" : {
+    "states" : {
         "basePath" : ""
     },
-    "viewManager" : {
-    },
-    "templateManager" : {
+    "view" : {
         "basePath" : "./../"
     }
 };
@@ -95,9 +92,8 @@ class App
         // Init core components
         this.initRouter();
         this.initL18n();
-        this.initStateManager();
-        this.initViewManager();
-        this.initTemplateManager();
+        this.initStates();
+        this.initView();
 
         // Add app to global app pool
         App.POOL[ this.uid ] = this;
@@ -113,9 +109,9 @@ class App
         this.l18n = new L18n( this );
 
     }
-    initStateManager()
+    initStates()
     {
-        this.stateManager = new StateManager( this );
+        this.states = new States( this );
     }
 
     initRouter()
@@ -123,14 +119,9 @@ class App
         this.router = new Router( this );
     }
 
-    initViewManager()
+    initView()
     {
-        this.viewManager = new ViewManager( this );
-    }
-
-    initTemplateManager()
-    {
-        this.templateManager = new TemplateManager( this );
+        this.view = new View( this );
     }
 
     /**

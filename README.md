@@ -1,37 +1,57 @@
-# InfrontJS
+![InfrontJS logo](https://www.infrontjs.com/assets/ext/ifjs-colored-bg-logo.png)
 
-The aim of this project is to provide a fast, unobstrusive and lightweight Vanilla Javascript Frontend framework.
+# [InfrontJS](https://www.infrontjs.com)
 
-## Stuff included
+A simple, smart and pure vanilla javascript framework.
 
-- Lodash _.get / _.set functionality wrapped into PathObject
-- UrlPattern
-- microtemplate
-- observable-slim for watchables
-- https://www.shadertoy.com/view/mt23WK forked from: https://www.shadertoy.com/view/wlSSD3
+**For developers who...**
 
-## ToDos
+* ... like simple and smart solutions
+* ... want to have full control of your code and no black boxes 
+* ... prefer to stay close to the platform and want to use its full power
+* ... know vanilla javascript, css3 and html5
+* ... avoids abstraction should be at its minimum
+* ... do not want to learn additional domain specific languages and concepts (e.g. for templates etc)
+* ... prefer a painless and easy-to-configure toolchain
 
-**Version 1.0**
+**For managers who...**
 
-- [ ] Remove TemplateManager
-- [ ] Rename ViewManager to View
-- [ ] Add engine property and by default, set it to "ejs"
-- [ ] JSDoc
-- [ ] infront-cli
-- [ ] Add tests
-- [ ] UserGuide
-- [ ] 404 State
-- [X] Rename Api to Http (Client)
-- [x] Move Http to Util
-- [x] Rethink PropertyObject -> maybe just a simple set/get method that interacts with [this] instance properties
-- [x] Move RouteParams/UrlPattern into Router/Controller
-- [x] Work on non-hash-based actions
-- [x] Add Front.js observables
-- [x] Wrap Functions to static Helper class
-- [x] Remove is_default state because it does not make sense, use route array instead
+* ... are tired of wasting time on permanent framework version updates 
+* ... don't want to take the risk that their product is built upon a framework which might become outdated in the near future
+* ... want their developers spending most of their energy on the product and not about the underlying technology
+* ... avoid uneccessary third party dependencies
+* ... want to stay flexible
 
-**Version 2.0**
+### [www](https://wwww.infronts.js) &middot; [apidocs](https://apidocs.infrontjs.com) &middot; [examples](https://examples.infrontjs.com) &middot; [twitter](https://twitter.com/infrontjs)
 
-- [ ] Add verbose mode and/or logger
-- [ ] Investigate on Typescript support
+## Resources
+
+* Find general information and interesting news on our [website](https://www.infrontjs.com).
+* Like reading api documentation. Have a look at the [api docs](https://apidocs.infrontjs.com).
+* Do you prefer to learn by example? Check out the [official examples](https://examples.infrontjs.com).
+* Get the latest development updates on [twitter](https://twitter.com/infrontjs).
+
+## Credits
+
+This framework is build upon some great other open source projects...
+
+* View class encapsulates [EJS](https://ejs.co/)
+* DOM diffing enabled rendering is powered by [diffDOM](https://github.com/fiduswriter/diffDOM)
+* Observables from the Helper class are supported by [ObservableSlim](https://github.com/elliotnb/observable-slim)
+* UrlPattern used by the Router class relies on [UrlPattern](https://github.com/snd/url-pattern)
+* PathObject implementation heavily relies on some [Lodash](https://github.com/lodash/lodash) methods
+* The background fx of our Shameless plug DefaultScene is based on this [shader](https://www.shadertoy.com/view/wlSSD3])
+
+## Roadmap to 1.0
+
+We are currently working hard on the release of version 1.0
+
+- [ ] State Not Found handling
+- [ ] Create proper L18N logic
+- [ ] Create Guides
+- [ ] Complete unit tests
+- [ ] Complete api docs
+
+## License
+
+This content is released under the (http://opensource.org/licenses/MIT) MIT License.

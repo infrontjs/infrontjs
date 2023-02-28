@@ -27,7 +27,7 @@ class State
      * Route(s) which trigger this state
      * @type {string|array}
      */
-    static ROUTE = null;
+    static ROUTE = "/";
 
     /**
      *

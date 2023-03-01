@@ -1,4 +1,5 @@
 export { State } from "./base/State.js";
+export { RouteParams } from "./base/RouteParams.js";
 
 export { App } from "./core/App.js";
 export { L18n } from "./core/L18n.js";

@@ -1,7 +1,33 @@
 import { get, set } from "./../_external/lodash/lodash-extract.js";
 
+/**
+ * PathObject
+ * Convenient way to work with JSON datastructures.
+ *
+ * @example
+ * const po = new PathObject(
+ *  {
+ *     "a" : "Hello",
+ *     "b" : {
+ *         "c" : "World"
+ *     }
+ *  }
+ * );
+ *
+ * po.get( "b.c" );
+ * // Returns "World"
+ * po.set( "b.c", "InfrontJS" );
+ * po.get( "b.c" );
+ * // Return "InfrontJS"
+ * po.get( "b.d", "what?" );
+ * // Returns "what?"
+ */
 class PathObject
 {
+    /**
+     * Constructor
+     * @param {object=} [properties={}] - Initial literal
+     */
     constructor( properties = {} )
     {
         this._props = properties;

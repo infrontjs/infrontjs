@@ -5,10 +5,13 @@ import { DiffDOM, nodeToObj } from "../_external/diffDOM/index.js";
 /**
  * View
  * Provides management and rendering of ejs templates including DOM diffing.
- * @namespace core
  */
 class View
 {
+    /**
+     * Constructor
+     * @param {App} appInstance - App reference
+     */
     constructor( appInstance )
     {
         this.app = appInstance;
@@ -27,6 +30,10 @@ class View
         this.dd = new DiffDOM();
     }
 
+    /**
+     * Sets window title
+     * @param {string} title - Title to set
+     */
     setWindowTitle( title )
     {
         if ( window && window.document && window.document.title )
@@ -35,22 +42,30 @@ class View
         }
     }
 
+    /**
+     * Compiles template with given options
+     * @param {string} template - EJS based template
+     * @param {object} opts - EJS template options. @see {@link https://ejs.co/#docs}
+     * @returns {*} - Compiled template function
+     */
     compile( template, opts )
     {
         return compile( template, opts );
     }
 
     /**
+     * Renders template with given data to html container.
      *
-     * @param {HTMLElement|null} container - Container in which template should be rendered
+     * @param {HTMLElement|null} container - Container in which template should be rendered. If null, the generated HTML is returned
      * @param {string} tmpl - EJS template string
      * @param {object=} [data={}] - Template data.
      * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
+     * @param {object=} [tmplOptions=null] - EJS template options. @see {@link https://ejs.co/#docs}
      * @returns {undefined|string} - If container is undefined|null, the rendered html is returned.
      */
-    render( container, tmpl, data = {}, forceRepaint = false )
+    render( container, tmpl, data = {}, forceRepaint = false, tmplOptions = null )
     {
-        const html = render( tmpl, data );
+        const html = render( tmpl, data, tmplOptions );
         if ( !container || false === ( container instanceof HTMLElement ) )
         {
             return html;
@@ -84,6 +99,14 @@ class View
         }
     }
 
+    /**
+     * Load html templated from given url
+     *
+     * @param {string} templateUrl - URL to template to load
+     * @param {boolean=} [useCache=true] - If true, use cache to avoid unnecessary loading
+     * @throws {Error}
+     * @returns {string}
+     */
     async load( templateUrl, useCache = true )
     {
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;

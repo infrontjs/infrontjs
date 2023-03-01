@@ -1,4 +1,4 @@
-import { RouteParams } from "./RouteParams.js";
+import { RouteParams } from "../base/RouteParams.js";
 import { Helper } from "../util/Helper.js";
 import { States } from "./States.js";
 

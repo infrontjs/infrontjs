@@ -1,7 +1,15 @@
+/**
+ * L18n
+ * Simple internationalization logic
+ */
 class L18n
 {
     static LANG_EN = 'en';
 
+    /**
+     * Constructor
+     * @param {App} appInstance - InfrontJS App reference
+     */
     constructor( appInstance )
     {
         this.app = appInstance;
@@ -11,6 +19,10 @@ class L18n
         this.dictionary = {};
     }
 
+    /**
+     * Export localization function to window scope.
+     * @param {string=} [fnName=_lc] - Name of global localization function
+     */
     expose( fnName = '_lc' )
     {
         if ( window )
@@ -19,11 +31,21 @@ class L18n
         }
     }
 
+    /**
+     * Sets dictionary
+     * @param {object=}  [dict={}] - Dictionary
+     */
     setDictionary( dict = {} )
     {
         this.dictionary = dict;
     }
 
+    /**
+     * Gets current translation by given key
+     * @param {string} key - Translation key
+     * @param {object=} [params=undefined] - Params object
+     * @returns {string}
+     */
     getLocale( key, params )
     {
         const defaultLanguage = this.defaultLanguage,

@@ -7,8 +7,6 @@
  *
  * class MyState extends State
  * {
- *     static ID = 'my-state';
- *
  *     asnyc enter()
  *     {
  *         console.log( "Hello from MyState" );
@@ -27,12 +25,12 @@ class State
      * Route(s) which trigger this state
      * @type {string|array}
      */
-    static ROUTE = null;
+    static ROUTE = "/";
 
     /**
      *
      * @param {App} app - App instance
-     * @param {RouteParams} routeParams - Current route params
+     * @param {RouteParams|null} [routeParams=null] - Current route params
      */
     constructor( app, routeParams )
     {
@@ -94,19 +92,38 @@ class State
     }
 }
 
+/**
+ * RouteParams
+ * The router params of current state call
+ */
 class RouteParams
 {
+    /**
+     *
+     * @param {object} [params={}]
+     * @param {object} [query={}]
+     */
     constructor( params = {}, query = {} )
     {
         this._p = params;
         this._q = query;
     }
 
+    /**
+     * Get param object
+     * @returns {Object}
+     */
     getParams()
     {
         return this._p;
     }
 
+    /**
+     * Get param value by given key. If key does not exists, the defaultValue is returned
+     * @param {string} key - Param key
+     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
+     * @returns {*|null}
+     */
     getParam( key, defaultValue = null )
     {
         if ( this._p && this._p.hasOwnProperty( key ) )
@@ -119,6 +136,12 @@ class RouteParams
         }
     }
 
+    /**
+     * Get query value by given key. If key does not exitss, the defaultValue is returned
+     * @param {string} key - Query key
+     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
+     * @returns {*|null}
+     */
     getQuery( key, defaultValue = null )
     {
         if ( this._q && this._q.hasOwnProperty( key ) )
@@ -131,6 +154,10 @@ class RouteParams
         }
     }
 
+    /**
+     * Get query object
+     * @returns {Object}
+     */
     getQueries()
     {
         return this._q;
@@ -5291,10 +5318,13 @@ class DiffDOM {
 /**
  * View
  * Provides management and rendering of ejs templates including DOM diffing.
- * @namespace core
  */
 class View
 {
+    /**
+     * Constructor
+     * @param {App} appInstance - App reference
+     */
     constructor( appInstance )
     {
         this.app = appInstance;
@@ -5313,6 +5343,10 @@ class View
         this.dd = new DiffDOM();
     }
 
+    /**
+     * Sets window title
+     * @param {string} title - Title to set
+     */
     setWindowTitle( title )
     {
         if ( window && window.document && window.document.title )
@@ -5321,22 +5355,30 @@ class View
         }
     }
 
+    /**
+     * Compiles template with given options
+     * @param {string} template - EJS based template
+     * @param {object} opts - EJS template options. @see {@link https://ejs.co/#docs}
+     * @returns {*} - Compiled template function
+     */
     compile( template, opts )
     {
         return compile( template, opts );
     }
 
     /**
+     * Renders template with given data to html container.
      *
-     * @param {HTMLElement|null} container - Container in which template should be rendered
+     * @param {HTMLElement|null} container - Container in which template should be rendered. If null, the generated HTML is returned
      * @param {string} tmpl - EJS template string
      * @param {object=} [data={}] - Template data.
      * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
+     * @param {object=} [tmplOptions=null] - EJS template options. @see {@link https://ejs.co/#docs}
      * @returns {undefined|string} - If container is undefined|null, the rendered html is returned.
      */
-    render( container, tmpl, data = {}, forceRepaint = false )
+    render( container, tmpl, data = {}, forceRepaint = false, tmplOptions = null )
     {
-        const html = render( tmpl, data );
+        const html = render( tmpl, data, tmplOptions );
         if ( !container || false === ( container instanceof HTMLElement ) )
         {
             return html;
@@ -5370,6 +5412,14 @@ class View
         }
     }
 
+    /**
+     * Load html templated from given url
+     *
+     * @param {string} templateUrl - URL to template to load
+     * @param {boolean=} [useCache=true] - If true, use cache to avoid unnecessary loading
+     * @throws {Error}
+     * @returns {string}
+     */
     async load( templateUrl, useCache = true )
     {
         let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
@@ -5401,10 +5451,18 @@ class View
     }
 }
 
+/**
+ * L18n
+ * Simple internationalization logic
+ */
 class L18n
 {
     static LANG_EN = 'en';
 
+    /**
+     * Constructor
+     * @param {App} appInstance - InfrontJS App reference
+     */
     constructor( appInstance )
     {
         this.app = appInstance;
@@ -5414,6 +5472,10 @@ class L18n
         this.dictionary = {};
     }
 
+    /**
+     * Export localization function to window scope.
+     * @param {string=} [fnName=_lc] - Name of global localization function
+     */
     expose( fnName = '_lc' )
     {
         if ( window )
@@ -5422,11 +5484,21 @@ class L18n
         }
     }
 
+    /**
+     * Sets dictionary
+     * @param {object=}  [dict={}] - Dictionary
+     */
     setDictionary( dict = {} )
     {
         this.dictionary = dict;
     }
 
+    /**
+     * Gets current translation by given key
+     * @param {string} key - Translation key
+     * @param {object=} [params=undefined] - Params object
+     * @returns {string}
+     */
     getLocale( key, params )
     {
         const defaultLanguage = this.defaultLanguage,
@@ -6527,8 +6599,34 @@ function set(object, path, value) {
     return object == null ? object : baseSet(object, path, value);
 }
 
+/**
+ * PathObject
+ * Convenient way to work with JSON datastructures.
+ *
+ * @example
+ * const po = new PathObject(
+ *  {
+ *     "a" : "Hello",
+ *     "b" : {
+ *         "c" : "World"
+ *     }
+ *  }
+ * );
+ *
+ * po.get( "b.c" );
+ * // Returns "World"
+ * po.set( "b.c", "InfrontJS" );
+ * po.get( "b.c" );
+ * // Return "InfrontJS"
+ * po.get( "b.d", "what?" );
+ * // Returns "what?"
+ */
 class PathObject
 {
+    /**
+     * Constructor
+     * @param {object=} [properties={}] - Initial literal
+     */
     constructor( properties = {} )
     {
         this._props = properties;
@@ -6597,7 +6695,7 @@ class PathObject
     }
 }
 
-const VERSION = '0.9.4';
+const VERSION = '0.9.41';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -6901,4 +6999,4 @@ class Http
     }
 }
 
-export { App, Helper, Http, L18n, PathObject, Router, State, States, View };
+export { App, Helper, Http, L18n, PathObject, RouteParams, Router, State, States, View };

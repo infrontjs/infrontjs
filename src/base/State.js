@@ -7,8 +7,6 @@
  *
  * class MyState extends State
  * {
- *     static ID = 'my-state';
- *
  *     asnyc enter()
  *     {
  *         console.log( "Hello from MyState" );
@@ -32,7 +30,7 @@ class State
     /**
      *
      * @param {App} app - App instance
-     * @param {RouteParams} routeParams - Current route params
+     * @param {RouteParams|null} [routeParams=null] - Current route params
      */
     constructor( app, routeParams )
     {

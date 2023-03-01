@@ -41,16 +41,16 @@ npm install infrontjs
 ## Example
 
 ```javascript
-class TestState extends IF.State
+class GreetingState extends IF.State
 {
     async enter()
     {
-        this.app.view.render( this.app.container, '<h1>Hello World</h1>' );
+        this.app.view.render( this.app.container, '<h1>Hello InfrontJS World</h1>' );
     }
 }
 
 const myApp = new IF.App();
-myApp.states.add( TestState );
+myApp.states.add( GreetingState );
 myApp.run();
 ```
 

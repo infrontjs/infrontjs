@@ -6695,7 +6695,7 @@ class PathObject
     }
 }
 
-const VERSION = '0.9.41';
+const VERSION = '0.9.42';
 
 const DEFAULT_SETTINGS = {
     "app" : {

@@ -22,7 +22,7 @@ A simple, smart and pure vanilla javascript framework.
 * ... want to avoid unnecessary third party dependencies
 * ... want to stay flexible
 
-### [www](https://wwww.infronts.js) &middot; [apidocs](https://apidocs.infrontjs.com) &middot; [examples](https://examples.infrontjs.com) &middot; [twitter](https://twitter.com/infrontjs)
+### [www](https://www.infronts.js) &middot; [apidocs](https://apidocs.infrontjs.com) &middot; [examples](https://examples.infrontjs.com) &middot; [twitter](https://twitter.com/infrontjs)
 
 ## Installation
 

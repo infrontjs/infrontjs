@@ -36,5 +36,5 @@ jobs:
         run: ssh-keyscan -p ${{ secrets.SSH_PORT}} -H ${{ secrets.SSH_HOST }}  >> ~/.ssh/known_hosts
 
       - name: Deploy client with rsync
-        run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./apidocs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/www/htdocs/w01d08f6/projects/apidocs.infrontjs.com
+        run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./apidocs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:{{ secrets.DEST_PATH }}
 

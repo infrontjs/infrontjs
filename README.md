@@ -95,21 +95,6 @@ npm run test
 * Do you prefer to learn by example? Check out the [official examples](https://examples.infrontjs.com).
 * Get the latest development updates on [twitter](https://twitter.com/infrontjs).
 
-## Contributing
-
-By contributing or commenting on issues in this repository, whether you've read them or not, you're agreeing to the [Contributor Code of Conduct](CODE-OF-CONDUCT.md). Much like traffic laws, ignorance doesn't grant you immunity.
-
-## Credits
-
-This framework is build upon some great other open source projects...
-
-* View class encapsulates [EJS](https://ejs.co/)
-* DOM diffing enabled rendering is powered by [diffDOM](https://github.com/fiduswriter/diffDOM)
-* Observables from the Helper class are supported by [ObservableSlim](https://github.com/elliotnb/observable-slim)
-* UrlPattern used by the Router class relies on [UrlPattern](https://github.com/snd/url-pattern)
-* PathObject implementation heavily relies on some [Lodash](https://github.com/lodash/lodash) methods
-* The background fx of our Shameless plug DefaultScene is based on this [shader](https://www.shadertoy.com/view/wlSSD3])
-
 ## Roadmap to 1.0
 
 We are currently working hard on the release of version 1.0
@@ -124,6 +109,21 @@ We are currently working hard on the release of version 1.0
 - [ ] Think about centralized loader
 - [ ] Add minification version to rollup build
 - [x] Complete api docs
+
+## Credits
+
+This framework is build upon some great other open source projects...
+
+* View class encapsulates [EJS](https://ejs.co/)
+* DOM diffing enabled rendering is powered by [diffDOM](https://github.com/fiduswriter/diffDOM)
+* Observables from the Helper class are supported by [ObservableSlim](https://github.com/elliotnb/observable-slim)
+* UrlPattern used by the Router class relies on [UrlPattern](https://github.com/snd/url-pattern)
+* PathObject implementation heavily relies on some [Lodash](https://github.com/lodash/lodash) methods
+* The background fx of our Shameless plug DefaultScene is based on this [shader](https://www.shadertoy.com/view/wlSSD3])
+
+## Contributing
+
+By contributing or commenting on issues in this repository, whether you've read them or not, you're agreeing to the [Contributor Code of Conduct](CODE-OF-CONDUCT.md). Much like traffic laws, ignorance doesn't grant you immunity.
 
 ## License
 

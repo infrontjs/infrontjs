@@ -184,7 +184,7 @@ class Router
     {
         if ( this.mode === 'url' )
         {
-            this.processUrl()
+            this.processUrl();
         }
         else if ( this.mode = 'hash' )
         {
@@ -262,6 +262,7 @@ class Router
             else
             {
                 window.history.replaceState( null, null, url );
+                this.processUrl();
             }
         }
     }

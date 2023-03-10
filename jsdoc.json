@@ -14,7 +14,31 @@
     "verbose": true,
     "template": "./node_modules/clean-jsdoc-theme",
     "theme_opts": {
-      "default_theme": "light"
+      "default_theme": "light",
+      "title" : "InfrontJS API documentation",
+      "menu": [
+        {
+          "title": "WWW",
+          "link": "https://www.infrontjs.com",
+          "target": "_blank"
+        },
+        {
+          "title": "EXAMPLES",
+          "link": "https://examples.infrontjs.com/",
+          "target": "_blank"
+        },
+        {
+          "title": "GUIDES",
+          "link": "https://guides.infrontjs.com/",
+          "target": "_blank"
+        },
+        {
+          "title": "GITHUB",
+          "link": "https://github.com/infrontjs/infrontjs",
+          "target": "_blank"
+        }
+      ],
+      "footer" :  "<small>Maintained by <a href=\"https://www.infrontjs\">InfontJS</a> - <a href=\"https://www.infrontjs.com/imprint.txt\">Imprint</a> - <a href=\"https://www.infrontjs.com/privacy.txt\">Privacy</a></small>"
     }
   },
   "markdown": {

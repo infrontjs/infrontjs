@@ -24,46 +24,46 @@ class States
     /**
      * Add state class
      *
-     * @param {BaseState} stateClass - State class to be added.
+     * @param {...BaseState} stateClasses - State class to be added.
      * @throws {Error}  - Throws an error when adding state is not possible
      * @returns {boolean} - Returns wheter or not adding was successful
      */
-    add( stateClass )
+    add( ...stateClasses )
     {
-        // @todo Fix this, only check for function or class
-        if ( false === Helper.isClass( stateClass ) )
+        for( const stateClass of stateClasses )
         {
-            throw new Error( 'States.addState expects a class/subclass of State.' );
-        }
-
-        // Throw an error if ID is null or already taken
-        if ( false === Helper.isString( stateClass.ID ) )
-        {
-            stateClass.ID = Helper.createUid();
-            // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
-        }
-
-        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
-        {
-            // @todo Show warning ...
-            return false;
-        }
-
-        this._states[ stateClass.ID ] = stateClass;
-
-        if ( Helper.isString( stateClass.ROUTE ) )
-        {
-            this.app.router.addRoute( stateClass.ROUTE, stateClass );
-        }
-        else if ( Helper.isArray( stateClass.ROUTE ) )
-        {
-            for ( let route of stateClass.ROUTE )
+            if ( false === Helper.isClass( stateClass ) )
             {
-                this.app.router.addRoute( route, stateClass );
+                throw new Error( 'States.addState expects a class/subclass of State.' );
+            }
+
+            // Throw an error if ID is null or already taken
+            if ( false === Helper.isString( stateClass.ID ) )
+            {
+                stateClass.ID = Helper.createUid();
+                // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
+            }
+
+            if ( true === this._states.hasOwnProperty( stateClass.ID ) )
+            {
+                // @todo Show warning ...
+                return false;
+            }
+
+            this._states[ stateClass.ID ] = stateClass;
+
+            if ( Helper.isString( stateClass.ROUTE ) )
+            {
+                this.app.router.addRoute( stateClass.ROUTE, stateClass );
+            }
+            else if ( Helper.isArray( stateClass.ROUTE ) )
+            {
+                for ( let route of stateClass.ROUTE )
+                {
+                    this.app.router.addRoute( route, stateClass );
+                }
             }
         }
-
-        return true;
     }
 
     /**
@@ -99,10 +99,10 @@ class States
     {
         if ( false === newState.canEnter() )
         {
-            const redirectTo = newState.getRedirectTo();
-            if ( redirectTo )
+            const redirectUrl = newState.getRedirectUrl();
+            if ( redirectUrl )
             {
-                this.app.router.redirect( redirectTo );
+                this.app.router.redirect( redirectUrl );
                 return false;
             }
 

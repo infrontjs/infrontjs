@@ -7,7 +7,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.42';
+const VERSION = '0.9.43';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -72,6 +72,11 @@ class App
     constructor( container = null, settings = {} )
     {
         this.container = container;
+
+        if ( typeof window === 'undefined'  )
+        {
+            throw new Error( 'InfrontJS works only in browser mode.' );
+        }
 
         // If container property is a string, check if it is a querySelector
         if ( this.container !== null && false === this.container instanceof HTMLElement )

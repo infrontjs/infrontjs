@@ -1,3 +1,5 @@
+import { RouteParams } from "../IF.js";
+
 /**
  * State class. Parent state class. Extend this class for your state logic.
  *
@@ -30,12 +32,12 @@ class State
     /**
      *
      * @param {App} app - App instance
-     * @param {RouteParams|null} [routeParams=null] - Current route params
+     * @param {RouteParams=} routeParams - Current route params
      */
     constructor( app, routeParams )
     {
         this.app = app;
-        this.routeParams = routeParams;
+        this.routeParams = null === routeParams ? new RouteParams() : routeParams;
     }
 
     /**
@@ -70,7 +72,7 @@ class State
      * Called when canEnter() function returns false.
      * @returns {string|null} - Return redirect route.
      */
-    getRedirectTo()
+    getRedirectUrl()
     {
         return null;
     }
@@ -90,6 +92,27 @@ class State
     async exit()
     {
     }
+
+    getParams()
+    {
+        return this.routeParams.getParams();
+    }
+
+    getParam( key, defaultValue = null )
+    {
+        return this.routeParams.getParam( key, defaultValue );
+    }
+
+    getQueries()
+    {
+        return this.routeParams.getQueries();
+    }
+
+    getQuery( key, defaultValue = null )
+    {
+        return this.routeParams.getQuery( key, defaultValue );
+    }
+
 }
 
 export { State };

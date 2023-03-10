@@ -36,12 +36,12 @@
 	    /**
 	     *
 	     * @param {App} app - App instance
-	     * @param {RouteParams|null} [routeParams=null] - Current route params
+	     * @param {RouteParams=} routeParams - Current route params
 	     */
 	    constructor( app, routeParams )
 	    {
 	        this.app = app;
-	        this.routeParams = routeParams;
+	        this.routeParams = null === routeParams ? new RouteParams() : routeParams;
 	    }
 
 	    /**
@@ -76,7 +76,7 @@
 	     * Called when canEnter() function returns false.
 	     * @returns {string|null} - Return redirect route.
 	     */
-	    getRedirectTo()
+	    getRedirectUrl()
 	    {
 	        return null;
 	    }
@@ -96,6 +96,27 @@
 	    async exit()
 	    {
 	    }
+
+	    getParams()
+	    {
+	        return this.routeParams.getParams();
+	    }
+
+	    getParam( key, defaultValue = null )
+	    {
+	        return this.routeParams.getParam( key, defaultValue );
+	    }
+
+	    getQueries()
+	    {
+	        return this.routeParams.getQueries();
+	    }
+
+	    getQuery( key, defaultValue = null )
+	    {
+	        return this.routeParams.getQuery( key, defaultValue );
+	    }
+
 	}
 
 	/**
@@ -1250,46 +1271,46 @@ void main()
 	    /**
 	     * Add state class
 	     *
-	     * @param {BaseState} stateClass - State class to be added.
+	     * @param {...BaseState} stateClasses - State class to be added.
 	     * @throws {Error}  - Throws an error when adding state is not possible
 	     * @returns {boolean} - Returns wheter or not adding was successful
 	     */
-	    add( stateClass )
+	    add( ...stateClasses )
 	    {
-	        // @todo Fix this, only check for function or class
-	        if ( false === Helper.isClass( stateClass ) )
+	        for( const stateClass of stateClasses )
 	        {
-	            throw new Error( 'States.addState expects a class/subclass of State.' );
-	        }
-
-	        // Throw an error if ID is null or already taken
-	        if ( false === Helper.isString( stateClass.ID ) )
-	        {
-	            stateClass.ID = Helper.createUid();
-	            // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
-	        }
-
-	        if ( true === this._states.hasOwnProperty( stateClass.ID ) )
-	        {
-	            // @todo Show warning ...
-	            return false;
-	        }
-
-	        this._states[ stateClass.ID ] = stateClass;
-
-	        if ( Helper.isString( stateClass.ROUTE ) )
-	        {
-	            this.app.router.addRoute( stateClass.ROUTE, stateClass );
-	        }
-	        else if ( Helper.isArray( stateClass.ROUTE ) )
-	        {
-	            for ( let route of stateClass.ROUTE )
+	            if ( false === Helper.isClass( stateClass ) )
 	            {
-	                this.app.router.addRoute( route, stateClass );
+	                throw new Error( 'States.addState expects a class/subclass of State.' );
+	            }
+
+	            // Throw an error if ID is null or already taken
+	            if ( false === Helper.isString( stateClass.ID ) )
+	            {
+	                stateClass.ID = Helper.createUid();
+	                // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
+	            }
+
+	            if ( true === this._states.hasOwnProperty( stateClass.ID ) )
+	            {
+	                // @todo Show warning ...
+	                return false;
+	            }
+
+	            this._states[ stateClass.ID ] = stateClass;
+
+	            if ( Helper.isString( stateClass.ROUTE ) )
+	            {
+	                this.app.router.addRoute( stateClass.ROUTE, stateClass );
+	            }
+	            else if ( Helper.isArray( stateClass.ROUTE ) )
+	            {
+	                for ( let route of stateClass.ROUTE )
+	                {
+	                    this.app.router.addRoute( route, stateClass );
+	                }
 	            }
 	        }
-
-	        return true;
 	    }
 
 	    /**
@@ -1325,10 +1346,10 @@ void main()
 	    {
 	        if ( false === newState.canEnter() )
 	        {
-	            const redirectTo = newState.getRedirectTo();
-	            if ( redirectTo )
+	            const redirectUrl = newState.getRedirectUrl();
+	            if ( redirectUrl )
 	            {
-	                this.app.router.redirect( redirectTo );
+	                this.app.router.redirect( redirectUrl );
 	                return false;
 	            }
 
@@ -1607,6 +1628,7 @@ void main()
 	            else
 	            {
 	                window.history.replaceState( null, null, url );
+	                this.processUrl();
 	            }
 	        }
 	    }
@@ -6701,7 +6723,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '0.9.42';
+	const VERSION = '0.9.43';
 
 	const DEFAULT_SETTINGS = {
 	    "app" : {
@@ -6766,6 +6788,11 @@ void main()
 	    constructor( container = null, settings = {} )
 	    {
 	        this.container = container;
+
+	        if ( typeof window === 'undefined'  )
+	        {
+	            throw new Error( 'InfrontJS works only in browser mode.' );
+	        }
 
 	        // If container property is a string, check if it is a querySelector
 	        if ( this.container !== null && false === this.container instanceof HTMLElement )

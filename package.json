@@ -1,13 +1,13 @@
 {
   "name": "infrontjs",
-  "version": "0.9.42",
+  "version": "0.9.43",
   "description": "A plain javascript frontend framework",
   "main": "src/IF.js",
-  "type" : "module",
+  "type": "module",
   "scripts": {
     "build": "rollup -c",
     "generate-docs": "jsdoc --configure jsdoc.json --verbose",
-    "test": "mocha --recursive ./test/*.test.js"
+    "test": "mocha --recursive ./test/**/*.test.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/infrontjs/infrontjs/issues"
   },
-  "homepage": "https://github.com/infrontjs/infrontjs#readme",
+  "homepage": "https://www.infrontjs.com",
   "devDependencies": {
     "@babel/plugin-proposal-class-static-block": "^7.18.6",
     "@babel/preset-env": "^7.19.1",

@@ -75,4 +75,21 @@ describe( "Testing core.L18n", () =>
         assert( 'Hallo' === l18n.getLocale( 'KEY_HELLO' ), true );
     });
 
+    it( 'Test number formatting', () =>
+    {
+        l18n.setCurrentLanguage( 'de' );
+        assert( l18n.getNumber( 100 ) === '100,00', true );
+        l18n.setCurrentLanguage( 'en' );
+        assert( l18n.getNumber( 100 ) === '100.00', true );
+    });
+
+    it( 'Test datetime formatting', () =>
+    {
+        const now = new Date();
+        l18n.setCurrentLanguage( 'de' );
+        assert( l18n.getDateTime( now ) === `${now.getDate()}.${(now.getMonth()+1)}.${now.getFullYear()}`, true );
+        l18n.setCurrentLanguage( 'en' );
+        assert( l18n.getDateTime( now ) === `${(now.getMonth()+1)}/${now.getDate()}/${now.getFullYear()}`, true );
+    });
+
 });

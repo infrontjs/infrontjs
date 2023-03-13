@@ -5,6 +5,10 @@ describe( "Testing core.App", () =>
 {
     let app;
 
-    it( 'Test')
+    it( 'Test class and its structure', () =>
+    {
+        assert.equal( "function" === typeof IF.App, true );
+        assert.throws( () => { new IF.App() }, Error );
+    });
 
 });

@@ -6,6 +6,34 @@ class L18n
 {
     static LANG_EN = 'en';
 
+    // List of valid 2-chared-county-codes
+    static COUNTRY_CODES = [
+    "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
+    "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+    "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ",
+    "DE", "DJ", "DK", "DM", "DO", "DZ",
+    "EC", "EE", "EG", "EH", "EN", "ER", "ES", "ET",
+    "FI", "FJ", "FK", "FM", "FO", "FR",
+    "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
+    "HK", "HM", "HN", "HR", "HT", "HU",
+    "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT",
+    "JE", "JM", "JO", "JP",
+    "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ",
+    "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+    "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+    "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+    "OM",
+    "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY",
+    "QA",
+    "RE", "RO", "RS", "RU", "RW",
+    "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ",
+    "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+    "UA", "UG", "UM", "US", "UY", "UZ",
+    "VA", "VC", "VE", "VG", "VI", "VN", "VU",
+    "WF", "WS", "YE", "YT",
+    "ZA","ZM", "ZW" ];
+
+
     /**
      * Constructor
      * @param {App} appInstance - InfrontJS App reference
@@ -14,13 +42,14 @@ class L18n
     {
         this.app = appInstance;
         this.defaultLanguage = L18n.LANG_EN;
-        this.currentLanguage = this.resolveBrowserLanguage();
-        if ( null === this.currentLanguage )
+        let cl = this.resolveBrowserLanguage();
+        if ( null === cl )
         {
-            this.currentLanguage = this.defaultLanguage.toLowerCase();
+            cl = this.defaultLanguage.toLowerCase();
         }
 
         this.dictionary = {};
+        this.setCurrentLanguage( cl );
     }
 
     /**
@@ -108,7 +137,7 @@ class L18n
             langCode = langCode.slice( 0, 2);
         }
 
-        if ( !langCode || langCode.length != 2 )
+        if ( !langCode || false === this._isValidLangCode( langCode ) )
         {
             throw new Error( 'Invalid langCode: ' + langCode )
         }
@@ -156,6 +185,50 @@ class L18n
         }
     }
 
+    /**
+     * Get formatted number
+     *
+     * @param {Date} num - Number to format
+     * @param {Object=} [opts=null] - NumberFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat|NumberFormat}
+     * @returns {string}
+     */
+    getNumber( num = 0, opts = null )
+    {
+        if ( opts )
+        {
+            return Intl.NumberFormat( this.currentLanguage, opts ).format( num );
+        }
+        else
+        {
+            return this._nf.format( num );
+        }
+    }
+
+    /**
+     * Get formatted date time
+     *
+     * @param {Date} dt - Date object to format
+     * @param {Object=} [opts=null] - DateTimeFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat|DateTimeFormat}
+     * @returns {string}
+     */
+    getDateTime( dt, opts = null )
+    {
+        if ( opts )
+        {
+            return Intl.DateTimeFormat( this.currentLanguage, opts ).format( dt );
+        }
+        else
+        {
+            return this._dtf.format( dt );
+        }
+    }
+
+
+    /**
+     * Set current language
+     * @param {string} langCode - 2 chared language code
+     * @throws {Error} - Invalid language code
+     */
     setCurrentLanguage( langCode )
     {
         if ( langCode && langCode.length > 2 )
@@ -163,17 +236,34 @@ class L18n
             langCode = langCode.slice( 0, 2);
         }
 
-        if ( !langCode || langCode.length != 2 )
+        if ( !langCode || false === this._isValidLangCode( langCode ) )
         {
             throw new Error( 'Invalid langCode: ' + langCode )
         }
 
         this.currentLanguage = langCode.toLowerCase();
+        this._nf = new Intl.NumberFormat(
+            this.currentLanguage,
+            {
+                minimumFractionDigits : 2,
+                maximumFractionDigits : 2
+            }
+        );
+        this._dtf = new Intl.DateTimeFormat( this.currentLanguage );
     }
 
+    /**
+     * Get current selected language
+     * @returns {string} - Returns 2 chared language code
+     */
     getCurrentLanguage()
     {
         return this.currentLanguage;
+    }
+
+    _isValidLangCode( langCode )
+    {
+        return -1 < L18n.COUNTRY_CODES.indexOf( langCode.toUpperCase() );
     }
 }
 

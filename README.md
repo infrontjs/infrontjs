@@ -99,15 +99,11 @@ npm run test
 
 We are currently working hard on the release of version 1.0
 
-- [ ] State Not Found handling
-- [ ] Implement Router.createLink function
-- [ ] L18N add automatic locale resolving
-- [ ] L18N add NumberFormat logic
-- [ ] L18N add DateTimeFormat logic
-- [ ] Create Guides
-- [ ] Complete unit tests
-- [ ] Think about centralized loader
+- [ ] Route Not Found handling
 - [ ] Add minification version to rollup build
+- [x] L18N add automatic locale resolving
+- [x] L18N add NumberFormat logic
+- [x] L18N add DateTimeFormat logic
 - [x] Complete api docs
 
 ## Credits

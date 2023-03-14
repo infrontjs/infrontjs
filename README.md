@@ -22,7 +22,7 @@ A simple, smart and pure vanilla javascript framework.
 * ... want to avoid unnecessary third party dependencies
 * ... want to stay flexible
 
-### [Homepage](https://www.infrontjs.com) &middot; [ApiDocs](https://apidocs.infrontjs.com) &middot; [Examples](https://examples.infrontjs.com) &middot; [Twitter](https://twitter.com/infrontjs)
+### [Homepage](https://www.infrontjs.com) &middot; [Guides](https://guides.infrontjs.com) &middot; [ApiDocs](https://apidocs.infrontjs.com) &middot; [Examples](https://examples.infrontjs.com) &middot; [Twitter](https://twitter.com/infrontjs)
 
 ## Installation
 
@@ -91,20 +91,10 @@ npm run test
 ## Resources
 
 * Find general information and interesting news on our [website](https://www.infrontjs.com).
+* Guides to certain aspects of the framework. [guides](https://guides.infrontjs.com).
 * Like reading api documentation. Have a look at the [api docs](https://apidocs.infrontjs.com).
 * Do you prefer to learn by example? Check out the [official examples](https://examples.infrontjs.com).
 * Get the latest development updates on [twitter](https://twitter.com/infrontjs).
-
-## Roadmap to 1.0
-
-We are currently working hard on the release of version 1.0
-
-- [ ] Route Not Found handling
-- [ ] Add minification version to rollup build
-- [x] L18N add automatic locale resolving
-- [x] L18N add NumberFormat logic
-- [x] L18N add DateTimeFormat logic
-- [x] Complete api docs
 
 ## Credits
 

@@ -59,9 +59,15 @@ class Helper
     /**
      * Creates an unique ID
      * @returns {string}
+     * @throws {Error} - If crypto module is not available
      */
     static createUid()
     {
+        if ( typeof crypto === 'undefined'  )
+        {
+            throw new Error( 'Crypto is not available.' );
+        }
+
         return ( [ 1e7 ] + -1e3 + -4e3 + -8e3 + -1e11 ).replace( /[018]/g, c =>
             ( c ^ crypto.getRandomValues( new Uint8Array( 1 ) )[ 0 ] & 15 >> c / 4 ).toString( 16 )
         );

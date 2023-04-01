@@ -1,17 +1,17 @@
 import assert from 'assert';
-import { DefaultState } from "../../src/base/DefaultState.js";
+import { DefaultNotFoundState } from "../../src/base/DefaultNotFoundState.js";
 
 describe( "Testing base.DefaultState", () =>
 {
     let state;
     before ( () => {
-        state = new DefaultState( null );
+        state = new DefaultNotFoundState( null );
     });
 
     it( 'Test class and its structure', () =>
     {
-        assert.equal( "function" === typeof DefaultState, true );
-        assert.equal( state instanceof DefaultState, true );
+        assert.equal( "function" === typeof DefaultNotFoundState, true );
+        assert.equal( state instanceof DefaultNotFoundState, true );
         assert.equal( "function" === typeof state.getId, true );
         assert.equal( "function" === typeof state.canEnter, true );
         assert.equal( "function" === typeof state.canExit, true );
@@ -25,7 +25,7 @@ describe( "Testing base.DefaultState", () =>
 
     it ( 'Test ID', () =>
     {
-        assert.equal( 'INFRONT_DEFAULT_INDEX_STATE' === state.getId(), true );
+        assert.equal( 'INFRONT_DEFAULT_NOTFOUND_STATE' === state.getId(), true );
     });
 
     it ( 'Test State.canEnter', () =>

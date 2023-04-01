@@ -7,7 +7,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.5';
+const VERSION = '0.9.6';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -24,7 +24,9 @@ const DEFAULT_SETTINGS = {
         "basePath" : null
     },
     "states" : {
-        "basePath" : ""
+        "basePath" : "",
+        "useDefaultIndexState" : true,
+        "useDefaultNotFoundState" : true
     },
     "view" : {
         "basePath" : "./../"

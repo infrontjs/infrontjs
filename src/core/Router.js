@@ -103,18 +103,22 @@ class Router
         }
 
         // If it is default route
-        if ( null === routeData && route === '/' )
+        if ( null === routeData )
         {
+            // @todo For later - check setting if default scene should be shown
             if ( route === '/' )
             {
                 routeData = {
-                    "routeAction" : States.DEFAULT_STATE_ID,
+                    "routeAction" : States.DEFAULT_INDEX_STATE_ID,
                     "routeParams" : null
                 };
             }
-            else
+            else if ( this.app.states.isNotFoundStateEnabled() )
             {
-                console.error( 404 );
+                routeData = {
+                    "routeAction" : States.DEFAULT_NOT_FOUND_STATE_ID,
+                    "routeParams" : null
+                }
             }
         }
 

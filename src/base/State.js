@@ -1,4 +1,4 @@
-import { RouteParams } from "../IF.js";
+import { RouteParams } from "./RouteParams.js";
 
 /**
  * State class. Parent state class. Extend this class for your state logic.

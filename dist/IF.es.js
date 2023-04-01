@@ -1,4 +1,76 @@
 /**
+ * RouteParams
+ * The router params of current state call
+ */
+class RouteParams
+{
+    /**
+     *
+     * @param {object} [params={}]
+     * @param {object} [query={}]
+     */
+    constructor( params = {}, query = {} )
+    {
+        this._p = params;
+        this._q = query;
+    }
+
+    /**
+     * Get param object
+     * @returns {Object}
+     */
+    getParams()
+    {
+        return this._p;
+    }
+
+    /**
+     * Get param value by given key. If key does not exists, the defaultValue is returned
+     * @param {string} key - Param key
+     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
+     * @returns {*|null}
+     */
+    getParam( key, defaultValue = null )
+    {
+        if ( this._p && this._p.hasOwnProperty( key ) )
+        {
+            return this._p[ key ];
+        }
+        else
+        {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Get query value by given key. If key does not exitss, the defaultValue is returned
+     * @param {string} key - Query key
+     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
+     * @returns {*|null}
+     */
+    getQuery( key, defaultValue = null )
+    {
+        if ( this._q && this._q.hasOwnProperty( key ) )
+        {
+            return this._q[ key ];
+        }
+        else
+        {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Get query object
+     * @returns {Object}
+     */
+    getQueries()
+    {
+        return this._q;
+    }
+}
+
+/**
  * State class. Parent state class. Extend this class for your state logic.
  *
  * @example
@@ -111,78 +183,6 @@ class State
         return this.routeParams.getQuery( key, defaultValue );
     }
 
-}
-
-/**
- * RouteParams
- * The router params of current state call
- */
-class RouteParams
-{
-    /**
-     *
-     * @param {object} [params={}]
-     * @param {object} [query={}]
-     */
-    constructor( params = {}, query = {} )
-    {
-        this._p = params;
-        this._q = query;
-    }
-
-    /**
-     * Get param object
-     * @returns {Object}
-     */
-    getParams()
-    {
-        return this._p;
-    }
-
-    /**
-     * Get param value by given key. If key does not exists, the defaultValue is returned
-     * @param {string} key - Param key
-     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
-     * @returns {*|null}
-     */
-    getParam( key, defaultValue = null )
-    {
-        if ( this._p && this._p.hasOwnProperty( key ) )
-        {
-            return this._p[ key ];
-        }
-        else
-        {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Get query value by given key. If key does not exitss, the defaultValue is returned
-     * @param {string} key - Query key
-     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
-     * @returns {*|null}
-     */
-    getQuery( key, defaultValue = null )
-    {
-        if ( this._q && this._q.hasOwnProperty( key ) )
-        {
-            return this._q[ key ];
-        }
-        else
-        {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Get query object
-     * @returns {Object}
-     */
-    getQueries()
-    {
-        return this._q;
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -959,9 +959,15 @@ class Helper
     /**
      * Creates an unique ID
      * @returns {string}
+     * @throws {Error} - If crypto module is not available
      */
     static createUid()
     {
+        if ( typeof crypto === 'undefined'  )
+        {
+            throw new Error( 'Crypto is not available.' );
+        }
+
         return ( [ 1e7 ] + -1e3 + -4e3 + -8e3 + -1e11 ).replace( /[018]/g, c =>
             ( c ^ crypto.getRandomValues( new Uint8Array( 1 ) )[ 0 ] & 15 >> c / 4 ).toString( 16 )
         );
@@ -1066,10 +1072,8 @@ class Helper
     }
 }
 
-class DefaultState extends State
+class DefaultBaseState extends State
 {
-    static ID = 'INFRONT_DEFAULT_INDEX_STATE';
-
     static VERTEX_SHADER = `
 attribute vec2 inPos;
 
@@ -1116,15 +1120,11 @@ void main()
 }
 `;
 
-    async enter( params = {} )
+    async enter()
     {
         this.app.container.innerHTML = `
-            <div style="margin: 0; padding: 0; width: 100%; height: 100%; min-height: 200px;position: relative">
+            <div id="if-cover" style="margin: 0; padding: 0; width: 100%; height: 100%; min-height: 200px;position: relative">
                 <canvas id="ds" style="margin: 0; padding: 0; width: 100%; height: 100%;position: absolute; top: 0; left: 0; z-index: 1"></canvas>;
-                <div style="position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 36%; min-width: 360px; display: inline-block">
-                    <?xml version="1.0" encoding="utf-8"?>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 504.23 181.11" style="max-width: 100%; max-height: 100%"><path fill="#ffffff" d="M493.78,10.44V170.66H10.44V10.44H493.78m2-1.95H8.49V172.62H495.73V8.49Z"/><path fill="#ffffff" d="M242.48,97.68A12.92,12.92,0,1,0,229.57,84.8,12.94,12.94,0,0,0,242.48,97.68Z"/><path fill="#ffffff" d="M193.13,79.86a4.31,4.31,0,0,0,3.79-4c0-1.51-2-2.73-4.42-2.73h-3.68V79.9h3.71Z"/><path fill="#ffffff" d="M489.88,14.35H14.35V166.76H489.88V14.35ZM373.34,94.23a10.06,10.06,0,0,0,6.47,2.2h.27a11.26,11.26,0,0,0,11-11.19L391,57.49H374.55V43.05h33.38v1l.2,41.21a27.91,27.91,0,0,1-28,28.11h-.41A28.34,28.34,0,0,1,364,108.56l-2.82-2,8.77-15.29Zm-47.9-35.4h39.4V73.27h-12.5v38.88H337.93V73.27H325.44Zm-50.21-1.49h3.28L305,82.73V58h14.41v54.12h-3.24L289.61,86.71V111.4H275.23Zm-32.72.06a27.38,27.38,0,1,1-27.38,27.46A27.46,27.46,0,0,1,242.51,57.4ZM174.4,58.77h17.93c10.6,0,19.23,8.27,19.23,18.43a17.37,17.37,0,0,1-7.37,14.16l15.11,20.79H201.5l-12.45-17.9h-.23v17.9H174.41V58.77Zm-40.27,0h33V73.12H148.46l-.07,6.78h18.72V94.25H148.38l.16,17.9H134.13ZM82.77,57.34h3.28l26.49,25.39V58H127v54.12h-3.24L97.15,86.71V111.4H82.77ZM43.05,99h9.06V57.49H43.05V43.05H76.43V57.49H67.37V99h9.06v14.43H43.05Zm418.13,38.39H43.05V122.11H461.18Zm-5.87-29.58c-4.57,3.62-10.89,5.62-17.79,5.62-11,0-20.13-5.14-24.39-13.77l-1.41-2.85,13.49-9.65,2.06,3.6c2,3.55,5.8,5.58,10.36,5.58s8.25-1.87,8.25-4.18c0-3.1-7.6-6.38-12.63-8.54l-.19-.09c-6.91-3.07-17.3-7.69-17.3-19.83,0-11.76,10-20.63,23.3-20.63,10.14,0,18.05,5,21.15,13.29l1,2.73-13.15,9.09-1.86-4a7.58,7.58,0,0,0-7.08-4.23c-3.76,0-6.29,2.08-6.29,4,0,1.57,3.08,3,8.14,5.08l2.6,1.09c8.46,3.72,17.41,8.49,19.07,18.47v6.82A19.79,19.79,0,0,1,455.31,107.79Z"/></svg>
-                </div>
             </div>        
         `;
         this.canvas = null;
@@ -1174,7 +1174,7 @@ void main()
         this.progDraw = this.gl.createProgram();
         for ( let i = 0; i < 2; ++i )
         {
-            let source = i == 0 ? DefaultState.VERTEX_SHADER : DefaultState.FRAGMENT_SHADER;
+            let source = i == 0 ? DefaultBaseState.VERTEX_SHADER : DefaultBaseState.FRAGMENT_SHADER;
             let shaderObj = this.gl.createShader( i == 0 ? this.gl.VERTEX_SHADER : this.gl.FRAGMENT_SHADER );
             if ( i === 0 )
             {
@@ -1242,13 +1242,43 @@ void main()
 
 }
 
+class DefaultNotFoundState extends DefaultBaseState
+{
+    static ID = 'INFRONT_DEFAULT_NOTFOUND_STATE';
+
+    async enter()
+    {
+        await super.enter();
+        this.app.container.querySelector( '#if-cover' ).insertAdjacentHTML(
+            'beforeend',
+            '<div style="position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 36%; min-width: 360px; display: inline-block; background-color: white; color: black; mix-blend-mode: screen; padding: 32px; font-family: monospace; text-align: center; font-size: 28px; font-weight: bold;outline: 2px solid white; border: 3px solid black;">' +
+            '<div style="font-size: 48px">404</div>REQUESTED URL NOT FOUND</div>'
+        );
+    }
+}
+
+class DefaultIndexState extends DefaultBaseState
+{
+    static ID = 'INFRONT_DEFAULT_INDEX_STATE';
+
+    async enter()
+    {
+        await super.enter();
+        this.app.container.querySelector( '#if-cover' ).insertAdjacentHTML(
+            'beforeend',
+            '<div style="position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 36%; min-width: 360px; display: inline-block"><?xml version="1.0" encoding="utf-8"?>\n                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 504.23 181.11" style="max-width: 100%; max-height: 100%"><path fill="#ffffff" d="M493.78,10.44V170.66H10.44V10.44H493.78m2-1.95H8.49V172.62H495.73V8.49Z"/><path fill="#ffffff" d="M242.48,97.68A12.92,12.92,0,1,0,229.57,84.8,12.94,12.94,0,0,0,242.48,97.68Z"/><path fill="#ffffff" d="M193.13,79.86a4.31,4.31,0,0,0,3.79-4c0-1.51-2-2.73-4.42-2.73h-3.68V79.9h3.71Z"/><path fill="#ffffff" d="M489.88,14.35H14.35V166.76H489.88V14.35ZM373.34,94.23a10.06,10.06,0,0,0,6.47,2.2h.27a11.26,11.26,0,0,0,11-11.19L391,57.49H374.55V43.05h33.38v1l.2,41.21a27.91,27.91,0,0,1-28,28.11h-.41A28.34,28.34,0,0,1,364,108.56l-2.82-2,8.77-15.29Zm-47.9-35.4h39.4V73.27h-12.5v38.88H337.93V73.27H325.44Zm-50.21-1.49h3.28L305,82.73V58h14.41v54.12h-3.24L289.61,86.71V111.4H275.23Zm-32.72.06a27.38,27.38,0,1,1-27.38,27.46A27.46,27.46,0,0,1,242.51,57.4ZM174.4,58.77h17.93c10.6,0,19.23,8.27,19.23,18.43a17.37,17.37,0,0,1-7.37,14.16l15.11,20.79H201.5l-12.45-17.9h-.23v17.9H174.41V58.77Zm-40.27,0h33V73.12H148.46l-.07,6.78h18.72V94.25H148.38l.16,17.9H134.13ZM82.77,57.34h3.28l26.49,25.39V58H127v54.12h-3.24L97.15,86.71V111.4H82.77ZM43.05,99h9.06V57.49H43.05V43.05H76.43V57.49H67.37V99h9.06v14.43H43.05Zm418.13,38.39H43.05V122.11H461.18Zm-5.87-29.58c-4.57,3.62-10.89,5.62-17.79,5.62-11,0-20.13-5.14-24.39-13.77l-1.41-2.85,13.49-9.65,2.06,3.6c2,3.55,5.8,5.58,10.36,5.58s8.25-1.87,8.25-4.18c0-3.1-7.6-6.38-12.63-8.54l-.19-.09c-6.91-3.07-17.3-7.69-17.3-19.83,0-11.76,10-20.63,23.3-20.63,10.14,0,18.05,5,21.15,13.29l1,2.73-13.15,9.09-1.86-4a7.58,7.58,0,0,0-7.08-4.23c-3.76,0-6.29,2.08-6.29,4,0,1.57,3.08,3,8.14,5.08l2.6,1.09c8.46,3.72,17.41,8.49,19.07,18.47v6.82A19.79,19.79,0,0,1,455.31,107.79Z"/></svg></div>'
+        );
+    }
+}
+
 /**
  * States - The state manager.
  * You can create multiple States instances in your application logic, e.g. for dealing with sub-states etc.
  */
 class States
 {
-    static DEFAULT_STATE_ID = 'INFRONT_DEFAULT_STATE_ID';
+    static DEFAULT_INDEX_STATE_ID = 'INFRONT_DEFAULT_INDEX_STATE';
+    static DEFAULT_NOT_FOUND_STATE_ID = 'INFRONT_DEFAULT_NOTFOUND_STATE';
 
     /**
      * Constructor
@@ -1259,13 +1289,17 @@ class States
         this._states =  {};
         this.app = appInstance;
         this.currentState = null;
-        this.defaultStateId = null;
+        this.stateNotFoundClass = null;
+        if ( this.app && true === this.app.settings.get( "states.useDefaultNotFoundState") )
+        {
+            this.stateNotFoundClass = DefaultNotFoundState;
+        }
     }
 
     /**
      * Add state class
      *
-     * @param {...BaseState} stateClasses - State class to be added.
+     * @param {...DefaultBaseState} stateClasses - State class to be added.
      * @throws {Error}  - Throws an error when adding state is not possible
      * @returns {boolean} - Returns wheter or not adding was successful
      */
@@ -1322,17 +1356,42 @@ class States
         {
             stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
-        else if ( stateId === States.DEFAULT_STATE_ID )
+        else if ( stateId === States.DEFAULT_INDEX_STATE_ID && true === this.app.settings.get( "states.useDefaultIndexState" ) )
         {
-            stateInstance = new DefaultState( this.app, routeParams );
+            stateInstance = new DefaultIndexState( this.app, routeParams );
+        }
+        else if ( null !== this.stateNotFoundClass )
+        {
+            stateInstance = new this.stateNotFoundClass( this.app, routeParams );
         }
 
         return stateInstance;
     }
 
     /**
+     * Set the StateNotFound class
+     *
+     * @param {State} notFoundClass - State class used in case when a state is not found
+     * @throws {Error} - Thrown when provided param is not of type State
+     */
+    setStateNotFoundClass( notFoundClass )
+    {
+        if ( false === Helper.isClass( notFoundClass ) )
+        {
+            throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
+        }
+
+        this.stateNotFoundClass = notFoundClass;
+    }
+
+    isNotFoundStateEnabled()
+    {
+        return ( this.stateNotFoundClass !== null );
+    }
+
+    /**
      * Switch to given state
-     * @param {BaseState} newState - Instance of state to switch to
+     * @param {DefaultBaseState} newState - Instance of state to switch to
      * @throws {Error} - Throws an error if given state cannot be entered or if enter() function throws an error.
      * @returns {Promise<boolean>}
      */
@@ -1463,18 +1522,22 @@ class Router
         }
 
         // If it is default route
-        if ( null === routeData && route === '/' )
+        if ( null === routeData )
         {
+            // @todo For later - check setting if default scene should be shown
             if ( route === '/' )
             {
                 routeData = {
-                    "routeAction" : States.DEFAULT_STATE_ID,
+                    "routeAction" : States.DEFAULT_INDEX_STATE_ID,
                     "routeParams" : null
                 };
             }
-            else
+            else if ( this.app.states.isNotFoundStateEnabled() )
             {
-                console.error( 404 );
+                routeData = {
+                    "routeAction" : States.DEFAULT_NOT_FOUND_STATE_ID,
+                    "routeParams" : null
+                };
             }
         }
 
@@ -5481,6 +5544,34 @@ class L18n
 {
     static LANG_EN = 'en';
 
+    // List of valid 2-chared-county-codes
+    static COUNTRY_CODES = [
+    "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
+    "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+    "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ",
+    "DE", "DJ", "DK", "DM", "DO", "DZ",
+    "EC", "EE", "EG", "EH", "EN", "ER", "ES", "ET",
+    "FI", "FJ", "FK", "FM", "FO", "FR",
+    "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
+    "HK", "HM", "HN", "HR", "HT", "HU",
+    "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT",
+    "JE", "JM", "JO", "JP",
+    "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ",
+    "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+    "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+    "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+    "OM",
+    "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY",
+    "QA",
+    "RE", "RO", "RS", "RU", "RW",
+    "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ",
+    "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+    "UA", "UG", "UM", "US", "UY", "UZ",
+    "VA", "VC", "VE", "VG", "VI", "VN", "VU",
+    "WF", "WS", "YE", "YT",
+    "ZA","ZM", "ZW" ];
+
+
     /**
      * Constructor
      * @param {App} appInstance - InfrontJS App reference
@@ -5489,9 +5580,64 @@ class L18n
     {
         this.app = appInstance;
         this.defaultLanguage = L18n.LANG_EN;
-        this.currentLanguage = this.defaultLanguage;
+        let cl = this.resolveBrowserLanguage();
+        if ( null === cl )
+        {
+            cl = this.defaultLanguage.toLowerCase();
+        }
 
         this.dictionary = {};
+        this.setCurrentLanguage( cl );
+    }
+
+    /**
+     * Resolve preferred browser language
+     * @returns {*|null|string}
+     */
+    resolveBrowserLanguage()
+    {
+        // See: https://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference/46514247#46514247
+        var nav = typeof window !== "undefined" && window.navigator ? window.navigator : null,
+            browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'],
+            i,
+            language,
+            len,
+            shortLanguage = null;
+
+        if ( !nav )
+        {
+            return null;
+        }
+
+        // support for HTML 5.1 "navigator.languages"
+        if (Array.isArray(nav.languages)) {
+            for (i = 0; i < nav.languages.length; i++) {
+                language = nav.languages[i];
+                len = language.length;
+                if (!shortLanguage && len) {
+                    shortLanguage = language;
+                }
+                if (language && len>2) {
+                    return language.slice( 0, 2).toLowerCase();
+                }
+            }
+        }
+
+        // support for other well known properties in browsers
+        for (i = 0; i < browserLanguagePropertyKeys.length; i++) {
+            language = nav[browserLanguagePropertyKeys[i]];
+            //skip this loop iteration if property is null/undefined.  IE11 fix.
+            if (language == null) { continue; }
+            len = language.length;
+            if (!shortLanguage && len) {
+                shortLanguage = language;
+            }
+            if (language && len > 2) {
+                return language.slice( 0, 2).toLowerCase();
+            }
+        }
+
+        return shortLanguage.toLowerCase();
     }
 
     /**
@@ -5500,7 +5646,7 @@ class L18n
      */
     expose( fnName = '_lc' )
     {
-        if ( window )
+        if ( typeof window !== "undefined" )
         {
             window[ fnName ] = this.getLocale.bind( this );
         }
@@ -5516,9 +5662,31 @@ class L18n
     }
 
     /**
+     *
+     * Add given translation object to dictionary
+     *
+     * @param {string} langCode - Langugae code (2 chars)
+     * @param {object} translationObject - The translation object, simple key-value object
+     */
+    addTranslation( langCode, translationObject )
+    {
+        if ( langCode && langCode.length > 2 )
+        {
+            langCode = langCode.slice( 0, 2);
+        }
+
+        if ( !langCode || false === this._isValidLangCode( langCode ) )
+        {
+            throw new Error( 'Invalid langCode: ' + langCode )
+        }
+
+        this.dictionary[ langCode ] = translationObject;
+    }
+
+    /**
      * Gets current translation by given key
      * @param {string} key - Translation key
-     * @param {object=} [params=undefined] - Params object
+     * @param {array=} [params=undefined] - Params array
      * @returns {string}
      */
     getLocale( key, params )
@@ -5553,6 +5721,87 @@ class L18n
         {
             return '###' + key + '###';
         }
+    }
+
+    /**
+     * Get formatted number
+     *
+     * @param {Date} num - Number to format
+     * @param {Object=} [opts=null] - NumberFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat|NumberFormat}
+     * @returns {string}
+     */
+    getNumber( num = 0, opts = null )
+    {
+        if ( opts )
+        {
+            return Intl.NumberFormat( this.currentLanguage, opts ).format( num );
+        }
+        else
+        {
+            return this._nf.format( num );
+        }
+    }
+
+    /**
+     * Get formatted date time
+     *
+     * @param {Date} dt - Date object to format
+     * @param {Object=} [opts=null] - DateTimeFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat|DateTimeFormat}
+     * @returns {string}
+     */
+    getDateTime( dt, opts = null )
+    {
+        if ( opts )
+        {
+            return Intl.DateTimeFormat( this.currentLanguage, opts ).format( dt );
+        }
+        else
+        {
+            return this._dtf.format( dt );
+        }
+    }
+
+
+    /**
+     * Set current language
+     * @param {string} langCode - 2 chared language code
+     * @throws {Error} - Invalid language code
+     */
+    setCurrentLanguage( langCode )
+    {
+        if ( langCode && langCode.length > 2 )
+        {
+            langCode = langCode.slice( 0, 2);
+        }
+
+        if ( !langCode || false === this._isValidLangCode( langCode ) )
+        {
+            throw new Error( 'Invalid langCode: ' + langCode )
+        }
+
+        this.currentLanguage = langCode.toLowerCase();
+        this._nf = new Intl.NumberFormat(
+            this.currentLanguage,
+            {
+                minimumFractionDigits : 2,
+                maximumFractionDigits : 2
+            }
+        );
+        this._dtf = new Intl.DateTimeFormat( this.currentLanguage );
+    }
+
+    /**
+     * Get current selected language
+     * @returns {string} - Returns 2 chared language code
+     */
+    getCurrentLanguage()
+    {
+        return this.currentLanguage;
+    }
+
+    _isValidLangCode( langCode )
+    {
+        return -1 < L18n.COUNTRY_CODES.indexOf( langCode.toUpperCase() );
     }
 }
 
@@ -6717,7 +6966,7 @@ class PathObject
     }
 }
 
-const VERSION = '0.9.43';
+const VERSION = '0.9.5';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -6734,7 +6983,9 @@ const DEFAULT_SETTINGS = {
         "basePath" : null
     },
     "states" : {
-        "basePath" : ""
+        "basePath" : "",
+        "useDefaultIndexState" : true,
+        "useDefaultNotFoundState" : true
     },
     "view" : {
         "basePath" : "./../"

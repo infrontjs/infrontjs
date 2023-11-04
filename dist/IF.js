@@ -5458,48 +5458,68 @@ void main()
 	    }
 
 	    /**
+	     * Generate HTML from given template string and data
+	     * @param tmpl
+	     * @param data
+	     * @param tmplOptions
+	     * @returns {string} - Generated HTML
+	     */
+	    getHtml( tmpl, data = {}, tmplOptions = null )
+	    {
+	        return render( tmpl, data, tmplOptions );
+	    }
+
+	    /**
 	     * Renders template with given data to html container.
 	     *
-	     * @param {HTMLElement|null} container - Container in which template should be rendered. If null, the generated HTML is returned
+	     * @param {HTMLElement|null} container - Container in which template should be rendered.
 	     * @param {string} tmpl - EJS template string
 	     * @param {object=} [data={}] - Template data.
 	     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
 	     * @param {object=} [tmplOptions=null] - EJS template options. @see {@link https://ejs.co/#docs}
-	     * @returns {undefined|string} - If container is undefined|null, the rendered html is returned.
 	     */
 	    render( container, tmpl, data = {}, forceRepaint = false, tmplOptions = null )
 	    {
-	        const html = render( tmpl, data, tmplOptions );
+	        const html = this.getHtml( tmpl, data, tmplOptions );
+	        this.renderHtml( container, html );
+	    }
+
+	    /**
+	     *
+	     * @param {HTMLElement|null} container - Container in which template should be rendered.
+	     * @param {string} html - HTML string to be rendered
+	     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
+	     */
+	    renderHtml( container, html, forceRepaint = false )
+	    {
 	        if ( !container || false === ( container instanceof HTMLElement ) )
 	        {
-	            return html;
+	            throw new Error( 'Invalid container. Given container must be an instance of an HTMLElement.' );
+	        }
+
+	        if ( true === forceRepaint )
+	        {
+	            container.innerHTML = html;
 	        }
 	        else
 	        {
-	            if ( true === forceRepaint )
+	            let outDiv = container.querySelector( 'div:first-child' );
+	            if ( !outDiv )
 	            {
-	                container.innerHTML = html;
+	                container.innerHTML = '<div></div>';
+	                outDiv = container.querySelector( 'div:first-child' );
 	            }
-	            else
-	            {
-	                let outDiv = container.querySelector( 'div:first-child' );
-	                if ( !outDiv )
-	                {
-	                    container.innerHTML = '<div></div>';
-	                    outDiv = container.querySelector( 'div:first-child' );
-	                }
 
-	                const newDiv = document.createElement( 'div' );
-	                newDiv.innerHTML = html;
+	            const newDiv = document.createElement( 'div' );
+	            newDiv.innerHTML = html;
 
-	                this.dd.apply(
-	                    outDiv,
-	                    this.dd.diff(
-	                        nodeToObj( outDiv ),
-	                        nodeToObj( newDiv )
-	                    )
-	                );
-	            }
+	            this.dd.apply(
+	                outDiv,
+	                this.dd.diff(
+	                    nodeToObj( outDiv ),
+	                    nodeToObj( newDiv )
+	                )
+	            );
 	        }
 	    }
 
@@ -6972,14 +6992,13 @@ void main()
 	    }
 	}
 
-	const VERSION = '0.9.5';
+	const VERSION = '0.9.7';
 
 	const DEFAULT_SETTINGS = {
 	    "app" : {
 	        "id" : null,
 	        "title" : null,
-	        "sayHello" : true,
-	        "environment" : "development"
+	        "sayHello" : true
 	    },
 	    "l18n" : {
 	        "defaultLanguage" : "en"
@@ -7034,7 +7053,6 @@ void main()
 	     * @param {object=} settings.app - App settings.
 	     * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
 	     * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
-	     * @param {string|null} [settings.app.environment=development] - Environment variable.
 	     */
 	    constructor( container = null, settings = {} )
 	    {
@@ -7055,6 +7073,7 @@ void main()
 	            this.container = document.querySelector( 'body' );
 	        }
 
+	        // @todo Replace spread logic with lodash merge function (inline)
 	        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
 	        if ( null === this.settings.get( 'app.id', null ) )
 	        {
@@ -7118,7 +7137,7 @@ void main()
 	    {
 	        if ( this.settings.get( 'app.title' ) )
 	        {
-	            this.viewManager.setWindowTitle( this.settings.get( 'app.title' ) );
+	            this.view.setWindowTitle( this.settings.get( 'app.title' ) );
 	        }
 
 	        this.router.enable();

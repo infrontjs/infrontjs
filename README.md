@@ -2,7 +2,7 @@
 
 # [InfrontJS](https://www.infrontjs.com)
 
-A simple, smart and pure vanilla javascript framework.
+The anti frontend framework for real javascript developers.
 
 **For developers who...**
 
@@ -56,7 +56,7 @@ myApp.run();
 
 ## Build & Test
 
-Feel free to fork and work with the library. After cloning it,  make sure to 
+Feel free to fork and work with the library. After cloning it, make sure to 
 
 ```bash
 npm install

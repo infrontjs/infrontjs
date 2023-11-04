@@ -7,14 +7,13 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.6';
+const VERSION = '0.9.7';
 
 const DEFAULT_SETTINGS = {
     "app" : {
         "id" : null,
         "title" : null,
-        "sayHello" : true,
-        "environment" : "development"
+        "sayHello" : true
     },
     "l18n" : {
         "defaultLanguage" : "en"
@@ -69,7 +68,6 @@ class App
      * @param {object=} settings.app - App settings.
      * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
      * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
-     * @param {string|null} [settings.app.environment=development] - Environment variable.
      */
     constructor( container = null, settings = {} )
     {
@@ -90,6 +88,7 @@ class App
             this.container = document.querySelector( 'body' );
         }
 
+        // @todo Replace spread logic with lodash merge function (inline)
         this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
         if ( null === this.settings.get( 'app.id', null ) )
         {
@@ -153,7 +152,7 @@ class App
     {
         if ( this.settings.get( 'app.title' ) )
         {
-            this.viewManager.setWindowTitle( this.settings.get( 'app.title' ) );
+            this.view.setWindowTitle( this.settings.get( 'app.title' ) );
         }
 
         this.router.enable();

@@ -103,14 +103,15 @@ class L18n
     }
 
     /**
-     * Export localization function to window scope.
-     * @param {string=} [fnName=_lc] - Name of global localization function
+     * Export localization functions to window scope.
      */
-    expose( fnName = '_lc' )
+    expose()
     {
         if ( typeof window !== "undefined" )
         {
-            window[ fnName ] = this.getLocale.bind( this );
+            window[ '_lcs' ] = this.getLocale.bind( this );
+            window[ '_lcn' ] = this.getNumber.bind( this );
+            window[ '_lcd' ] = this.getDateTime.bind( this );
         }
     }
 

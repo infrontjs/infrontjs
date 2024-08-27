@@ -4,23 +4,7 @@
 
 The anti frontend framework for real javascript developers.
 
-**For developers who...**
-
-* ... like simple and smart solutions
-* ... want to have full control of your code and no black boxes 
-* ... prefer to stay close to the platform and want to use its full power
-* ... know vanilla javascript, css3 and html5
-* ... want to avoid unnecessary abstractions
-* ... do not want to learn additional domain specific languages and concepts (e.g. for templates etc)
-* ... prefer a painless and easy-to-configure toolchain
-
-**For managers who...**
-
-* ... are tired of wasting time on permanent framework version updates 
-* ... don't want to take the risk that their product is built upon a framework which might become outdated in the future
-* ... want their developers spending most of their energy on the product and not about the underlying technology
-* ... want to avoid unnecessary third party dependencies
-* ... want to stay flexible
+pure. simple. stable.
 
 ### [Homepage](https://www.infrontjs.com) &middot; [Guides](https://guides.infrontjs.com) &middot; [ApiDocs](https://apidocs.infrontjs.com) &middot; [Examples](https://examples.infrontjs.com) &middot; [Twitter](https://twitter.com/infrontjs)
 
@@ -101,7 +85,6 @@ npm run test
 This framework is build upon some great other open source projects...
 
 * View class encapsulates [EJS](https://ejs.co/)
-* DOM diffing enabled rendering is powered by [diffDOM](https://github.com/fiduswriter/diffDOM)
 * Observables from the Helper class are supported by [ObservableSlim](https://github.com/elliotnb/observable-slim)
 * UrlPattern used by the Router class relies on [UrlPattern](https://github.com/snd/url-pattern)
 * PathObject implementation heavily relies on some [Lodash](https://github.com/lodash/lodash) methods

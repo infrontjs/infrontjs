@@ -9,4 +9,5 @@ export { View } from "./core/View.js";
 
 export { Helper } from "./util/Helper.js";
 export { Http } from "./util/Http.js";
+export { Fetcher } from "./util/Fetcher.js";
 export { PathObject } from "./util/PathObject.js";

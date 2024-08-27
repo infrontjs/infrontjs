@@ -42,7 +42,7 @@ class Router
         if ( null === this.basePath )
         {
             // Try "best guess"
-            this.basePath = Helper.trim( window.location.pathname, '/' );
+            this.basePath = "";
         }
         this.basePath = Helper.trim( this.basePath, '/' );
     }
@@ -60,7 +60,10 @@ class Router
 
         if ( true === Helper.isClass( stateClass ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
         {
-            this.app.states.add( stateClass );
+            if ( false === this.app.states.exists( stateClass.ID ) )
+            {
+                this.app.states.add( stateClass );
+            }
             this._routeActions.push(
                 {
                     "action" : stateClass.ID,
@@ -158,10 +161,19 @@ class Router
         if ( this.mode === 'url' )
         {
             this.app.container.addEventListener( 'click', this.processUrl.bind( this ), false);
+            // Fix to properly handle backbutton
+            window.addEventListener( 'popstate', ( e ) =>
+            {
+                this.processUrl();
+            });
         }
         else if ( this.mode = 'hash' )
         {
             window.addEventListener( 'hashchange', this.processHash.bind( this ) );
+        }
+        else
+        {
+            console.erorr( `Invalid mode: ${mode} detected` );
         }
     }
 
@@ -292,6 +304,10 @@ class Router
                     actionData.routeParams
                 );
                 await this.app.states.switchTo( stateInstance );
+            }
+            else
+            {
+                console.error( 'No state found.' );
             }
         }
         catch( e )

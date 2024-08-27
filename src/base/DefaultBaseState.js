@@ -51,7 +51,7 @@ void main()
     async enter()
     {
         this.app.container.innerHTML = `
-            <div id="if-cover" style="margin: 0; padding: 0; width: 100%; height: 100%; min-height: 200px;position: relative">
+            <div id="if-cover" style="margin: 0; padding: 0; width: 100%; height: 100%; min-height: 100vh;position: relative">
                 <canvas id="ds" style="margin: 0; padding: 0; width: 100%; height: 100%;position: absolute; top: 0; left: 0; z-index: 1"></canvas>;
             </div>        
         `

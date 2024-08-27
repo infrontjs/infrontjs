@@ -1,20 +1,18 @@
 import { Helper } from "../util/Helper.js";
 
 /**
- * Http
- * Simple helper class for http client requests.
- *
- * Note: All http verb functions support callback and await mode.
+ * Fetcher
+ * Wrapper of the native Fetch API
  *
  * @example <caption>Using callbacks</caption>
- * const apiClient = new Http( 'https://api.example.com' );
- * apiClient.get( '/books', function( err, result ) { } );
+ * const fetcher = new Fetcher( 'https://api.example.com' );
+ * fetcher.get( '/books', function( err, result ) { } );
  *
  * @example <caption>Using await</caption>
- * const apiClient = new Http( 'https://api.example.com' );
+ * const fetcher = new Fetcher( 'https://api.example.com' );
  * try
  * {
- *     const result = await apiClient.get( '/books' );
+ *     const result = await fetcher.get( '/books' );
  * }
  * catch( e )
  * {
@@ -22,12 +20,12 @@ import { Helper } from "../util/Helper.js";
  * }
  *
  */
-class Http
+class Fetcher
 {
     /**
      * Construcotr
      * @param {string} url - Base url
-     * @param {object=} headers - Header data.
+     * @param {Headers=} headers - Header data.
      */
     constructor( url = '', headers = {} )
     {
@@ -158,4 +156,4 @@ class Http
     }
 }
 
-export { Http };
+export { Fetcher };

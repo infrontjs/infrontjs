@@ -1,6 +1,5 @@
 import { compile, render } from "./../_external/ejs/ejs.js";
 import { Helper } from "../util/Helper.js";
-import { DiffDOM, nodeToObj } from "../_external/diffDOM/index.js";
 
 /**
  * View
@@ -15,19 +14,6 @@ class View
     constructor( appInstance )
     {
         this.app = appInstance;
-
-        this.basePath = this.app.settings.get( "templateManager.basePath", null );
-        if ( null !== this.basePath )
-        {
-            this.basePath = this.app.router.basePath + "/" + Helper.trim( this.basePath, "/" );
-        }
-        else
-        {
-            this.basePath = this.app.router.basePath;
-        }
-
-        this._cache = [];
-        this.dd = new DiffDOM();
     }
 
     /**
@@ -62,7 +48,7 @@ class View
      */
     getHtml( tmpl, data = {}, tmplOptions = null )
     {
-        return render( tmpl, data, tmplOptions );
+        return render( tmpl, this.createData( data ), tmplOptions );
     }
 
     /**
@@ -84,77 +70,47 @@ class View
      *
      * @param {HTMLElement|null} container - Container in which template should be rendered.
      * @param {string} html - HTML string to be rendered
-     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
      */
-    renderHtml( container, html, forceRepaint = false )
+    renderHtml( container, html )
     {
         if ( !container || false === ( container instanceof HTMLElement ) )
         {
             throw new Error( 'Invalid container. Given container must be an instance of an HTMLElement.' );
         }
 
-        if ( true === forceRepaint )
+        container.innerHTML = html;
+    }
+
+    createData( data = {} )
+    {
+        if ( data.hasOwnProperty( '_lcs' ) )
         {
-            container.innerHTML = html;
+            console.warn( '_lcs already exists in template data.' );
         }
         else
         {
-            let outDiv = container.querySelector( 'div:first-child' );
-            if ( !outDiv )
-            {
-                container.innerHTML = '<div></div>';
-                outDiv = container.querySelector( 'div:first-child' );
-            }
-
-            const newDiv = document.createElement( 'div' );
-            newDiv.innerHTML = html;
-
-            this.dd.apply(
-                outDiv,
-                this.dd.diff(
-                    nodeToObj( outDiv ),
-                    nodeToObj( newDiv )
-                )
-            );
+            data[ '_lcs' ] = this.app.l18n.getLocale.bind( this.app.l18n );
         }
-    }
 
-    /**
-     * Load html templated from given url
-     *
-     * @param {string} templateUrl - URL to template to load
-     * @param {boolean=} [useCache=true] - If true, use cache to avoid unnecessary loading
-     * @throws {Error}
-     * @returns {string}
-     */
-    async load( templateUrl, useCache = true )
-    {
-        let tmplHtml = useCache ? this._getTemplateFromCache( templateUrl ) : null;
-        if ( !tmplHtml )
+        if ( data.hasOwnProperty( '_lcn' ) )
         {
-            const response = await fetch( null === this.basePath ? templateUrl : `/${this.basePath}/${Helper.trim( templateUrl, '/' )}` );
-            if ( response.status > 399 )
-            {
-                throw new Error( `${response.status}: ${response.statusText}`);
-            }
-            tmplHtml = await response.text();
-            this._cache.push(
-                {
-                    url : templateUrl,
-                    html : tmplHtml
-                }
-            );
+            console.warn( '_lcn already exists in template data.' );
         }
-        return tmplHtml;
-    }
-
-    _getTemplateFromCache( templateUrl )
-    {
-        const cachedTemplate =  this._cache.find( tmpl => tmpl.url === templateUrl );
-        if ( cachedTemplate )
+        else
         {
-            return cachedTemplate.html;
+            data[ '_lcn' ] = this.app.l18n.getNumber.bind( this.app.l18n );;
         }
+
+        if ( data.hasOwnProperty( '_lcd' ) )
+        {
+            console.warn( '_lcd already exists in template data.' );
+        }
+        else
+        {
+            data[ '_lcd' ] = this.app.l18n.getDateTime.bind( this.app.l18n );
+        }
+
+        return data;
     }
 }
 

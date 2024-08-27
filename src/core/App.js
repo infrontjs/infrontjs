@@ -7,7 +7,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.6';
+const VERSION = '1.0.0';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -26,9 +26,6 @@ const DEFAULT_SETTINGS = {
         "basePath" : "",
         "useDefaultIndexState" : true,
         "useDefaultNotFoundState" : true
-    },
-    "view" : {
-        "basePath" : "./../"
     }
 };
 
@@ -73,6 +70,13 @@ class App
     {
         this.container = container;
 
+        // @todo Replace spread logic with lodash merge function (inline)
+        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
+        if ( null === this.settings.get( 'app.id', null ) )
+        {
+            this.settings.set( 'app.id', Helper.createUid() );
+        }
+
         if ( typeof window === 'undefined'  )
         {
             throw new Error( 'InfrontJS works only in browser mode.' );
@@ -85,15 +89,13 @@ class App
         }
         else if ( this.container === null )
         {
-            this.container = document.querySelector( 'body' );
+            const body = document.querySelector( 'body' );
+            const customContainer = document.createElement( 'section' );
+            body.appendChild( customContainer );
+            this.container = customContainer;
         }
 
-        // @todo Replace spread logic with lodash merge function (inline)
-        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
-        if ( null === this.settings.get( 'app.id', null ) )
-        {
-            this.settings.set( 'app.id', Helper.createUid() );
-        }
+        this.container.setAttribute( 'data-ifjs-app-id', this.settings.get( 'app.id') );
 
         // Init core components
         this.initRouter();

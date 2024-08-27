@@ -1,5 +1,4 @@
 import { Helper } from "../util/Helper.js";
-import { DefaultNotFoundState } from "../base/DefaultNotFoundState.js";
 import { DefaultIndexState } from "../base/DefaultIndexState.js";
 
 
@@ -22,10 +21,6 @@ class States
         this.app = appInstance;
         this.currentState = null;
         this.stateNotFoundClass = null;
-        if ( this.app && true === this.app.settings.get( "states.useDefaultNotFoundState") )
-        {
-            this.stateNotFoundClass = DefaultNotFoundState;
-        }
     }
 
     /**
@@ -44,16 +39,16 @@ class States
                 throw new Error( 'States.addState expects a class/subclass of State.' );
             }
 
-            // Throw an error if ID is null or already taken
+            // Autogeneratre id in case it is not valid
             if ( false === Helper.isString( stateClass.ID ) )
             {
+                console.warn( 'StateClass doesnt have a valid ID.' );
                 stateClass.ID = Helper.createUid();
-                // @todo show warning ... throw new Error( 'Given stateClass does not have a valid static ID' );
             }
 
             if ( true === this._states.hasOwnProperty( stateClass.ID ) )
             {
-                // @todo Show warning ...
+                console.warn( `StateClass not added. ID ${stateClass.ID} already exists.` );
                 return false;
             }
 
@@ -96,8 +91,23 @@ class States
         {
             stateInstance = new this.stateNotFoundClass( this.app, routeParams );
         }
+        else
+        {
+            console.error( `State ${stateId} does not exist.` );
+        }
 
         return stateInstance;
+    }
+
+    /**
+     * Checks if given stateId already exists.
+     *
+     * @param {string} stateId
+     * @return {boolean}
+     */
+    exists( stateId )
+    {
+        return this._states.hasOwnProperty( stateId );
     }
 
     /**

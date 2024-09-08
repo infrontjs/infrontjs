@@ -140,7 +140,18 @@ class States
      */
     async switchTo( newState )
     {
-        this.app.emit( Events.EVENT.BEFORE_STATE_CHANGE );
+        let previousStateId = null;
+        let currentStateId = this.currentState ? this.currentState.getId() : null;
+
+        this.app.emit(
+            Events.EVENT.BEFORE_STATE_CHANGE,
+            {
+                detail: {
+                    currentStateId: currentStateId,
+                    nextStateId : newState ? newState.getId() : null
+                }
+            }
+        );
 
         if ( false === newState.canEnter() )
         {
@@ -156,14 +167,24 @@ class States
 
         if ( this.currentState )
         {
+            previousStateId = this.currentState.getId();
             await this.currentState.exit();
             delete this.currentState;
         }
 
         this.currentState = newState;
         await newState.enter();
+        currentStateId = this.currentState.getId();
 
-        this.app.emit( Events.EVENT.AFTER_STATE_CHANGE );
+        this.app.emit(
+            Events.EVENT.AFTER_STATE_CHANGE,
+            {
+                detail: {
+                    previousStateId : previousStateId,
+                    currentStateId: currentStateId
+                }
+            }
+        );
     }
 
 }

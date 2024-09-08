@@ -2,7 +2,7 @@
 
 # [InfrontJS](https://www.infrontjs.com)
 
-The anti frontend framework for real javascript developers.
+The **anti framework** for real javascript developers.
 
 pure. simple. stable.
 

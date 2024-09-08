@@ -1,5 +1,6 @@
 import { Helper } from "../util/Helper.js";
 import { DefaultIndexState } from "../base/DefaultIndexState.js";
+import { Events } from "../IF.js";
 
 
 /**
@@ -139,6 +140,8 @@ class States
      */
     async switchTo( newState )
     {
+        this.app.emit( Events.EVENT.BEFORE_STATE_CHANGE );
+
         if ( false === newState.canEnter() )
         {
             const redirectUrl = newState.getRedirectUrl();
@@ -159,6 +162,8 @@ class States
 
         this.currentState = newState;
         await newState.enter();
+
+        this.app.emit( Events.EVENT.AFTER_STATE_CHANGE );
     }
 
 }

@@ -2,12 +2,13 @@ import { Router } from "./Router.js";
 import { States } from "./States.js";
 import { View } from "./View.js";
 import { L18n } from "./L18n.js";
+import { Events } from "./Events.js";
 
 import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '1.0.0';
+const VERSION = '0.9.8';
 
 const DEFAULT_SETTINGS = {
     "app" : {
@@ -33,7 +34,7 @@ const DEFAULT_SETTINGS = {
  * App
  * The App class is the logical core unit of every InfrontJS application.
  */
-class App
+class App extends Events
 {
     static POOL = {};
 
@@ -68,6 +69,8 @@ class App
      */
     constructor( container = null, settings = {} )
     {
+        super();
+
         this.container = container;
 
         // @todo Replace spread logic with lodash merge function (inline)
@@ -110,6 +113,8 @@ class App
         {
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
+
+        this.emit( Events.EVENT.READY );
     }
 
     initL18n()

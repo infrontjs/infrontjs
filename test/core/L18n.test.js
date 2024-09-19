@@ -29,20 +29,24 @@ describe( "Testing core.L18n", () =>
     it( 'Test getLocale', () =>
     {
         const dict = {
-            "en" : {
-                "KEY_HELLO" : "Hello",
-                "KEY_WORLD" : "World",
-                "KEY_HELLO_NAME" : "Hello {0} !"
+            "Hello World!" : {
+                "de" : "Hallo Welt!"
+            },
+            "My name is {0}." : {
+                "de" : "Mein Name ist {0}."
             }
         };
         l18n.setDictionary( dict );
 
-        const keyUndefined = 'KEY_UNKNOWN';
-
-        assert.equal( l18n.getLocale( "KEY_HELLO" ) === "Hello", true );
-        assert.equal( l18n.getLocale( "KEY_WORLD" ) === "World", true );
-        assert.equal( l18n.getLocale( keyUndefined ) === '###' + keyUndefined + '###', true );
-        assert.equal( l18n.getLocale( "KEY_HELLO_NAME", [ "InfrontJS" ] ) === "Hello InfrontJS !", true );
+        assert.equal( l18n.getLocale( "Hello World!" ) === "Hello World!", true );
+        l18n.setCurrentLanguage( "de" );
+        assert.equal( l18n.getLocale( "Hello World!" ) === "Hallo Welt!", true );
+        l18n.setCurrentLanguage( "en" );
+        assert.equal( l18n.getLocale( "My name is {0}.", [ "InfrontJS" ] ) === "My name is InfrontJS.", true );
+        l18n.setCurrentLanguage( "de" );
+        assert.equal( l18n.getLocale( "My name is {0}.", [ "InfrontJS" ] ) === "Mein Name ist InfrontJS.", true );
+        l18n.setCurrentLanguage( "en" );
+        assert.equal( l18n.getLocale( "New textkey!" ) === "New textkey!", true );
     });
 
     it( 'Test setCurrentLanguage with invalid call', () =>
@@ -65,14 +69,12 @@ describe( "Testing core.L18n", () =>
     {
         l18n.addTranslation(
             'de',
-            {
-                "KEY_HELLO" : "Hallo"
-            }
+            { 'Hello' : "Hallo" }
         );
         l18n.setCurrentLanguage( 'de' );
-
-        assert( l18n.dictionary.hasOwnProperty( 'de' ) );
-        assert( 'Hallo' === l18n.getLocale( 'KEY_HELLO' ), true );
+        assert( 'Hallo' === l18n.getLocale( 'Hello' ), true );
+        l18n.setCurrentLanguage( 'en' );
+        assert( 'Hello' === l18n.getLocale( 'Hello' ), true );
     });
 
     it( 'Test number formatting', () =>

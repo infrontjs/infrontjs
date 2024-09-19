@@ -117,7 +117,7 @@ class L18n
 
     /**
      * Sets dictionary
-     * @param {object=}  [dict={}] - Dictionary
+     * @param {object=}  [dict={ defaultLang : { "langCode" : "translation", ... }, ... } ] - Dictionary
      */
     setDictionary( dict = {} )
     {
@@ -129,7 +129,7 @@ class L18n
      * Add given translation object to dictionary
      *
      * @param {string} langCode - Langugae code (2 chars)
-     * @param {object} translationObject - The translation object, simple key-value object
+     * @param {object} translationObject - The translation object, simple key-value object, e.g. { 'Hello' : 'Hallo' }
      */
     addTranslation( langCode, translationObject )
     {
@@ -143,7 +143,14 @@ class L18n
             throw new Error( 'Invalid langCode: ' + langCode )
         }
 
-        this.dictionary[ langCode ] = translationObject;
+        for ( const [ key, value ] of Object.entries( translationObject ) )
+        {
+            if ( false === this.dictionary.hasOwnProperty( key ) )
+            {
+                this.dictionary[ key ] = {};
+            }
+            this.dictionary[ key ][ langCode ] = value;
+        }
     }
 
     /**
@@ -158,32 +165,24 @@ class L18n
             language = this.currentLanguage,
             dictionary = this.dictionary;
 
-        if ( language && dictionary[ language ].hasOwnProperty( key ) )
+        let langEntry = null;
+
+        if ( dictionary.hasOwnProperty( key ) && dictionary[ key ].hasOwnProperty( language ) )
         {
-            return dictionary[ language][ key ].replace(/{(\d+)}/g, function(match, number)
-            {
-                return typeof params[number] != 'undefined'
-                    ? params[number]
-                    : match
-                    ;
-            });
-        }
-        else if ( defaultLanguage &&
-            dictionary.hasOwnProperty( defaultLanguage ) &&
-            dictionary[ defaultLanguage ].hasOwnProperty( key ) )
-        {
-            return dictionary[ defaultLanguage ][ key ].replace(/{(\d+)}/g, function(match, number)
-            {
-                return typeof params[number] != 'undefined'
-                    ? params[number]
-                    : match
-                    ;
-            });
+            langEntry = dictionary[ key ][ language ];
         }
         else
         {
-            return '###' + key + '###';
+            langEntry = key;
         }
+
+        return langEntry.replace(/{(\d+)}/g, function(match, number)
+        {
+            return typeof params[number] != 'undefined'
+                ? params[number]
+                : match
+                ;
+        });
     }
 
     /**

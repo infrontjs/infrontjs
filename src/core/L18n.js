@@ -241,6 +241,20 @@ class L18n
             throw new Error( 'Invalid langCode: ' + langCode )
         }
 
+        if ( this.app )
+        {
+            this.app.emit(
+                Events.EVENT.BEFORE_LANGUAGE_SWITCH,
+                {
+                    detail: {
+                        currentLanguage: this.currentLanguage,
+                        newLanguage: langCode.toLowerCase()
+                    }
+                }
+            );
+        }
+
+        const oldLanguage = this.currentLanguage;
         this.currentLanguage = langCode.toLowerCase();
         this._nf = new Intl.NumberFormat(
             this.currentLanguage,
@@ -250,6 +264,19 @@ class L18n
             }
         );
         this._dtf = new Intl.DateTimeFormat( this.currentLanguage );
+
+        if ( this.app )
+        {
+            this.app.emit(
+                Events.EVENT.AFTER_LANGUAGE_SWITCH,
+                {
+                    detail: {
+                        oldLanguage: oldLanguage,
+                        currentLanguage: this.currentLanguage
+                    }
+                }
+            );
+        }
     }
 
     /**

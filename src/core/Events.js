@@ -22,7 +22,9 @@ class Events
         return {
             'READY' : 'ready',
             'BEFORE_STATE_CHANGE' : 'beforeStateChange',
-            'AFTER_STATE_CHANGE' : 'afterStateChange'
+            'AFTER_STATE_CHANGE' : 'afterStateChange',
+            'BEFORE_LANGUAGE_SWITCH' : 'beforeLanguageSwitch',
+            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch'
         }
     };
 

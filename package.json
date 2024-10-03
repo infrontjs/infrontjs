@@ -1,6 +1,6 @@
 {
   "name": "infrontjs",
-  "version": "0.9.91",
+  "version": "0.9.92",
   "description": "A plain javascript frontend framework",
   "main": "src/IF.js",
   "type": "module",

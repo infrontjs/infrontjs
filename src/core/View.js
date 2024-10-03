@@ -14,6 +14,7 @@ class View
     constructor( appInstance )
     {
         this.app = appInstance;
+        this.globalViewData = {};
     }
 
     /**
@@ -108,6 +109,19 @@ class View
         else
         {
             data[ '_lcd' ] = this.app.l18n.getDateTime.bind( this.app.l18n );
+        }
+
+        const gvdKeys = Object.keys( this.globalViewData );
+        for ( let gi = 0; gi < gvdKeys.length; gi++ )
+        {
+            if ( data.hasOwnProperty( gvdKeys[ gi ] ) )
+            {
+                console.warn( `The globalViewData entry ${gvdKeys[ gi ]} already exists in template data.` );
+            }
+            else
+            {
+                data[ gvdKeys[ gi ] ] = this.globalViewData[ gvdKeys[ gi ] ];
+            }
         }
 
         return data;

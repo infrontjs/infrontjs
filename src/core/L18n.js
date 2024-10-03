@@ -1,3 +1,5 @@
+import { Events} from "./Events.js";
+
 /**
  * L18n
  * Simple internationalization logic

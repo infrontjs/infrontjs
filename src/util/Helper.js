@@ -136,6 +136,41 @@ class Helper
     }
 
     /**
+     * Deep merges two objects into target
+     *
+     * @param {Object} target
+     * @param {Object} sources
+     * @return {Object}
+     * @example
+     *
+     * const merged = mergeDeep({a: 1}, { b : { c: { d: { e: 12345}}}});
+     * // => { a: 1, b: { c: { d: [Object] } } }
+     */
+    static deepMerge( target, ...sources )
+    {
+        if (!sources.length) return target;
+        const source = sources.shift();
+
+        if ( Helper.isPlainObject( target ) && Helper.isPlainObject( source ) )
+        {
+            for ( const key in source )
+            {
+                if ( Helper.isPlainObject( source[ key ] ) )
+                {
+                    if ( !target[ key ] ) Object.assign( target, { [key]: {} } );
+                    Helper.deepMerge( target[ key ], source[ key ] );
+                }
+                else
+                {
+                    Object.assign( target, { [key]: source[key] });
+                }
+            }
+        }
+
+        return Helper.deepMerge( target, ...sources );
+    }
+
+    /**
      * Create an observable object
      *
      * @param {function=} onChange - Callback triggered on change. Default is undefined.

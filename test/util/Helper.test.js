@@ -14,6 +14,7 @@ describe( "Testing util.Helper", () =>
         assert.equal( "function" === typeof Helper.isPlainObject, true );
         assert.equal( "function" === typeof Helper.isClass, true );
         assert.equal( "function" === typeof Helper.createObservable, true );
+        assert.equal( "function" === typeof Helper.deepMerge, true );
     });
 
     it( 'Test Helper.trim', () =>
@@ -67,5 +68,24 @@ describe( "Testing util.Helper", () =>
     {
         const obs = Helper.createObservable();
         assert.equal( null !== obs, true );
+    });
+
+    it ( 'Test Helper.deepMerge', () =>
+    {
+        const merged = Helper.deepMerge( {}, { a: 1, b: 2 } );
+        assert.equal( merged.hasOwnProperty( 'a' ), true );
+        assert.equal( merged.hasOwnProperty( 'b' ), true );
+        assert.equal( merged.a, 1 );
+        assert.equal( merged.b, 2 );
+        const merged2 = Helper.deepMerge( { a : 1, b : 2 }, { a: 3, b : 4, c : { c1 : 33 } } );
+        assert.equal( merged2.hasOwnProperty( 'a' ), true );
+        assert.equal( merged2.hasOwnProperty( 'b' ), true );
+        assert.equal( merged2.hasOwnProperty( 'c' ), true );
+        assert.equal( merged2.a, 3 );
+        assert.equal( merged2.b, 4 );
+        assert.equal( Helper.isPlainObject( merged2.c ), true );
+        assert.equal( merged2.c.hasOwnProperty( 'c1' ), true );
+        assert.equal( merged2.c.c1, 33 );
+
     });
 });

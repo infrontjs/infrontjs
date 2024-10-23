@@ -169,7 +169,7 @@ class L18n
 
         let langEntry = null;
 
-        if ( dictionary.hasOwnProperty( key ) && dictionary[ key ].hasOwnProperty( language ) )
+        if ( dictionary.hasOwnProperty( key ) && dictionary[ key ].hasOwnProperty( language ) && typeof dictionary[ key ][ language ] === 'string' )
         {
             langEntry = dictionary[ key ][ language ];
         }

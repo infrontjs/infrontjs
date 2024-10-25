@@ -85,6 +85,7 @@ npm run test
 This framework is build upon some great other open source projects...
 
 * View class encapsulates [EJS](https://ejs.co/)
+* Re-conception of L18N/dictionary logic by [antag0n1st](https://github.com/antag0n1st)
 * Observables from the Helper class are supported by [ObservableSlim](https://github.com/elliotnb/observable-slim)
 * UrlPattern used by the Router class relies on [UrlPattern](https://github.com/snd/url-pattern)
 * PathObject implementation heavily relies on some [Lodash](https://github.com/lodash/lodash) methods

@@ -86,9 +86,9 @@ class Router
             routeSplits = route.split( "?" );
 
         route = routeSplits[ 0 ];
-        if ( routeSplits.length > 0 )
+        if ( routeSplits.length > 1 )
         {
-            let sp = new URLSearchParams( routeSplits[ 0 ] );
+            let sp = new URLSearchParams( routeSplits[ 1 ] );
             query = Object.fromEntries( sp.entries() );
         }
 

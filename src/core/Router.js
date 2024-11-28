@@ -58,7 +58,7 @@ class Router
         let sRoute = Helper.trim( route, '/' );
         sRoute = '/' + sRoute;
 
-        if ( true === Helper.isClass( stateClass ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
+        if ( true === Helper.isClass( stateClass ) )
         {
             if ( false === this.app.states.exists( stateClass.ID ) )
             {
@@ -167,7 +167,7 @@ class Router
                 this.processUrl();
             });
         }
-        else if ( this.mode = 'hash' )
+        else if ( this.mode === 'hash' )
         {
             window.addEventListener( 'hashchange', this.processHash.bind( this ) );
         }
@@ -187,7 +187,7 @@ class Router
         {
             document.removeEventListener( 'click', this.processUrl.bind( this ) );
         }
-        else if ( this.mode = 'hash' )
+        else if ( this.mode === 'hash' )
         {
             window.removeEventListener( 'hashchange', this.processHash.bind( this ) );
         }
@@ -202,7 +202,7 @@ class Router
         {
             this.processUrl();
         }
-        else if ( this.mode = 'hash' )
+        else if ( this.mode === 'hash' )
         {
             this.processHash();
         }
@@ -280,6 +280,24 @@ class Router
                 window.history.replaceState( null, null, url );
                 this.processUrl();
             }
+        }
+    }
+
+    /**
+     * Update browser URL without triggering the processing
+     *
+     * @param {String} url - Sets the url part
+     */
+    setUrl( url )
+    {
+        if ( 'hash' === this.mode )
+        {
+            location.hash = '/' + Helper.trim( url, '/' );
+
+        }
+        else if ( 'url' === this.mode )
+        {
+            window.history.replaceState( null, null, url );
         }
     }
 

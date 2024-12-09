@@ -248,10 +248,8 @@ class L18n
             this.app.emit(
                 Events.EVENT.BEFORE_LANGUAGE_SWITCH,
                 {
-                    detail: {
-                        currentLanguage: this.currentLanguage,
-                        newLanguage: langCode.toLowerCase()
-                    }
+                    currentLanguage: this.currentLanguage,
+                    newLanguage: langCode.toLowerCase()
                 }
             );
         }
@@ -272,10 +270,8 @@ class L18n
             this.app.emit(
                 Events.EVENT.AFTER_LANGUAGE_SWITCH,
                 {
-                    detail: {
-                        oldLanguage: oldLanguage,
-                        currentLanguage: this.currentLanguage
-                    }
+                    oldLanguage: oldLanguage,
+                    currentLanguage: this.currentLanguage
                 }
             );
         }

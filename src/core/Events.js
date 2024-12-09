@@ -45,9 +45,16 @@ class Events
             return host;
         };
 
-        host.emit = ( eventName, options ) =>
+        host.emit = ( eventName, optionsDetail = null ) =>
         {
-            host.dispatchEvent(new CustomEvent(eventName, options));
+            host.dispatchEvent(
+                new CustomEvent(
+                    eventName,
+                    {
+                        "detail": optionsDetail
+                    }
+                )
+            );
         }
     }
 

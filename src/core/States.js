@@ -146,10 +146,8 @@ class States
         this.app.emit(
             Events.EVENT.BEFORE_STATE_CHANGE,
             {
-                detail: {
-                    currentStateId: currentStateId,
-                    nextStateId : newState ? newState.getId() : null
-                }
+                currentStateId: currentStateId,
+                nextStateId : newState ? newState.getId() : null
             }
         );
 
@@ -179,10 +177,8 @@ class States
         this.app.emit(
             Events.EVENT.AFTER_STATE_CHANGE,
             {
-                detail: {
-                    previousStateId : previousStateId,
-                    currentStateId: currentStateId
-                }
+                previousStateId : previousStateId,
+                currentStateId: currentStateId
             }
         );
     }

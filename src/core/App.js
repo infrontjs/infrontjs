@@ -8,7 +8,7 @@ import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
 
 
-const VERSION = '0.9.98';
+const VERSION = '0.9.99';
 
 const DEFAULT_SETTINGS = {
     "app" : {

@@ -1527,6 +1527,12 @@ void main()
 	            return host;
 	        };
 
+	        host.off = ( eventName, func ) =>
+	        {
+	            host.removeEventListener( eventName, func );
+	            return host;
+	        };
+
 	        host.emit = ( eventName, optionsDetail = null ) =>
 	        {
 	            host.dispatchEvent(
@@ -5027,7 +5033,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '0.9.98';
+	const VERSION = '0.9.99';
 
 	const DEFAULT_SETTINGS = {
 	    "app" : {

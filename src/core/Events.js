@@ -46,6 +46,12 @@ class Events
             return host;
         };
 
+        host.off = ( eventName, func ) =>
+        {
+            host.removeEventListener( eventName, func );
+            return host;
+        };
+
         host.emit = ( eventName, optionsDetail = null ) =>
         {
             host.dispatchEvent(

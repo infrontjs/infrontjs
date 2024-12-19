@@ -21,6 +21,7 @@ class Events
     static get EVENT() {
         return {
             'READY' : 'ready',
+            'POPSTATE' : 'popstate',
             'BEFORE_STATE_CHANGE' : 'beforeStateChange',
             'AFTER_STATE_CHANGE' : 'afterStateChange',
             'BEFORE_LANGUAGE_SWITCH' : 'beforeLanguageSwitch',

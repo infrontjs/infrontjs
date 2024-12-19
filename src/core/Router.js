@@ -1,6 +1,7 @@
 import { RouteParams } from "../base/RouteParams.js";
 import { Helper } from "../util/Helper.js";
 import { States } from "./States.js";
+import { Events } from "./Events.js";
 
 const UrlPattern = new UP();
 
@@ -164,6 +165,12 @@ class Router
             // Fix to properly handle backbutton
             window.addEventListener( 'popstate', ( e ) =>
             {
+                this.app.emit(
+                    Events.EVENT.POPSTATE,
+                    {
+                        originalEvent : e
+                    }
+                );
                 this.processUrl();
             });
         }

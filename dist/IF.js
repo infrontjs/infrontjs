@@ -1042,6 +1042,41 @@
 	    }
 
 	    /**
+	     * Deep merges two objects into target
+	     *
+	     * @param {Object} target
+	     * @param {Object} sources
+	     * @return {Object}
+	     * @example
+	     *
+	     * const merged = mergeDeep({a: 1}, { b : { c: { d: { e: 12345}}}});
+	     * // => { a: 1, b: { c: { d: [Object] } } }
+	     */
+	    static deepMerge( target, ...sources )
+	    {
+	        if (!sources.length) return target;
+	        const source = sources.shift();
+
+	        if ( Helper.isPlainObject( target ) && Helper.isPlainObject( source ) )
+	        {
+	            for ( const key in source )
+	            {
+	                if ( Helper.isPlainObject( source[ key ] ) )
+	                {
+	                    if ( !target[ key ] ) Object.assign( target, { [key]: {} } );
+	                    Helper.deepMerge( target[ key ], source[ key ] );
+	                }
+	                else
+	                {
+	                    Object.assign( target, { [key]: source[key] });
+	                }
+	            }
+	        }
+
+	        return Helper.deepMerge( target, ...sources );
+	    }
+
+	    /**
 	     * Create an observable object
 	     *
 	     * @param {function=} onChange - Callback triggered on change. Default is undefined.
@@ -1399,7 +1434,16 @@ void main()
 	     */
 	    async switchTo( newState )
 	    {
-	        this.app.emit( Events.EVENT.BEFORE_STATE_CHANGE );
+	        let previousStateId = null;
+	        let currentStateId = this.currentState ? this.currentState.getId() : null;
+
+	        this.app.emit(
+	            Events.EVENT.BEFORE_STATE_CHANGE,
+	            {
+	                currentStateId: currentStateId,
+	                nextStateId : newState ? newState.getId() : null
+	            }
+	        );
 
 	        if ( false === newState.canEnter() )
 	        {
@@ -1415,16 +1459,91 @@ void main()
 
 	        if ( this.currentState )
 	        {
+	            previousStateId = this.currentState.getId();
 	            await this.currentState.exit();
 	            delete this.currentState;
 	        }
 
 	        this.currentState = newState;
 	        await newState.enter();
+	        currentStateId = this.currentState.getId();
 
-	        this.app.emit( Events.EVENT.AFTER_STATE_CHANGE );
+	        this.app.emit(
+	            Events.EVENT.AFTER_STATE_CHANGE,
+	            {
+	                previousStateId : previousStateId,
+	                currentStateId: currentStateId
+	            }
+	        );
 	    }
 
+	}
+
+	/**
+	 * Events
+	 * Super simple custom events
+	 *
+	 * @example
+	 * class MyClass {
+	 *   constructor() {
+	 *       this.events = new Events( this  );
+	 *   }
+	 *   start() {
+	 *       this.emit( "start", { detail: { ... } } );
+	 *   }
+	 * }
+	 *
+	 * const myInstance = new MyClass();
+	 * myInstance.on( "start", e => { ... } );
+	 *
+	 */
+	class Events
+	{
+	    static get EVENT() {
+	        return {
+	            'READY' : 'ready',
+	            'POPSTATE' : 'popstate',
+	            'BEFORE_STATE_CHANGE' : 'beforeStateChange',
+	            'AFTER_STATE_CHANGE' : 'afterStateChange',
+	            'BEFORE_LANGUAGE_SWITCH' : 'beforeLanguageSwitch',
+	            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch'
+	        }
+	    };
+
+	    constructor()
+	    {
+	        const host = this;
+	        this.proxy = document.createDocumentFragment();
+	        this.proxy.host = this;
+
+	        ["addEventListener", "dispatchEvent", "removeEventListener"].forEach(
+	            this.delegate,
+	            this
+	        );
+
+	        host.on = ( eventName, func ) =>
+	        {
+	            host.addEventListener( eventName, func );
+	            return host;
+	        };
+
+	        host.emit = ( eventName, optionsDetail = null ) =>
+	        {
+	            host.dispatchEvent(
+	                new CustomEvent(
+	                    eventName,
+	                    {
+	                        "detail": optionsDetail
+	                    }
+	                )
+	            );
+	        };
+	    }
+
+	    delegate( method )
+	    {
+	        this.proxy.host[method] = this.proxy[method].bind(this.proxy);
+	    }
 	}
 
 	const UrlPattern = new UP();
@@ -1483,7 +1602,7 @@ void main()
 	        let sRoute = Helper.trim( route, '/' );
 	        sRoute = '/' + sRoute;
 
-	        if ( true === Helper.isClass( stateClass ) ) // @todo fix - this does not work for webpack in production mode && true === isClassChildOf( action, 'State' )  )
+	        if ( true === Helper.isClass( stateClass ) )
 	        {
 	            if ( false === this.app.states.exists( stateClass.ID ) )
 	            {
@@ -1511,9 +1630,9 @@ void main()
 	            routeSplits = route.split( "?" );
 
 	        route = routeSplits[ 0 ];
-	        if ( routeSplits.length > 0 )
+	        if ( routeSplits.length > 1 )
 	        {
-	            let sp = new URLSearchParams( routeSplits[ 0 ] );
+	            let sp = new URLSearchParams( routeSplits[ 1 ] );
 	            query = Object.fromEntries( sp.entries() );
 	        }
 
@@ -1589,10 +1708,16 @@ void main()
 	            // Fix to properly handle backbutton
 	            window.addEventListener( 'popstate', ( e ) =>
 	            {
+	                this.app.emit(
+	                    Events.EVENT.POPSTATE,
+	                    {
+	                        originalEvent : e
+	                    }
+	                );
 	                this.processUrl();
 	            });
 	        }
-	        else if ( this.mode = 'hash' )
+	        else if ( this.mode === 'hash' )
 	        {
 	            window.addEventListener( 'hashchange', this.processHash.bind( this ) );
 	        }
@@ -1612,7 +1737,7 @@ void main()
 	        {
 	            document.removeEventListener( 'click', this.processUrl.bind( this ) );
 	        }
-	        else if ( this.mode = 'hash' )
+	        else if ( this.mode === 'hash' )
 	        {
 	            window.removeEventListener( 'hashchange', this.processHash.bind( this ) );
 	        }
@@ -1627,7 +1752,7 @@ void main()
 	        {
 	            this.processUrl();
 	        }
-	        else if ( this.mode = 'hash' )
+	        else if ( this.mode === 'hash' )
 	        {
 	            this.processHash();
 	        }
@@ -1705,6 +1830,24 @@ void main()
 	                window.history.replaceState( null, null, url );
 	                this.processUrl();
 	            }
+	        }
+	    }
+
+	    /**
+	     * Update browser URL without triggering the processing
+	     *
+	     * @param {String} url - Sets the url part
+	     */
+	    setUrl( url )
+	    {
+	        if ( 'hash' === this.mode )
+	        {
+	            location.hash = '/' + Helper.trim( url, '/' );
+
+	        }
+	        else if ( 'url' === this.mode )
+	        {
+	            window.history.replaceState( null, null, url );
 	        }
 	    }
 
@@ -3318,6 +3461,7 @@ void main()
 	    constructor( appInstance )
 	    {
 	        this.app = appInstance;
+	        this.globalViewData = {};
 	    }
 
 	    /**
@@ -3411,6 +3555,19 @@ void main()
 	        else
 	        {
 	            data[ '_lcd' ] = this.app.l18n.getDateTime.bind( this.app.l18n );
+	        }
+
+	        const gvdKeys = Object.keys( this.globalViewData );
+	        for ( let gi = 0; gi < gvdKeys.length; gi++ )
+	        {
+	            if ( data.hasOwnProperty( gvdKeys[ gi ] ) )
+	            {
+	                console.warn( `The globalViewData entry ${gvdKeys[ gi ]} already exists in template data.` );
+	            }
+	            else
+	            {
+	                data[ gvdKeys[ gi ] ] = this.globalViewData[ gvdKeys[ gi ] ];
+	            }
 	        }
 
 	        return data;
@@ -3536,7 +3693,7 @@ void main()
 
 	    /**
 	     * Sets dictionary
-	     * @param {object=}  [dict={}] - Dictionary
+	     * @param {object=}  [dict={ defaultLang : { "langCode" : "translation", ... }, ... } ] - Dictionary
 	     */
 	    setDictionary( dict = {} )
 	    {
@@ -3548,7 +3705,7 @@ void main()
 	     * Add given translation object to dictionary
 	     *
 	     * @param {string} langCode - Langugae code (2 chars)
-	     * @param {object} translationObject - The translation object, simple key-value object
+	     * @param {object} translationObject - The translation object, simple key-value object, e.g. { 'Hello' : 'Hallo' }
 	     */
 	    addTranslation( langCode, translationObject )
 	    {
@@ -3562,7 +3719,14 @@ void main()
 	            throw new Error( 'Invalid langCode: ' + langCode )
 	        }
 
-	        this.dictionary[ langCode ] = translationObject;
+	        for ( const [ key, value ] of Object.entries( translationObject ) )
+	        {
+	            if ( false === this.dictionary.hasOwnProperty( key ) )
+	            {
+	                this.dictionary[ key ] = {};
+	            }
+	            this.dictionary[ key ][ langCode ] = value;
+	        }
 	    }
 
 	    /**
@@ -3573,36 +3737,28 @@ void main()
 	     */
 	    getLocale( key, params )
 	    {
-	        const defaultLanguage = this.defaultLanguage,
-	            language = this.currentLanguage,
+	        this.defaultLanguage;
+	            const language = this.currentLanguage,
 	            dictionary = this.dictionary;
 
-	        if ( language && dictionary[ language ].hasOwnProperty( key ) )
+	        let langEntry = null;
+
+	        if ( dictionary.hasOwnProperty( key ) && dictionary[ key ].hasOwnProperty( language ) && typeof dictionary[ key ][ language ] === 'string' )
 	        {
-	            return dictionary[ language][ key ].replace(/{(\d+)}/g, function(match, number)
-	            {
-	                return typeof params[number] != 'undefined'
-	                    ? params[number]
-	                    : match
-	                    ;
-	            });
-	        }
-	        else if ( defaultLanguage &&
-	            dictionary.hasOwnProperty( defaultLanguage ) &&
-	            dictionary[ defaultLanguage ].hasOwnProperty( key ) )
-	        {
-	            return dictionary[ defaultLanguage ][ key ].replace(/{(\d+)}/g, function(match, number)
-	            {
-	                return typeof params[number] != 'undefined'
-	                    ? params[number]
-	                    : match
-	                    ;
-	            });
+	            langEntry = dictionary[ key ][ language ];
 	        }
 	        else
 	        {
-	            return '###' + key + '###';
+	            langEntry = key;
 	        }
+
+	        return langEntry.replace(/{(\d+)}/g, function(match, number)
+	        {
+	            return typeof params[number] != 'undefined'
+	                ? params[number]
+	                : match
+	                ;
+	        });
 	    }
 
 	    /**
@@ -3661,6 +3817,18 @@ void main()
 	            throw new Error( 'Invalid langCode: ' + langCode )
 	        }
 
+	        if ( this.app )
+	        {
+	            this.app.emit(
+	                Events.EVENT.BEFORE_LANGUAGE_SWITCH,
+	                {
+	                    currentLanguage: this.currentLanguage,
+	                    newLanguage: langCode.toLowerCase()
+	                }
+	            );
+	        }
+
+	        const oldLanguage = this.currentLanguage;
 	        this.currentLanguage = langCode.toLowerCase();
 	        this._nf = new Intl.NumberFormat(
 	            this.currentLanguage,
@@ -3670,6 +3838,17 @@ void main()
 	            }
 	        );
 	        this._dtf = new Intl.DateTimeFormat( this.currentLanguage );
+
+	        if ( this.app )
+	        {
+	            this.app.emit(
+	                Events.EVENT.AFTER_LANGUAGE_SWITCH,
+	                {
+	                    oldLanguage: oldLanguage,
+	                    currentLanguage: this.currentLanguage
+	                }
+	            );
+	        }
 	    }
 
 	    /**
@@ -3684,63 +3863,6 @@ void main()
 	    _isValidLangCode( langCode )
 	    {
 	        return -1 < L18n.COUNTRY_CODES.indexOf( langCode.toUpperCase() );
-	    }
-	}
-
-	/**
-	 * Events
-	 * Super simple custom events
-	 *
-	 * @example
-	 * class MyClass {
-	 *   constructor() {
-	 *       this.events = new Events( this  );
-	 *   }
-	 *   start() {
-	 *       this.emit( "start", { detail: { ... } } );
-	 *   }
-	 * }
-	 *
-	 * const myInstance = new MyClass();
-	 * myInstance.on( "start", e => { ... } );
-	 *
-	 */
-	class Events
-	{
-	    static get EVENT() {
-	        return {
-	            'READY' : 'ready',
-	            'BEFORE_STATE_CHANGE' : 'beforeStateChange',
-	            'AFTER_STATE_CHANGE' : 'afterStateChange'
-	        }
-	    };
-
-	    constructor()
-	    {
-	        const host = this;
-	        this.proxy = document.createDocumentFragment();
-	        this.proxy.host = this;
-
-	        ["addEventListener", "dispatchEvent", "removeEventListener"].forEach(
-	            this.delegate,
-	            this
-	        );
-
-	        host.on = ( eventName, func ) =>
-	        {
-	            host.addEventListener( eventName, func );
-	            return host;
-	        };
-
-	        host.emit = ( eventName, options ) =>
-	        {
-	            host.dispatchEvent(new CustomEvent(eventName, options));
-	        };
-	    }
-
-	    delegate( method )
-	    {
-	        this.proxy.host[method] = this.proxy[method].bind(this.proxy);
 	    }
 	}
 
@@ -4905,7 +5027,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '0.9.8';
+	const VERSION = '0.9.98';
 
 	const DEFAULT_SETTINGS = {
 	    "app" : {

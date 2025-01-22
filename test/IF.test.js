@@ -10,7 +10,7 @@ it( 'Check for all IF exports exists', () =>
     assert.equal( "function" === typeof IF.L18n, true );
     assert.equal( "function" === typeof IF.States, true );
     assert.equal( "function" === typeof IF.PathObject, true );
-    assert.equal( "function" === typeof IF.Fetcher, true );
+    assert.equal( "function" === typeof IF.RestApi, true );
     assert.equal( "function" === typeof IF.Router, true );
     assert.equal( "function" === typeof IF.View, true );
 });

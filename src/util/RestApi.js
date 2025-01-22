@@ -1,18 +1,18 @@
 import { Helper } from "../util/Helper.js";
 
 /**
- * Fetcher
- * Wrapper of the native Fetch API
+ * RestApi
+ * Utility class for REST Api development wraps native fetch internally.
  *
  * @example <caption>Using callbacks</caption>
- * const fetcher = new Fetcher( 'https://api.example.com' );
- * fetcher.get( '/books', function( err, result ) { } );
+ * const myRestApi = new RestApi( 'https://api.example.com' );
+ * myRestApi.get( '/books', function( err, result ) { } );
  *
  * @example <caption>Using await</caption>
- * const fetcher = new Fetcher( 'https://api.example.com' );
+ * const myRestApi = new RestApi( 'https://api.example.com' );
  * try
  * {
- *     const result = await fetcher.get( '/books' );
+ *     const result = await myRestApi.get( '/books' );
  * }
  * catch( e )
  * {
@@ -20,7 +20,7 @@ import { Helper } from "../util/Helper.js";
  * }
  *
  */
-class Fetcher
+class RestApi
 {
     /**
      * Construcotr
@@ -156,4 +156,4 @@ class Fetcher
     }
 }
 
-export { Fetcher };
+export { RestApi };

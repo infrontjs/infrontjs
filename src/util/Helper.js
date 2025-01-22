@@ -36,6 +36,7 @@ class Helper
      */
     static serializeForm( form )
     {
+        // todo - check for disabled form elements which cannot be resolved and show an info/warning
         const object = {};
         new FormData( form ).forEach(( value, key) =>
         {

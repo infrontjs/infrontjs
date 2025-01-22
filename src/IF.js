@@ -9,5 +9,5 @@ export { States } from "./core/States.js";
 export { View } from "./core/View.js";
 
 export { Helper } from "./util/Helper.js";
-export { Fetcher } from "./util/Fetcher.js";
+export { RestApi } from "./util/RestApi.js";
 export { PathObject } from "./util/PathObject.js";

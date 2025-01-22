@@ -22,10 +22,11 @@ const DEFAULT_CONFIG = {
     },
     "router" : {
         "isEnabled" : true,
+        "mode" : "url",
         "basePath" : null
     },
     "stateManager" : {
-        "notFoundState" :  DefaultIndexState
+        "notFoundState" : DefaultIndexState
     }
 };
 

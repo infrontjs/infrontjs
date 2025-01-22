@@ -5,7 +5,7 @@ export { App } from "./core/App.js";
 export { Events } from "./core/Events.js";
 export { L18n } from "./core/L18n.js";
 export { Router } from "./core/Router.js";
-export { States } from "./core/States.js";
+export { StateManager } from "./core/StateManager.js";
 export { View } from "./core/View.js";
 
 export { Helper } from "./util/Helper.js";

@@ -34,7 +34,7 @@ class GreetingState extends IF.State
 }
 
 const myApp = new IF.App();
-myApp.states.add( GreetingState );
+myApp.stateManager.add( GreetingState );
 myApp.run();
 ```
 

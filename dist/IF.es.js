@@ -936,6 +936,7 @@ class Helper
      */
     static serializeForm( form )
     {
+        // todo - check for disabled form elements which cannot be resolved and show an info/warning
         const object = {};
         new FormData( form ).forEach(( value, key) =>
         {
@@ -1295,7 +1296,7 @@ class DefaultIndexState extends DefaultBaseState
  * States - The state manager.
  * You can create multiple States instances in your application logic, e.g. for dealing with sub-states etc.
  */
-class States
+class StateManager
 {
     static DEFAULT_INDEX_STATE_ID = 'INFRONT_DEFAULT_INDEX_STATE';
     static DEFAULT_NOT_FOUND_STATE_ID = 'INFRONT_DEFAULT_NOTFOUND_STATE';
@@ -1306,10 +1307,35 @@ class States
      */
     constructor( appInstance )
     {
-        this._states =  {};
         this.app = appInstance;
-        this.currentState = null;
-        this.stateNotFoundClass = null;
+        this._states =  {};
+        this._currentState = null;
+        this._stateNotFoundClass = this.app.config.get( 'stateManager.notFoundState' );
+    }
+
+    set currentState( currentState )
+    {
+        this._currentState = currentState;
+    }
+
+    get currentState()
+    {
+        return this._currentState;
+    }
+
+    set stateNotFoundClass( stateNotFoundClass )
+    {
+        if ( false === Helper.isClass( notFoundClass ) )
+        {
+            throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
+        }
+
+        this._stateNotFoundClass = stateNotFoundClass;
+    }
+
+    get stateNotFoundClass()
+    {
+        return this._stateNotFoundClass;
     }
 
     /**
@@ -1372,10 +1398,6 @@ class States
         {
             stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
-        else if ( stateId === States.DEFAULT_INDEX_STATE_ID && true === this.app.settings.get( "states.useDefaultIndexState" ) )
-        {
-            stateInstance = new DefaultIndexState( this.app, routeParams );
-        }
         else if ( null !== this.stateNotFoundClass )
         {
             stateInstance = new this.stateNotFoundClass( this.app, routeParams );
@@ -1397,27 +1419,6 @@ class States
     exists( stateId )
     {
         return this._states.hasOwnProperty( stateId );
-    }
-
-    /**
-     * Set the StateNotFound class
-     *
-     * @param {State} notFoundClass - State class used in case when a state is not found
-     * @throws {Error} - Thrown when provided param is not of type State
-     */
-    setStateNotFoundClass( notFoundClass )
-    {
-        if ( false === Helper.isClass( notFoundClass ) )
-        {
-            throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
-        }
-
-        this.stateNotFoundClass = notFoundClass;
-    }
-
-    isNotFoundStateEnabled()
-    {
-        return ( this.stateNotFoundClass !== null );
     }
 
     /**
@@ -1561,8 +1562,8 @@ class Router
     {
         this.app = appInstance;
 
-        this.mode = this.app.settings.get( 'router.mode', 'url' );
-        this.basePath = this.app.settings.get( 'router.basePath', null );
+        this.mode = this.app.config.get( 'router.mode', 'url' );
+        this.basePath = this.app.config.get( 'router.basePath', null );
 
         this._routeActions = [];
         this.isEnabled = false;
@@ -1604,10 +1605,11 @@ class Router
 
         if ( true === Helper.isClass( stateClass ) )
         {
-            if ( false === this.app.states.exists( stateClass.ID ) )
+            if ( false === this.app.stateManager.exists( stateClass.ID ) )
             {
-                this.app.states.add( stateClass );
+                this.app.stateManager.add( stateClass );
             }
+
             this._routeActions.push(
                 {
                     "action" : stateClass.ID,
@@ -1650,30 +1652,19 @@ class Router
         }
 
         // If it is default route
-        if ( null === routeData )
+        if ( null === routeData && null !== this.app.stateManager.stateNotFoundClass )
         {
-            // @todo For later - check setting if default scene should be shown
-            if ( route === '/' )
-            {
-                routeData = {
-                    "routeAction" : States.DEFAULT_INDEX_STATE_ID,
-                    "routeParams" : null
-                };
-            }
-            else if ( this.app.states.isNotFoundStateEnabled() )
-            {
-                routeData = {
-                    "routeAction" : States.DEFAULT_NOT_FOUND_STATE_ID,
-                    "routeParams" : null
-                };
-            }
+            routeData = {
+                "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
+                "routeParams" : null
+            };
         }
 
         return routeData;
     }
 
-    createUrl( str ) {
-        // @todo Check whether its hash based routing or not
+    createUrl( str )
+    {
         if ( this.mode === 'hash' )
         {
             return '#/' + Helper.trim( str, '/' );
@@ -1867,11 +1858,11 @@ class Router
         {
             if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = this.app.states.create(
+                let stateInstance = this.app.stateManager.create(
                     actionData.routeAction,
                     actionData.routeParams
                 );
-                await this.app.states.switchTo( stateInstance );
+                await this.app.stateManager.switchTo( stateInstance );
             }
             else
             {
@@ -5027,9 +5018,9 @@ class PathObject
     }
 }
 
-const VERSION = '0.9.99';
+const VERSION = '1.0.0';
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_CONFIG = {
     "app" : {
         "id" : null,
         "title" : null,
@@ -5042,10 +5033,8 @@ const DEFAULT_SETTINGS = {
         "isEnabled" : true,
         "basePath" : null
     },
-    "states" : {
-        "basePath" : "",
-        "useDefaultIndexState" : true,
-        "useDefaultNotFoundState" : true
+    "stateManager" : {
+        "notFoundState" :  DefaultIndexState
     }
 };
 
@@ -5081,22 +5070,21 @@ class App extends Events
     /**
      * Create an app instance
      * @param {HTMLElement} [container=document.body] - The root container of the application.
-     * @param {object=} settings - Application settings object.
-     * @param {object=} settings.app - App settings.
+     * @param {object=} config - Application configuration object.
+     * @param {object=} config.app - App configuration.
      * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
      * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
      */
-    constructor( container = null, settings = {} )
+    constructor( container = null, config = {} )
     {
         super();
 
         this.container = container;
 
-        // @todo Replace spread logic with lodash merge function (inline)
-        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
-        if ( null === this.settings.get( 'app.id', null ) )
+        this.config = new PathObject( Helper.deepMerge( DEFAULT_CONFIG, config ) );
+        if ( null === this.config.get( 'app.id', null ) )
         {
-            this.settings.set( 'app.id', Helper.createUid() );
+            this.config.set( 'app.id', Helper.createUid() );
         }
 
         if ( typeof window === 'undefined'  )
@@ -5117,7 +5105,7 @@ class App extends Events
             this.container = customContainer;
         }
 
-        this.container.setAttribute( 'data-ifjs-app-id', this.settings.get( 'app.id') );
+        this.container.setAttribute( 'data-ifjs-app-id', this.config.get( 'app.id') );
 
         // Init core components
         this.initRouter();
@@ -5128,7 +5116,7 @@ class App extends Events
         // Add app to global app pool
         App.POOL[ this.uid ] = this;
 
-        if ( true === this.settings.get( 'app.sayHello' ) && console )
+        if ( true === this.config.get( 'app.sayHello' ) && console )
         {
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
@@ -5143,7 +5131,7 @@ class App extends Events
     }
     initStates()
     {
-        this.states = new States( this );
+        this.stateManager = new StateManager( this );
     }
 
     initRouter()
@@ -5176,9 +5164,9 @@ class App extends Events
      */
     async run( route = null )
     {
-        if ( this.settings.get( 'app.title' ) )
+        if ( this.config.get( 'app.title' ) )
         {
-            this.view.setWindowTitle( this.settings.get( 'app.title' ) );
+            this.view.setWindowTitle( this.config.get( 'app.title' ) );
         }
 
         this.router.enable();
@@ -5204,18 +5192,18 @@ class App extends Events
 }
 
 /**
- * Fetcher
- * Wrapper of the native Fetch API
+ * RestApi
+ * Utility class for REST Api development wraps native fetch internally.
  *
  * @example <caption>Using callbacks</caption>
- * const fetcher = new Fetcher( 'https://api.example.com' );
- * fetcher.get( '/books', function( err, result ) { } );
+ * const myRestApi = new RestApi( 'https://api.example.com' );
+ * myRestApi.get( '/books', function( err, result ) { } );
  *
  * @example <caption>Using await</caption>
- * const fetcher = new Fetcher( 'https://api.example.com' );
+ * const myRestApi = new RestApi( 'https://api.example.com' );
  * try
  * {
- *     const result = await fetcher.get( '/books' );
+ *     const result = await myRestApi.get( '/books' );
  * }
  * catch( e )
  * {
@@ -5223,7 +5211,7 @@ class App extends Events
  * }
  *
  */
-class Fetcher
+class RestApi
 {
     /**
      * Construcotr
@@ -5359,4 +5347,4 @@ class Fetcher
     }
 }
 
-export { App, Events, Fetcher, Helper, L18n, PathObject, RouteParams, Router, State, States, View };
+export { App, Events, Helper, L18n, PathObject, RestApi, RouteParams, Router, State, StateManager, View };

@@ -1,6 +1,6 @@
 import { RouteParams } from "../base/RouteParams.js";
 import { Helper } from "../util/Helper.js";
-import { States } from "./States.js";
+import { StateManager } from "./StateManager.js";
 import { Events } from "./Events.js";
 
 const UrlPattern = new UP();
@@ -18,8 +18,8 @@ class Router
     {
         this.app = appInstance;
 
-        this.mode = this.app.settings.get( 'router.mode', 'url' );
-        this.basePath = this.app.settings.get( 'router.basePath', null );
+        this.mode = this.app.config.get( 'router.mode', 'url' );
+        this.basePath = this.app.config.get( 'router.basePath', null );
 
         this._routeActions = [];
         this.isEnabled = false;
@@ -61,10 +61,11 @@ class Router
 
         if ( true === Helper.isClass( stateClass ) )
         {
-            if ( false === this.app.states.exists( stateClass.ID ) )
+            if ( false === this.app.stateManager.exists( stateClass.ID ) )
             {
-                this.app.states.add( stateClass );
+                this.app.stateManager.add( stateClass );
             }
+
             this._routeActions.push(
                 {
                     "action" : stateClass.ID,
@@ -107,30 +108,19 @@ class Router
         }
 
         // If it is default route
-        if ( null === routeData )
+        if ( null === routeData && null !== this.app.stateManager.stateNotFoundClass )
         {
-            // @todo For later - check setting if default scene should be shown
-            if ( route === '/' )
-            {
-                routeData = {
-                    "routeAction" : States.DEFAULT_INDEX_STATE_ID,
-                    "routeParams" : null
-                };
-            }
-            else if ( this.app.states.isNotFoundStateEnabled() )
-            {
-                routeData = {
-                    "routeAction" : States.DEFAULT_NOT_FOUND_STATE_ID,
-                    "routeParams" : null
-                }
+            routeData = {
+                "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
+                "routeParams" : null
             }
         }
 
         return routeData;
     }
 
-    createUrl( str ) {
-        // @todo Check whether its hash based routing or not
+    createUrl( str )
+    {
         if ( this.mode === 'hash' )
         {
             return '#/' + Helper.trim( str, '/' );
@@ -324,11 +314,11 @@ class Router
         {
             if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
             {
-                let stateInstance = this.app.states.create(
+                let stateInstance = this.app.stateManager.create(
                     actionData.routeAction,
                     actionData.routeParams
                 );
-                await this.app.states.switchTo( stateInstance );
+                await this.app.stateManager.switchTo( stateInstance );
             }
             else
             {

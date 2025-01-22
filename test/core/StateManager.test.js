@@ -1,11 +1,11 @@
 import assert from 'assert';
 import * as IF from './../../src/IF.js';
 
-it( 'Checks for States class and its structure', () =>
+it( 'Checks for StateManager class and its structure', () =>
 {
-    assert.equal( "function" === typeof IF.States, true );
-    const states = new IF.States( null );
-    assert.equal( states instanceof IF.States, true );
+    assert.equal( "function" === typeof IF.StateManager, true );
+    const states = new IF.StateManager( null );
+    assert.equal( states instanceof IF.StateManager, true );
     assert.equal( "function" === typeof states.add, true );
     assert.equal( "function" === typeof states.create, true );
     assert.equal( "function" === typeof states.switchTo, true );
@@ -14,8 +14,8 @@ it( 'Checks for States class and its structure', () =>
 
 it ( 'Checks for States.add function', () =>
 {
-    const states = new IF.States( null );
-    assert.equal( "object" === typeof states._states, true );
+    const stateManager = new IF.StateManager( null );
+    assert.equal( "object" === typeof stateManager._states, true );
     class TestState extends IF.State {
         static ID = 'test-state';
         static ROUTE = null;    // Note: set no route on purpose in order to make test work
@@ -24,8 +24,8 @@ it ( 'Checks for States.add function', () =>
     {
         static ID = 'test-state-two';
     }
-    states.add( TestState, TestTwoState );
-    assert.equal( states._states.hasOwnProperty( TestState.ID ), true );
-    assert.equal( states._states.hasOwnProperty( TestTwoState.ID ), true );
+    stateManager.add( TestState, TestTwoState );
+    assert.equal( stateManager._states.hasOwnProperty( TestState.ID ), true );
+    assert.equal( stateManager._states.hasOwnProperty( TestTwoState.ID ), true );
 });
 

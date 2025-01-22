@@ -7,7 +7,7 @@ import { Events } from "../IF.js";
  * States - The state manager.
  * You can create multiple States instances in your application logic, e.g. for dealing with sub-states etc.
  */
-class States
+class StateManager
 {
     static DEFAULT_INDEX_STATE_ID = 'INFRONT_DEFAULT_INDEX_STATE';
     static DEFAULT_NOT_FOUND_STATE_ID = 'INFRONT_DEFAULT_NOTFOUND_STATE';
@@ -18,10 +18,35 @@ class States
      */
     constructor( appInstance )
     {
-        this._states =  {};
         this.app = appInstance;
-        this.currentState = null;
-        this.stateNotFoundClass = null;
+        this._states =  {};
+        this._currentState = null;
+        this._stateNotFoundClass = this.app.config.get( 'stateManager.notFoundState' );
+    }
+
+    set currentState( currentState )
+    {
+        this._currentState = currentState;
+    }
+
+    get currentState()
+    {
+        return this._currentState;
+    }
+
+    set stateNotFoundClass( stateNotFoundClass )
+    {
+        if ( false === Helper.isClass( notFoundClass ) )
+        {
+            throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
+        }
+
+        this._stateNotFoundClass = stateNotFoundClass;
+    }
+
+    get stateNotFoundClass()
+    {
+        return this._stateNotFoundClass;
     }
 
     /**
@@ -84,10 +109,6 @@ class States
         {
             stateInstance = new this._states[ stateId ]( this.app, routeParams );
         }
-        else if ( stateId === States.DEFAULT_INDEX_STATE_ID && true === this.app.settings.get( "states.useDefaultIndexState" ) )
-        {
-            stateInstance = new DefaultIndexState( this.app, routeParams );
-        }
         else if ( null !== this.stateNotFoundClass )
         {
             stateInstance = new this.stateNotFoundClass( this.app, routeParams );
@@ -109,27 +130,6 @@ class States
     exists( stateId )
     {
         return this._states.hasOwnProperty( stateId );
-    }
-
-    /**
-     * Set the StateNotFound class
-     *
-     * @param {State} notFoundClass - State class used in case when a state is not found
-     * @throws {Error} - Thrown when provided param is not of type State
-     */
-    setStateNotFoundClass( notFoundClass )
-    {
-        if ( false === Helper.isClass( notFoundClass ) )
-        {
-            throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
-        }
-
-        this.stateNotFoundClass = notFoundClass;
-    }
-
-    isNotFoundStateEnabled()
-    {
-        return ( this.stateNotFoundClass !== null );
     }
 
     /**
@@ -185,4 +185,4 @@ class States
 
 }
 
-export { States };
+export { StateManager };

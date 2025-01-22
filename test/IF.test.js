@@ -8,7 +8,7 @@ it( 'Check for all IF exports exists', () =>
     assert.equal( "function" === typeof IF.App, true );
     assert.equal( "function" === typeof IF.Helper, true );
     assert.equal( "function" === typeof IF.L18n, true );
-    assert.equal( "function" === typeof IF.States, true );
+    assert.equal( "function" === typeof IF.StateManager, true );
     assert.equal( "function" === typeof IF.PathObject, true );
     assert.equal( "function" === typeof IF.RestApi, true );
     assert.equal( "function" === typeof IF.Router, true );

@@ -1,16 +1,17 @@
 import { Router } from "./Router.js";
-import { States } from "./States.js";
+import { StateManager } from "./StateManager.js";
 import { View } from "./View.js";
 import { L18n } from "./L18n.js";
 import { Events } from "./Events.js";
 
 import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
+import { DefaultIndexState } from "../base/DefaultIndexState.js";
 
 
-const VERSION = '0.9.99';
+const VERSION = '1.0.0';
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_CONFIG = {
     "app" : {
         "id" : null,
         "title" : null,
@@ -23,10 +24,8 @@ const DEFAULT_SETTINGS = {
         "isEnabled" : true,
         "basePath" : null
     },
-    "states" : {
-        "basePath" : "",
-        "useDefaultIndexState" : true,
-        "useDefaultNotFoundState" : true
+    "stateManager" : {
+        "notFoundState" :  DefaultIndexState
     }
 };
 
@@ -62,22 +61,21 @@ class App extends Events
     /**
      * Create an app instance
      * @param {HTMLElement} [container=document.body] - The root container of the application.
-     * @param {object=} settings - Application settings object.
-     * @param {object=} settings.app - App settings.
+     * @param {object=} config - Application configuration object.
+     * @param {object=} config.app - App configuration.
      * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
      * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
      */
-    constructor( container = null, settings = {} )
+    constructor( container = null, config = {} )
     {
         super();
 
         this.container = container;
 
-        // @todo Replace spread logic with lodash merge function (inline)
-        this.settings = new PathObject( { ...DEFAULT_SETTINGS, ...settings } );
-        if ( null === this.settings.get( 'app.id', null ) )
+        this.config = new PathObject( Helper.deepMerge( DEFAULT_CONFIG, config ) );
+        if ( null === this.config.get( 'app.id', null ) )
         {
-            this.settings.set( 'app.id', Helper.createUid() );
+            this.config.set( 'app.id', Helper.createUid() );
         }
 
         if ( typeof window === 'undefined'  )
@@ -98,7 +96,7 @@ class App extends Events
             this.container = customContainer;
         }
 
-        this.container.setAttribute( 'data-ifjs-app-id', this.settings.get( 'app.id') );
+        this.container.setAttribute( 'data-ifjs-app-id', this.config.get( 'app.id') );
 
         // Init core components
         this.initRouter();
@@ -109,7 +107,7 @@ class App extends Events
         // Add app to global app pool
         App.POOL[ this.uid ] = this;
 
-        if ( true === this.settings.get( 'app.sayHello' ) && console )
+        if ( true === this.config.get( 'app.sayHello' ) && console )
         {
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
@@ -124,7 +122,7 @@ class App extends Events
     }
     initStates()
     {
-        this.states = new States( this );
+        this.stateManager = new StateManager( this );
     }
 
     initRouter()
@@ -157,9 +155,9 @@ class App extends Events
      */
     async run( route = null )
     {
-        if ( this.settings.get( 'app.title' ) )
+        if ( this.config.get( 'app.title' ) )
         {
-            this.view.setWindowTitle( this.settings.get( 'app.title' ) );
+            this.view.setWindowTitle( this.config.get( 'app.title' ) );
         }
 
         this.router.enable();

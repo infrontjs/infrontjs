@@ -1,5 +1,4 @@
 import { compile, render } from "./../_external/ejs/ejs.js";
-import { Helper } from "../util/Helper.js";
 
 /**
  * View

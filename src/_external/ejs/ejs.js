@@ -955,7 +955,7 @@ exports.name = _NAME;
 
 /* istanbul ignore if */
 if (typeof window != 'undefined') {
-    window.ejs = exports;
+    //window.ejs = exports;
 }
 
 export const compile = exports.compile;

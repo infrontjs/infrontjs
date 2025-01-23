@@ -43,7 +43,7 @@ class CustomEvents
 
         host.addCustomEventListener = ( eventName, func ) =>
         {
-            host.addCustomEventListener( eventName, func );
+            host.addEventListener( eventName, func );
             return host;
         };
 

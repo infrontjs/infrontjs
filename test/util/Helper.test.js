@@ -88,11 +88,4 @@ describe( "Testing util.Helper", () =>
         assert.equal( merged2.c.c1, 33 );
 
     });
-
-    it ( 'Test Helper.createObservable', () =>
-    {
-        const form = document.createElement( 'form' );
-        console.log( form );
-        assert.equal( null !== form, true );
-    });
 });

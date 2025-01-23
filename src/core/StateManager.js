@@ -21,7 +21,7 @@ class StateManager
         this.app = appInstance;
         this._states =  {};
         this._currentState = null;
-        this._stateNotFoundClass = this.app.config.get( 'stateManager.notFoundState' );
+        this._stateNotFoundClass = this.app ? this.app.config.get( 'stateManager.notFoundState' ) : null;
     }
 
     set currentState( currentState )

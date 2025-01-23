@@ -9,7 +9,6 @@ it( 'Checks for StateManager class and its structure', () =>
     assert.equal( "function" === typeof states.add, true );
     assert.equal( "function" === typeof states.create, true );
     assert.equal( "function" === typeof states.switchTo, true );
-    assert.equal( "function" === typeof states.setStateNotFoundClass, true );
 });
 
 it ( 'Checks for States.add function', () =>

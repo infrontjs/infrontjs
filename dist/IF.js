@@ -1316,7 +1316,7 @@ void main()
 	        this.app = appInstance;
 	        this._states =  {};
 	        this._currentState = null;
-	        this._stateNotFoundClass = this.app.config.get( 'stateManager.notFoundState' );
+	        this._stateNotFoundClass = this.app ? this.app.config.get( 'stateManager.notFoundState' ) : null;
 	    }
 
 	    set currentState( currentState )
@@ -1438,8 +1438,8 @@ void main()
 	        let previousStateId = null;
 	        let currentStateId = this.currentState ? this.currentState.getId() : null;
 
-	        this.app.emit(
-	            Events.EVENT.BEFORE_STATE_CHANGE,
+	        this.app.dispatchCustomEvent(
+	            CustomEvents.TYPE.BEFORE_STATE_CHANGE,
 	            {
 	                currentStateId: currentStateId,
 	                nextStateId : newState ? newState.getId() : null
@@ -1469,8 +1469,8 @@ void main()
 	        await newState.enter();
 	        currentStateId = this.currentState.getId();
 
-	        this.app.emit(
-	            Events.EVENT.AFTER_STATE_CHANGE,
+	        this.app.dispatchCustomEvent(
+	            CustomEvents.TYPE.AFTER_STATE_CHANGE,
 	            {
 	                previousStateId : previousStateId,
 	                currentStateId: currentStateId
@@ -1487,27 +1487,28 @@ void main()
 	 * @example
 	 * class MyClass {
 	 *   constructor() {
-	 *       this.events = new Events( this  );
+	 *       this.events = new CustomEvents( this  );
 	 *   }
 	 *   start() {
-	 *       this.emit( "start", { detail: { ... } } );
+	 *       this.dispatchCustomEvent( "start", { detail: { ... } } );
 	 *   }
 	 * }
 	 *
 	 * const myInstance = new MyClass();
-	 * myInstance.on( "start", e => { ... } );
+	 * myInstance.addEventListener( "start", e => { ... } );
 	 *
 	 */
-	class Events
+	class CustomEvents
 	{
-	    static get EVENT() {
+	    static get TYPE() {
 	        return {
 	            'READY' : 'ready',
 	            'POPSTATE' : 'popstate',
 	            'BEFORE_STATE_CHANGE' : 'beforeStateChange',
 	            'AFTER_STATE_CHANGE' : 'afterStateChange',
 	            'BEFORE_LANGUAGE_SWITCH' : 'beforeLanguageSwitch',
-	            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch'
+	            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch',
+	            'ON_STATE_NOT_FOUND' : 'onStateNotFound'
 	        }
 	    };
 
@@ -1522,19 +1523,19 @@ void main()
 	            this
 	        );
 
-	        host.on = ( eventName, func ) =>
+	        host.addEventListener = ( eventName, func ) =>
 	        {
 	            host.addEventListener( eventName, func );
 	            return host;
 	        };
 
-	        host.off = ( eventName, func ) =>
+	        host.removeEventListener = ( eventName, func ) =>
 	        {
 	            host.removeEventListener( eventName, func );
 	            return host;
 	        };
 
-	        host.emit = ( eventName, optionsDetail = null ) =>
+	        host.dispatchCustomEvent = ( eventName, optionsDetail = null ) =>
 	        {
 	            host.dispatchEvent(
 	                new CustomEvent(
@@ -1658,12 +1659,22 @@ void main()
 	        }
 
 	        // If it is default route
-	        if ( null === routeData && null !== this.app.stateManager.stateNotFoundClass )
+	        if ( null === routeData )
 	        {
-	            routeData = {
-	                "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
-	                "routeParams" : null
-	            };
+	            this.app.dispatchCustomEvent(
+	                CustomEvents.TYPE.ON_STATE_NOT_FOUND,
+	                {
+	                    route: route
+	                }
+	            );
+
+	            if ( null !== this.app.stateManager.stateNotFoundClass )
+	            {
+	                routeData = {
+	                    "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
+	                    "routeParams" : null
+	                };
+	            }
 	        }
 
 	        return routeData;
@@ -1705,8 +1716,8 @@ void main()
 	            // Fix to properly handle backbutton
 	            window.addEventListener( 'popstate', ( e ) =>
 	            {
-	                this.app.emit(
-	                    Events.EVENT.POPSTATE,
+	                this.app.dispatchCustomEvent(
+	                    CustomEvents.TYPE.POPSTATE,
 	                    {
 	                        originalEvent : e
 	                    }
@@ -3816,8 +3827,8 @@ void main()
 
 	        if ( this.app )
 	        {
-	            this.app.emit(
-	                Events.EVENT.BEFORE_LANGUAGE_SWITCH,
+	            this.app.dispatchCustomEvent(
+	                CustomEvents.TYPE.BEFORE_LANGUAGE_SWITCH,
 	                {
 	                    currentLanguage: this.currentLanguage,
 	                    newLanguage: langCode.toLowerCase()
@@ -3838,8 +3849,8 @@ void main()
 
 	        if ( this.app )
 	        {
-	            this.app.emit(
-	                Events.EVENT.AFTER_LANGUAGE_SWITCH,
+	            this.app.dispatchCustomEvent(
+	                CustomEvents.TYPE.AFTER_LANGUAGE_SWITCH,
 	                {
 	                    oldLanguage: oldLanguage,
 	                    currentLanguage: this.currentLanguage
@@ -5024,7 +5035,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.0-rc';
 
 	const DEFAULT_CONFIG = {
 	    "app" : {
@@ -5037,10 +5048,11 @@ void main()
 	    },
 	    "router" : {
 	        "isEnabled" : true,
+	        "mode" : "url",
 	        "basePath" : null
 	    },
 	    "stateManager" : {
-	        "notFoundState" :  DefaultIndexState
+	        "notFoundState" : DefaultIndexState
 	    }
 	};
 
@@ -5048,7 +5060,7 @@ void main()
 	 * App
 	 * The App class is the logical core unit of every InfrontJS application.
 	 */
-	class App extends Events
+	class App extends CustomEvents
 	{
 	    static POOL = {};
 
@@ -5127,7 +5139,7 @@ void main()
 	            console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
 	        }
 
-	        this.emit( Events.EVENT.READY );
+	        this.dispatchCustomEvent( CustomEvents.TYPE.READY );
 	    }
 
 	    initL18n()
@@ -5354,7 +5366,7 @@ void main()
 	}
 
 	exports.App = App;
-	exports.Events = Events;
+	exports.CustomEvents = CustomEvents;
 	exports.Helper = Helper;
 	exports.L18n = L18n;
 	exports.PathObject = PathObject;

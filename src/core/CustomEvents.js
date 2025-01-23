@@ -41,13 +41,13 @@ class CustomEvents
             this
         );
 
-        host.addEventListener = ( eventName, func ) =>
+        host.addCustomEventListener = ( eventName, func ) =>
         {
-            host.addEventListener( eventName, func );
+            host.addCustomEventListener( eventName, func );
             return host;
         };
 
-        host.removeEventListener = ( eventName, func ) =>
+        host.removeCustomEventListener = ( eventName, func ) =>
         {
             host.removeEventListener( eventName, func );
             return host;

@@ -2,7 +2,7 @@ export { State } from "./base/State.js";
 export { RouteParams } from "./base/RouteParams.js";
 
 export { App } from "./core/App.js";
-export { Events } from "./core/Events.js";
+export { CustomEvents } from "./core/CustomEvents.js";
 export { L18n } from "./core/L18n.js";
 export { Router } from "./core/Router.js";
 export { StateManager } from "./core/StateManager.js";

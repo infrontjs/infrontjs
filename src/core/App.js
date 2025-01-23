@@ -2,7 +2,7 @@ import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
 import { View } from "./View.js";
 import { L18n } from "./L18n.js";
-import { Events } from "./Events.js";
+import { CustomEvents } from "./CustomEvents.js";
 
 import { Helper } from "../util/Helper.js";
 import { PathObject } from "../util/PathObject.js";
@@ -34,7 +34,7 @@ const DEFAULT_CONFIG = {
  * App
  * The App class is the logical core unit of every InfrontJS application.
  */
-class App extends Events
+class App extends CustomEvents
 {
     static POOL = {};
 
@@ -113,7 +113,7 @@ class App extends Events
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
 
-        this.emit( Events.EVENT.READY );
+        this.dispatchCustomEvent( CustomEvents.TYPE.READY );
     }
 
     initL18n()

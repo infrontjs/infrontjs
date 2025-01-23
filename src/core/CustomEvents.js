@@ -5,27 +5,28 @@
  * @example
  * class MyClass {
  *   constructor() {
- *       this.events = new Events( this  );
+ *       this.events = new CustomEvents( this  );
  *   }
  *   start() {
- *       this.emit( "start", { detail: { ... } } );
+ *       this.dispatchCustomEvent( "start", { detail: { ... } } );
  *   }
  * }
  *
  * const myInstance = new MyClass();
- * myInstance.on( "start", e => { ... } );
+ * myInstance.addEventListener( "start", e => { ... } );
  *
  */
-class Events
+class CustomEvents
 {
-    static get EVENT() {
+    static get TYPE() {
         return {
             'READY' : 'ready',
             'POPSTATE' : 'popstate',
             'BEFORE_STATE_CHANGE' : 'beforeStateChange',
             'AFTER_STATE_CHANGE' : 'afterStateChange',
             'BEFORE_LANGUAGE_SWITCH' : 'beforeLanguageSwitch',
-            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch'
+            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch',
+            'ON_STATE_NOT_FOUND' : 'onStateNotFound'
         }
     };
 
@@ -40,19 +41,19 @@ class Events
             this
         );
 
-        host.on = ( eventName, func ) =>
+        host.addEventListener = ( eventName, func ) =>
         {
             host.addEventListener( eventName, func );
             return host;
         };
 
-        host.off = ( eventName, func ) =>
+        host.removeEventListener = ( eventName, func ) =>
         {
             host.removeEventListener( eventName, func );
             return host;
         };
 
-        host.emit = ( eventName, optionsDetail = null ) =>
+        host.dispatchCustomEvent = ( eventName, optionsDetail = null ) =>
         {
             host.dispatchEvent(
                 new CustomEvent(
@@ -71,4 +72,4 @@ class Events
     }
 }
 
-export { Events };
+export { CustomEvents };

@@ -1,4 +1,4 @@
-import { Events} from "./Events.js";
+import { CustomEvents} from "./CustomEvents.js";
 
 /**
  * L18n
@@ -245,8 +245,8 @@ class L18n
 
         if ( this.app )
         {
-            this.app.emit(
-                Events.EVENT.BEFORE_LANGUAGE_SWITCH,
+            this.app.dispatchCustomEvent(
+                CustomEvents.TYPE.BEFORE_LANGUAGE_SWITCH,
                 {
                     currentLanguage: this.currentLanguage,
                     newLanguage: langCode.toLowerCase()
@@ -267,8 +267,8 @@ class L18n
 
         if ( this.app )
         {
-            this.app.emit(
-                Events.EVENT.AFTER_LANGUAGE_SWITCH,
+            this.app.dispatchCustomEvent(
+                CustomEvents.TYPE.AFTER_LANGUAGE_SWITCH,
                 {
                     oldLanguage: oldLanguage,
                     currentLanguage: this.currentLanguage

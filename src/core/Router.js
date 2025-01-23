@@ -1,7 +1,7 @@
 import { RouteParams } from "../base/RouteParams.js";
 import { Helper } from "../util/Helper.js";
 import { StateManager } from "./StateManager.js";
-import { Events } from "./Events.js";
+import { CustomEvents } from "./CustomEvents.js";
 
 const UrlPattern = new UP();
 
@@ -108,11 +108,21 @@ class Router
         }
 
         // If it is default route
-        if ( null === routeData && null !== this.app.stateManager.stateNotFoundClass )
+        if ( null === routeData )
         {
-            routeData = {
-                "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
-                "routeParams" : null
+            this.app.dispatchCustomEvent(
+                CustomEvents.TYPE.ON_STATE_NOT_FOUND,
+                {
+                    route: route
+                }
+            );
+
+            if ( null !== this.app.stateManager.stateNotFoundClass )
+            {
+                routeData = {
+                    "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
+                    "routeParams" : null
+                }
             }
         }
 
@@ -155,8 +165,8 @@ class Router
             // Fix to properly handle backbutton
             window.addEventListener( 'popstate', ( e ) =>
             {
-                this.app.emit(
-                    Events.EVENT.POPSTATE,
+                this.app.dispatchCustomEvent(
+                    CustomEvents.TYPE.POPSTATE,
                     {
                         originalEvent : e
                     }

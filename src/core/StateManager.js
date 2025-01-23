@@ -1,6 +1,6 @@
 import { Helper } from "../util/Helper.js";
 import { DefaultIndexState } from "../base/DefaultIndexState.js";
-import { Events } from "../IF.js";
+import { CustomEvents } from "../IF.js";
 
 
 /**
@@ -143,8 +143,8 @@ class StateManager
         let previousStateId = null;
         let currentStateId = this.currentState ? this.currentState.getId() : null;
 
-        this.app.emit(
-            Events.EVENT.BEFORE_STATE_CHANGE,
+        this.app.dispatchCustomEvent(
+            CustomEvents.TYPE.BEFORE_STATE_CHANGE,
             {
                 currentStateId: currentStateId,
                 nextStateId : newState ? newState.getId() : null
@@ -174,8 +174,8 @@ class StateManager
         await newState.enter();
         currentStateId = this.currentState.getId();
 
-        this.app.emit(
-            Events.EVENT.AFTER_STATE_CHANGE,
+        this.app.dispatchCustomEvent(
+            CustomEvents.TYPE.AFTER_STATE_CHANGE,
             {
                 previousStateId : previousStateId,
                 currentStateId: currentStateId

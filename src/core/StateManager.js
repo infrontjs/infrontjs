@@ -36,7 +36,7 @@ class StateManager
 
     set stateNotFoundClass( stateNotFoundClass )
     {
-        if ( false === Helper.isClass( notFoundClass ) )
+        if ( false === Helper.isClass( stateNotFoundClass ) )
         {
             throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
         }

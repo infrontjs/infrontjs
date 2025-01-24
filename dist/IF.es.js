@@ -1517,13 +1517,13 @@ class CustomEvents
             this
         );
 
-        host.addEventListener = ( eventName, func ) =>
+        host.addCustomEventListener = ( eventName, func ) =>
         {
             host.addEventListener( eventName, func );
             return host;
         };
 
-        host.removeEventListener = ( eventName, func ) =>
+        host.removeCustomEventListener = ( eventName, func ) =>
         {
             host.removeEventListener( eventName, func );
             return host;
@@ -3442,11 +3442,6 @@ exports.VERSION = _VERSION_STRING;
 
 exports.name = _NAME;
 
-/* istanbul ignore if */
-if (typeof window != 'undefined') {
-    window.ejs = exports;
-}
-
 const compile = exports.compile;
 const render = exports.render;
 
@@ -5029,7 +5024,7 @@ class PathObject
     }
 }
 
-const VERSION = '1.0.0-rc';
+const VERSION = '1.0.0';
 
 const DEFAULT_CONFIG = {
     "app" : {

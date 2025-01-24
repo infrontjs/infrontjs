@@ -9,7 +9,7 @@ import { PathObject } from "../util/PathObject.js";
 import { DefaultIndexState } from "../base/DefaultIndexState.js";
 
 
-const VERSION = '1.0.0-rc3';
+const VERSION = '1.0.0';
 
 const DEFAULT_CONFIG = {
     "app" : {

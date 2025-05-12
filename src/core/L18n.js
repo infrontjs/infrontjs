@@ -210,7 +210,7 @@ class L18n
      * Get formatted date time
      *
      * @param {Date} dt - Date object to format
-     * @param {Object=} [opts=null] - DateTimeFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat|DateTimeFormat}
+     * @param {Object=} [opts=null] - DateTimeFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/format}
      * @returns {string}
      */
     getDateTime( dt, opts = null )

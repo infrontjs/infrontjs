@@ -36,6 +36,7 @@ class RestApi
         }
 
         this.headers = new Headers( headers );
+        this._controllers = new Set();
     }
 
     /**
@@ -107,51 +108,79 @@ class RestApi
         return await this._fetch( req, cb );
     }
 
-    async _fetch( req, cb = null )
+    /**
+     * Aborts all pending requests
+     */
+    abortAll()
     {
-        if ( cb )
+        for (const controller of this._controllers)
         {
-            fetch( req )
-                .then( response => response.json() )
-                .then( json => cb( null, json ) )
-                .catch( error => cb( error, null ) );
+            controller.abort();
+        }
+        this._controllers.clear();
+    }
+
+    async _fetch(req, cb = null)
+    {
+        const controller = req.signal?.__controller; // fallback falls du es nicht im req direkt speichern kannst
+        if (cb)
+        {
+            fetch(req)
+                .then(response => response.json())
+                .then(json => cb(null, json))
+                .catch(error => cb(error, null))
+                .finally(() => {
+                    if (controller) this._controllers.delete(controller);
+                });
         }
         else
         {
             try
             {
-                const response = await fetch( req );
+                const response = await fetch(req);
                 let json = null;
                 try {
                     json = await response.json();
                 }
-                catch ( jsonErr )
+                catch (jsonErr)
                 {
                     json = null;
                 }
                 return {
-                    status : response.status,
+                    status: response.status,
                     json
                 };
             }
-            catch( err )
+            catch (err)
             {
-                console.error( err );
+                console.error(err);
                 return null;
+            }
+            finally
+            {
+                if (controller) this._controllers.delete(controller);
             }
         }
     }
 
     _createFetchOptions( method, data = null )
     {
+        const controller = new AbortController();
+        this._controllers.add(controller);
+
         const opts = {
-            "method" : method.toUpperCase(),
-            "headers" : this.headers
+            method: method.toUpperCase(),
+            headers: this.headers,
+            signal: controller.signal
         };
-        if ( Helper.isPlainObject( data ) )
+
+        if ( Helper.isPlainObject(data) )
         {
-            opts.body = JSON.stringify( data );
+            opts.body = JSON.stringify(data);
         }
+
+        // Entferne den Controller automatisch, sobald fetch abgeschlossen ist
+        opts._controller = controller; // temporär anfügen, wird gleich wieder entfernt
         return opts;
     }
 }

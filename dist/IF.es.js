@@ -1325,7 +1325,7 @@ class StateManager
 
     set stateNotFoundClass( stateNotFoundClass )
     {
-        if ( false === Helper.isClass( notFoundClass ) )
+        if ( false === Helper.isClass( stateNotFoundClass ) )
         {
             throw new Error( 'States.setNotFoundClass expects a class/subclass of State.' );
         }
@@ -3523,7 +3523,9 @@ class View
             throw new Error( 'Invalid container. Given container must be an instance of an HTMLElement.' );
         }
 
-        container.innerHTML = html;
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        container.replaceChildren(...temp.childNodes);
     }
 
     createData( data = {} )
@@ -3781,7 +3783,7 @@ class L18n
      * Get formatted date time
      *
      * @param {Date} dt - Date object to format
-     * @param {Object=} [opts=null] - DateTimeFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat|DateTimeFormat}
+     * @param {Object=} [opts=null] - DateTimeFormat options used if set. @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/format}
      * @returns {string}
      */
     getDateTime( dt, opts = null )
@@ -5024,7 +5026,7 @@ class PathObject
     }
 }
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.0-rc4';
 
 const DEFAULT_CONFIG = {
     "app" : {
@@ -5234,6 +5236,7 @@ class RestApi
         }
 
         this.headers = new Headers( headers );
+        this._controllers = new Set();
     }
 
     /**
@@ -5305,51 +5308,86 @@ class RestApi
         return await this._fetch( req, cb );
     }
 
-    async _fetch( req, cb = null )
+    /**
+     * Aborts all pending requests
+     */
+    abortAll()
     {
-        if ( cb )
+        for (const controller of this._controllers)
         {
-            fetch( req )
-                .then( response => response.json() )
-                .then( json => cb( null, json ) )
-                .catch( error => cb( error, null ) );
+            try
+            {
+                controller.abort();
+            }
+            catch( e )
+            {
+                // Fail silently and catch the AbortErrors.
+            }
+        }
+        this._controllers.clear();
+    }
+
+    async _fetch(req, cb = null)
+    {
+        const controller = req.signal?.__controller; // fallback falls du es nicht im req direkt speichern kannst
+        if (cb)
+        {
+            fetch(req)
+                .then(response => response.json())
+                .then(json => cb(null, json))
+                .catch(error => cb(error, null))
+                .finally(() => {
+                    if (controller) this._controllers.delete(controller);
+                });
         }
         else
         {
             try
             {
-                const response = await fetch( req );
+                const response = await fetch(req);
                 let json = null;
                 try {
                     json = await response.json();
                 }
-                catch ( jsonErr )
+                catch (jsonErr)
                 {
                     json = null;
                 }
                 return {
-                    status : response.status,
+                    status: response.status,
                     json
                 };
             }
-            catch( err )
+            catch (err)
             {
-                console.error( err );
+                console.error(err);
                 return null;
+            }
+            finally
+            {
+                if (controller) this._controllers.delete(controller);
             }
         }
     }
 
     _createFetchOptions( method, data = null )
     {
+        const controller = new AbortController();
+        this._controllers.add(controller);
+
         const opts = {
-            "method" : method.toUpperCase(),
-            "headers" : this.headers
+            method: method.toUpperCase(),
+            headers: this.headers,
+            signal: controller.signal
         };
-        if ( Helper.isPlainObject( data ) )
+
+        if ( Helper.isPlainObject(data) )
         {
-            opts.body = JSON.stringify( data );
+            opts.body = JSON.stringify(data);
         }
+
+        // Entferne den Controller automatisch, sobald fetch abgeschlossen ist
+        opts._controller = controller; // temporär anfügen, wird gleich wieder entfernt
         return opts;
     }
 }

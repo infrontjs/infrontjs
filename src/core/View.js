@@ -78,7 +78,9 @@ class View
             throw new Error( 'Invalid container. Given container must be an instance of an HTMLElement.' );
         }
 
-        container.innerHTML = html;
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        container.replaceChildren(...temp.childNodes);
     }
 
     createData( data = {} )

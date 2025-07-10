@@ -115,7 +115,14 @@ class RestApi
     {
         for (const controller of this._controllers)
         {
-            controller.abort();
+            try
+            {
+                controller.abort();
+            }
+            catch( e )
+            {
+                // Fail silently and catch the AbortErrors.
+            }
         }
         this._controllers.clear();
     }

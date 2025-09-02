@@ -1,5 +1,6 @@
 export { State } from "./base/State.js";
 export { RouteParams } from "./base/RouteParams.js";
+export { Model } from "./base/Model.js";
 
 export { App } from "./core/App.js";
 export { CustomEvents } from "./core/CustomEvents.js";

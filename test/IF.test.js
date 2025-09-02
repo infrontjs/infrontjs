@@ -13,4 +13,5 @@ it( 'Check for all IF exports exists', () =>
     assert.equal( "function" === typeof IF.RestApi, true );
     assert.equal( "function" === typeof IF.Router, true );
     assert.equal( "function" === typeof IF.View, true );
+    assert.equal( "function" === typeof IF.Model, true );
 });

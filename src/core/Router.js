@@ -110,11 +110,13 @@ class Router
         // If it is default route
         if ( null === routeData )
         {
-            this.app.dispatchCustomEvent(
-                CustomEvents.TYPE.ON_STATE_NOT_FOUND,
+            this.app.dispatchEvent(
+                new CustomEvent(CustomEvents.TYPE.ON_STATE_NOT_FOUND,
                 {
-                    route: route
-                }
+                    detail: {
+                        route: route
+                    }
+                })
             );
 
             if ( null !== this.app.stateManager.stateNotFoundClass )
@@ -165,11 +167,13 @@ class Router
             // Fix to properly handle backbutton
             window.addEventListener( 'popstate', ( e ) =>
             {
-                this.app.dispatchCustomEvent(
-                    CustomEvents.TYPE.POPSTATE,
+                this.app.dispatchEvent(
+                    new CustomEvent(CustomEvents.TYPE.POPSTATE,
                     {
-                        originalEvent : e
-                    }
+                        detail: {
+                            originalEvent : e
+                        }
+                    })
                 );
                 this.processUrl();
             });

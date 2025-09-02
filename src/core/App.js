@@ -113,7 +113,7 @@ class App extends CustomEvents
             console && console.log( "%c»InfrontJS« Version " + VERSION, "font-family: monospace sans-serif; background-color: black; color: white;" );
         }
 
-        this.dispatchCustomEvent( CustomEvents.TYPE.READY );
+        this.dispatchEvent(new CustomEvent( CustomEvents.TYPE.READY ));
     }
 
     initL18n()

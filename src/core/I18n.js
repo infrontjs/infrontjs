@@ -188,10 +188,12 @@ class I18n {
 
         // Fire before event
         if (this.app && this.currentLanguage !== normalizedLang) {
-            this.app.dispatchCustomEvent(CustomEvents.TYPE.BEFORE_LANGUAGE_SWITCH, {
-                currentLanguage: this.currentLanguage,
-                newLanguage: normalizedLang
-            });
+            this.app.dispatchEvent(new CustomEvent(CustomEvents.TYPE.BEFORE_LANGUAGE_SWITCH, {
+                detail: {
+                    currentLanguage: this.currentLanguage,
+                    newLanguage: normalizedLang
+                }
+            }));
         }
 
         const oldLanguage = this.currentLanguage;
@@ -202,10 +204,12 @@ class I18n {
 
         // Fire after event
         if (this.app && oldLanguage !== normalizedLang) {
-            this.app.dispatchCustomEvent(CustomEvents.TYPE.AFTER_LANGUAGE_SWITCH, {
-                oldLanguage: oldLanguage,
-                currentLanguage: this.currentLanguage
-            });
+            this.app.dispatchEvent(new CustomEvent(CustomEvents.TYPE.AFTER_LANGUAGE_SWITCH, {
+                detail: {
+                    oldLanguage: oldLanguage,
+                    currentLanguage: this.currentLanguage
+                }
+            }));
         }
     }
 

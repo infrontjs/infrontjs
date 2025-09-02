@@ -5,70 +5,72 @@
  * @example
  * class MyClass {
  *   constructor() {
- *       this.events = new CustomEvents( this  );
+ *       this.events = new CustomEvents();
  *   }
  *   start() {
- *       this.dispatchCustomEvent( "start", { detail: { ... } } );
+ *       this.events.dispatchEvent(new CustomEvent("start", { detail: { myData: '...' } }));
  *   }
  * }
  *
  * const myInstance = new MyClass();
- * myInstance.addEventListener( "start", e => { ... } );
+ * myInstance.events.addEventListener("start", e => { console.log(e.detail); });
  *
  */
-class CustomEvents
-{
+class CustomEvents {
     static get TYPE() {
         return {
-            'READY' : 'ready',
-            'POPSTATE' : 'popstate',
-            'BEFORE_STATE_CHANGE' : 'beforeStateChange',
-            'AFTER_STATE_CHANGE' : 'afterStateChange',
-            'BEFORE_LANGUAGE_SWITCH' : 'beforeLanguageSwitch',
-            'AFTER_LANGUAGE_SWITCH' : 'afterLanguageSwitch',
-            'ON_STATE_NOT_FOUND' : 'onStateNotFound'
+            'READY': 'ready',
+            'POPSTATE': 'popstate',
+            'BEFORE_STATE_CHANGE': 'beforeStateChange',
+            'AFTER_STATE_CHANGE': 'afterStateChange',
+            'BEFORE_LANGUAGE_SWITCH': 'beforeLanguageSwitch',
+            'AFTER_LANGUAGE_SWITCH': 'afterLanguageSwitch',
+            'ON_STATE_NOT_FOUND': 'onStateNotFound'
+        };
+    }
+
+    constructor() {
+        this.listeners = new Map();
+    }
+
+    /**
+     * @param {string} type
+     * @param {EventListenerOrEventListenerObject} listener
+     */
+    addEventListener(type, listener) {
+        if (!this.listeners.has(type)) {
+            this.listeners.set(type, []);
         }
-    };
+        this.listeners.get(type).push(listener);
+    }
 
-    constructor()
-    {
-        const host = this;
-        this.proxy = document.createDocumentFragment();
-        this.proxy.host = this;
-
-        ["addEventListener", "dispatchEvent", "removeEventListener"].forEach(
-            this.delegate,
-            this
-        );
-
-        host.addCustomEventListener = ( eventName, func ) =>
-        {
-            host.addEventListener( eventName, func );
-            return host;
-        };
-
-        host.removeCustomEventListener = ( eventName, func ) =>
-        {
-            host.removeEventListener( eventName, func );
-            return host;
-        };
-
-        host.dispatchCustomEvent = ( eventName, optionsDetail = null ) =>
-        {
-            host.dispatchEvent(
-                new CustomEvent(
-                    eventName,
-                    {
-                        "detail": optionsDetail
-                    }
-                )
-            );
+    /**
+     * @param {string} type
+     * @param {EventListenerOrEventListenerObject} listener
+     */
+    removeEventListener(type, listener) {
+        if (!this.listeners.has(type)) {
+            return;
+        }
+        const listeners = this.listeners.get(type);
+        const index = listeners.indexOf(listener);
+        if (index > -1) {
+            listeners.splice(index, 1);
         }
     }
 
-    delegate( method )
-    {
-        this.proxy.host[method] = this.proxy[method].bind(this.proxy);
+    /**
+     * @param {Event} event
+     */
+    dispatchEvent(event) {
+        if (!this.listeners.has(event.type)) {
+            return true;
+        }
+        const listeners = this.listeners.get(event.type).slice();
+        for (const listener of listeners) {
+            listener.call(this, event);
+        }
+        return !event.defaultPrevented;
     }
 }
 

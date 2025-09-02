@@ -1,7 +1,7 @@
 import { Router } from "./Router.js";
 import { StateManager } from "./StateManager.js";
 import { View } from "./View.js";
-import { L18n } from "./L18n.js";
+import { I18n } from "./I18n.js";
 import { CustomEvents } from "./CustomEvents.js";
 
 import { Helper } from "../util/Helper.js";
@@ -118,8 +118,7 @@ class App extends CustomEvents
 
     initL18n()
     {
-        this.l18n = new L18n( this );
-
+        this.l18n = new I18n( this );
     }
     initStates()
     {

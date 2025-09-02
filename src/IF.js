@@ -4,7 +4,7 @@ export { Model } from "./base/Model.js";
 
 export { App } from "./core/App.js";
 export { CustomEvents } from "./core/CustomEvents.js";
-export { L18n } from "./core/L18n.js";
+export { I18n } from "./core/I18n.js";
 export { Router } from "./core/Router.js";
 export { StateManager } from "./core/StateManager.js";
 export { View } from "./core/View.js";

@@ -6353,7 +6353,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '1.0.0-rc7';
+	const VERSION = '1.0.0-rc8';
 
 	const DEFAULT_CONFIG = {
 	    "app" : {
@@ -6674,7 +6674,7 @@ void main()
 	     * @param {number=} options.retryDelay - Delay between retries in milliseconds
 	     * @param {object=} options.queryParams - Query parameters object
 	     * @param {function=} options.onDownloadProgress - Download progress callback
-	     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+	     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
 	     */
 	    async get( endpoint, cb = null, options = {} )
 	    {
@@ -6705,7 +6705,7 @@ void main()
 	     * @param {object=} options.queryParams - Query parameters object
 	     * @param {function=} options.onUploadProgress - Upload progress callback
 	     * @param {function=} options.onDownloadProgress - Download progress callback
-	     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+	     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
 	     */
 	    async post( endpoint, data = {}, cb = null, options = {} )
 	    {
@@ -6734,7 +6734,7 @@ void main()
 	     * @param {number=} options.retryDelay - Delay between retries in milliseconds
 	     * @param {object=} options.queryParams - Query parameters object
 	     * @param {function=} options.onDownloadProgress - Download progress callback
-	     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+	     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
 	     */
 	    async delete( endpoint, cb = null, options = {} )
 	    {
@@ -6765,7 +6765,7 @@ void main()
 	     * @param {object=} options.queryParams - Query parameters object
 	     * @param {function=} options.onUploadProgress - Upload progress callback
 	     * @param {function=} options.onDownloadProgress - Download progress callback
-	     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+	     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
 	     */
 	    async put( endpoint, data = {}, cb = null, options = {} )
 	    {
@@ -6796,7 +6796,7 @@ void main()
 	     * @param {object=} options.queryParams - Query parameters object
 	     * @param {function=} options.onUploadProgress - Upload progress callback
 	     * @param {function=} options.onDownloadProgress - Download progress callback
-	     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+	     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
 	     */
 	    async patch( endpoint, data = {}, cb = null, options = {} )
 	    {

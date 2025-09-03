@@ -310,26 +310,33 @@ class State
     /**
      * Find a state in the hierarchy by ID
      * @param {string} stateId - State ID to find
+     * @param {Set} visited - Set of already visited states (internal use)
      * @returns {State|null} Found state or null
      */
-    findStateInHierarchy( stateId )
+    findStateInHierarchy( stateId, visited = new Set() )
     {
+        // Prevent infinite recursion
+        if (visited.has(this)) {
+            return null;
+        }
+        visited.add(this);
+        
         // Check this state
         if (this.getId() === stateId) {
             return this;
         }
         
         // Check current sub-state
-        if (this.currentSubState) {
-            const found = this.currentSubState.findStateInHierarchy(stateId);
+        if (this.currentSubState && !visited.has(this.currentSubState)) {
+            const found = this.currentSubState.findStateInHierarchy(stateId, visited);
             if (found) {
                 return found;
             }
         }
         
-        // Check parent
-        if (this.parentState) {
-            return this.parentState.findStateInHierarchy(stateId);
+        // Check parent (only if we haven't already visited it)
+        if (this.parentState && !visited.has(this.parentState)) {
+            return this.parentState.findStateInHierarchy(stateId, visited);
         }
         
         return null;

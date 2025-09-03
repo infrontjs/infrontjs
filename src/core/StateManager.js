@@ -192,7 +192,11 @@ class StateManager
             
             // Dispose of the current state to cleanup resources (including sub-states)
             if (typeof this.currentState.dispose === 'function') {
-                await this.currentState.dispose();
+                try {
+                    await this.currentState.dispose();
+                } catch (error) {
+                    console.warn('Error disposing state:', error);
+                }
             }
             
             delete this.currentState;

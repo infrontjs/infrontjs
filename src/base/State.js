@@ -65,7 +65,8 @@ class State
 
     /**
      * Called before exiting state.
-     * @returns {boolean}
+     * Return false to prevent state transition.
+     * @returns {boolean} - True to allow exit, false to prevent exit
      */
     canExit()
     {

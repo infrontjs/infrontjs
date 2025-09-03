@@ -135,7 +135,7 @@ class StateManager
     /**
      * Switch to given state
      * @param {DefaultBaseState} newState - Instance of state to switch to
-     * @throws {Error} - Throws an error if given state cannot be entered or if enter() function throws an error.
+     * @throws {Error} - Throws an error if given state cannot be entered, current state cannot be exited, or if enter()/exit() functions throw an error.
      * @returns {Promise<boolean>}
      */
     async switchTo( newState )
@@ -167,6 +167,12 @@ class StateManager
 
         if ( this.currentState )
         {
+            // Check if current state can be exited
+            if ( false === this.currentState.canExit() )
+            {
+                throw new Error( 'Cannot exit current state: ' + this.currentState.getId() );
+            }
+
             previousStateId = this.currentState.getId();
             await this.currentState.exit();
             

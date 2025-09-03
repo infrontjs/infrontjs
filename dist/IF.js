@@ -4534,7 +4534,7 @@ void main()
 	        }
 	        else
 	        {
-	            data[ '_lcs' ] = this.app.l18n.getLocale.bind( this.app.l18n );
+	            data[ '_lcs' ] = this.app.l18n.t.bind( this.app.l18n );
 	        }
 
 	        if ( data.hasOwnProperty( '_lcn' ) )
@@ -4543,7 +4543,7 @@ void main()
 	        }
 	        else
 	        {
-	            data[ '_lcn' ] = this.app.l18n.getNumber.bind( this.app.l18n );        }
+	            data[ '_lcn' ] = this.app.l18n.n.bind( this.app.l18n );        }
 
 	        if ( data.hasOwnProperty( '_lcd' ) )
 	        {
@@ -4551,7 +4551,7 @@ void main()
 	        }
 	        else
 	        {
-	            data[ '_lcd' ] = this.app.l18n.getDateTime.bind( this.app.l18n );
+	            data[ '_lcd' ] = this.app.l18n.d.bind( this.app.l18n );
 	        }
 
 	        const gvdKeys = Object.keys( this.globalViewData );
@@ -6353,7 +6353,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '1.0.0-rc8';
+	const VERSION = '1.0.0-rc9';
 
 	const DEFAULT_CONFIG = {
 	    "app" : {

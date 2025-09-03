@@ -77,6 +77,36 @@ import { Helper } from "../util/Helper.js";
  * // Cancel all requests
  * myRestApi.abortAll();
  *
+ * @example <caption>Progress tracking</caption>
+ * // Upload progress tracking
+ * const formData = new FormData();
+ * formData.append('file', fileInput.files[0]);
+ * 
+ * const { requestId } = await myRestApi.post('/upload', formData, null, {
+ *     onUploadProgress: (progress) => {
+ *         console.log(`Upload: ${progress.percent}% (${progress.loaded}/${progress.total} bytes)`);
+ *         // Update progress bar: progressBar.value = progress.percent;
+ *     }
+ * });
+ *
+ * // Download progress tracking
+ * const { requestId, result } = await myRestApi.get('/large-file', null, {
+ *     onDownloadProgress: (progress) => {
+ *         console.log(`Download: ${progress.percent}% (${progress.loaded}/${progress.total} bytes)`);
+ *         // Update progress bar: downloadBar.value = progress.percent;
+ *     }
+ * });
+ *
+ * // Both upload and download progress
+ * const { requestId } = await myRestApi.put('/documents/123', documentData, null, {
+ *     onUploadProgress: (progress) => {
+ *         console.log('Uploading:', progress.percent + '%');
+ *     },
+ *     onDownloadProgress: (progress) => {
+ *         console.log('Downloading response:', progress.percent + '%');
+ *     }
+ * });
+ *
  */
 class RestApi
 {
@@ -117,6 +147,7 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
+     * @param {function=} options.onDownloadProgress - Download progress callback
      * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async get( endpoint, cb = null, options = {} )
@@ -146,6 +177,8 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
+     * @param {function=} options.onUploadProgress - Upload progress callback
+     * @param {function=} options.onDownloadProgress - Download progress callback
      * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async post( endpoint, data = {}, cb = null, options = {} )
@@ -174,6 +207,7 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
+     * @param {function=} options.onDownloadProgress - Download progress callback
      * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async delete( endpoint, cb = null, options = {} )
@@ -203,6 +237,8 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
+     * @param {function=} options.onUploadProgress - Upload progress callback
+     * @param {function=} options.onDownloadProgress - Download progress callback
      * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async put( endpoint, data = {}, cb = null, options = {} )
@@ -232,6 +268,8 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
+     * @param {function=} options.onUploadProgress - Upload progress callback
+     * @param {function=} options.onDownloadProgress - Download progress callback
      * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async patch( endpoint, data = {}, cb = null, options = {} )
@@ -405,6 +443,154 @@ class RestApi
     }
 
     /**
+     * Create a progress tracking wrapper for upload progress
+     * @param {any} body - Request body
+     * @param {function=} onProgress - Progress callback
+     * @returns {any} Wrapped body or original body
+     * @private
+     */
+    _wrapBodyForProgress(body, onProgress) {
+        if (!onProgress || !body) {
+            return body;
+        }
+
+        // For FormData, File, or Blob, we can track upload progress via XMLHttpRequest
+        if (body instanceof FormData || body instanceof File || body instanceof Blob) {
+            // Return original body, we'll use XMLHttpRequest for upload progress
+            return body;
+        }
+
+        // For string/JSON data, we can estimate progress
+        if (typeof body === 'string') {
+            const totalBytes = new Blob([body]).size;
+            setTimeout(() => onProgress({ loaded: totalBytes, total: totalBytes, percent: 100 }), 0);
+            return body;
+        }
+
+        return body;
+    }
+
+    /**
+     * Fetch with upload progress support using XMLHttpRequest
+     * @param {Request} req - Request object
+     * @param {function=} onUploadProgress - Upload progress callback
+     * @returns {Promise<Response>} Promise resolving to Response
+     * @private
+     */
+    _fetchWithUploadProgress(req, onUploadProgress) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            
+            // Configure upload progress
+            if (onUploadProgress && xhr.upload) {
+                xhr.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        onUploadProgress({
+                            loaded: event.loaded,
+                            total: event.total,
+                            percent: Math.round((event.loaded / event.total) * 100)
+                        });
+                    }
+                });
+            }
+
+            // Configure response handling
+            xhr.addEventListener('load', () => {
+                const response = new Response(xhr.response, {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    headers: xhr.getAllResponseHeaders().split('\r\n').reduce((headers, line) => {
+                        const [key, value] = line.split(': ');
+                        if (key && value) {
+                            headers[key] = value;
+                        }
+                        return headers;
+                    }, {})
+                });
+                resolve(response);
+            });
+
+            xhr.addEventListener('error', () => {
+                reject(new Error('Network error'));
+            });
+
+            xhr.addEventListener('abort', () => {
+                reject(new DOMException('Request aborted', 'AbortError'));
+            });
+
+            // Configure abort signal
+            if (req.signal) {
+                req.signal.addEventListener('abort', () => {
+                    xhr.abort();
+                });
+            }
+
+            // Configure request
+            xhr.open(req.method, req.url);
+            
+            // Set headers
+            for (const [key, value] of req.headers.entries()) {
+                xhr.setRequestHeader(key, value);
+            }
+
+            // Send request
+            req.arrayBuffer().then(body => {
+                xhr.send(body);
+            }).catch(reject);
+        });
+    }
+
+    /**
+     * Create a response with download progress tracking
+     * @param {Response} response - Original response
+     * @param {function=} onProgress - Progress callback
+     * @returns {Response} Response with progress tracking
+     * @private
+     */
+    _wrapResponseForProgress(response, onProgress) {
+        if (!onProgress || !response.body) {
+            return response;
+        }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : null;
+        let loaded = 0;
+
+        const reader = response.body.getReader();
+        const stream = new ReadableStream({
+            start(controller) {
+                function pump() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            controller.close();
+                            return;
+                        }
+
+                        loaded += value.byteLength;
+                        
+                        // Call progress callback
+                        onProgress({
+                            loaded,
+                            total: total || loaded,
+                            percent: total ? Math.round((loaded / total) * 100) : 0
+                        });
+
+                        controller.enqueue(value);
+                        return pump();
+                    });
+                }
+                return pump();
+            }
+        });
+
+        return new Response(stream, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+        });
+    }
+
+    /**
      * Sleep utility for retry delays
      * @private
      */
@@ -431,12 +617,24 @@ class RestApi
      * @private
      */
     async _fetchWithRetry(req, options = {}) {
-        const { retryAttempts = this.retryAttempts, retryDelay = this.retryDelay } = options;
+        const { 
+            retryAttempts = this.retryAttempts, 
+            retryDelay = this.retryDelay,
+            onUploadProgress,
+            onDownloadProgress
+        } = options;
         let lastError;
 
         for (let attempt = 0; attempt <= retryAttempts; attempt++) {
             try {
-                const response = await fetch(req);
+                let response;
+                
+                // Use XMLHttpRequest for upload progress or regular fetch
+                if (onUploadProgress && req.body) {
+                    response = await this._fetchWithUploadProgress(req, onUploadProgress);
+                } else {
+                    response = await fetch(req);
+                }
                 
                 if (!response.ok) {
                     const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -455,6 +653,11 @@ class RestApi
                     }
                     
                     throw error;
+                }
+                
+                // Wrap response for download progress if needed
+                if (onDownloadProgress) {
+                    response = this._wrapResponseForProgress(response, onDownloadProgress);
                 }
                 
                 let result = null;

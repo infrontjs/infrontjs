@@ -15,10 +15,12 @@ class StateManager
     /**
      * Constructor
      * @param {App} appInstance - Instance of app
+     * @param {State=} parentState - Parent state for sub-state managers
      */
-    constructor( appInstance )
+    constructor( appInstance, parentState = null )
     {
         this.app = appInstance;
+        this.parentState = parentState;
         this._states =  {};
         this._currentState = null;
         this._stateNotFoundClass = this.app ? this.app.config.get( 'stateManager.notFoundState' ) : null;
@@ -99,7 +101,7 @@ class StateManager
      *
      * @param {string} stateId - The state id to be instantiated
      * @param {RouteParams} routeParams - Current RouteParams
-     * @returns {null}
+     * @returns {State|null} - State instance or null
      */
     create( stateId, routeParams )
     {
@@ -107,11 +109,12 @@ class StateManager
 
         if ( this._states.hasOwnProperty( stateId ) )
         {
-            stateInstance = new this._states[ stateId ]( this.app, routeParams );
+            // Pass parent state to sub-state constructor
+            stateInstance = new this._states[ stateId ]( this.app, routeParams, this.parentState );
         }
         else if ( null !== this.stateNotFoundClass )
         {
-            stateInstance = new this.stateNotFoundClass( this.app, routeParams );
+            stateInstance = new this.stateNotFoundClass( this.app, routeParams, this.parentState );
         }
         else
         {
@@ -143,14 +146,16 @@ class StateManager
         let previousStateId = null;
         let currentStateId = this.currentState ? this.currentState.getId() : null;
 
+        // Create hierarchy-aware event details
+        const eventDetail = {
+            currentStateId: currentStateId,
+            nextStateId: newState ? newState.getId() : null,
+            isSubState: this.parentState !== null,
+            parentStateId: this.parentState ? this.parentState.getId() : null
+        };
+
         this.app.dispatchEvent(
-            new CustomEvent(CustomEvents.TYPE.BEFORE_STATE_CHANGE,
-            {
-                detail: {
-                    currentStateId: currentStateId,
-                    nextStateId : newState ? newState.getId() : null
-                }
-            })
+            new CustomEvent(CustomEvents.TYPE.BEFORE_STATE_CHANGE, { detail: eventDetail })
         );
 
         if ( false === newState.canEnter() )
@@ -158,7 +163,16 @@ class StateManager
             const redirectUrl = newState.getRedirectUrl();
             if ( redirectUrl )
             {
-                this.app.router.redirect( redirectUrl );
+                // For sub-states, delegate redirect to root state manager
+                if (this.parentState) {
+                    const rootState = newState.getRootState();
+                    const rootApp = rootState.app;
+                    if (rootApp && rootApp.router) {
+                        rootApp.router.redirect(redirectUrl);
+                    }
+                } else {
+                    this.app.router.redirect( redirectUrl );
+                }
                 return false;
             }
 
@@ -176,7 +190,7 @@ class StateManager
             previousStateId = this.currentState.getId();
             await this.currentState.exit();
             
-            // Dispose of the current state to cleanup resources
+            // Dispose of the current state to cleanup resources (including sub-states)
             if (typeof this.currentState.dispose === 'function') {
                 await this.currentState.dispose();
             }
@@ -185,18 +199,24 @@ class StateManager
         }
 
         this.currentState = newState;
+        
+        // Update parent state reference if this is a sub-state manager
+        if (this.parentState) {
+            this.parentState.currentSubState = newState;
+        }
+        
         await newState.enter();
         currentStateId = this.currentState.getId();
 
+        // Update event detail for after-change event
+        eventDetail.previousStateId = previousStateId;
+        eventDetail.currentStateId = currentStateId;
+
         this.app.dispatchEvent(
-            new CustomEvent(CustomEvents.TYPE.AFTER_STATE_CHANGE,
-            {
-                detail: {
-                    previousStateId : previousStateId,
-                    currentStateId: currentStateId
-                }
-            })
+            new CustomEvent(CustomEvents.TYPE.AFTER_STATE_CHANGE, { detail: eventDetail })
         );
+
+        return true;
     }
 
 }

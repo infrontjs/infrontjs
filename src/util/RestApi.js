@@ -148,7 +148,7 @@ class RestApi
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
      * @param {function=} options.onDownloadProgress - Download progress callback
-     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
      */
     async get( endpoint, cb = null, options = {} )
     {
@@ -179,7 +179,7 @@ class RestApi
      * @param {object=} options.queryParams - Query parameters object
      * @param {function=} options.onUploadProgress - Upload progress callback
      * @param {function=} options.onDownloadProgress - Download progress callback
-     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
      */
     async post( endpoint, data = {}, cb = null, options = {} )
     {
@@ -208,7 +208,7 @@ class RestApi
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
      * @param {function=} options.onDownloadProgress - Download progress callback
-     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
      */
     async delete( endpoint, cb = null, options = {} )
     {
@@ -239,7 +239,7 @@ class RestApi
      * @param {object=} options.queryParams - Query parameters object
      * @param {function=} options.onUploadProgress - Upload progress callback
      * @param {function=} options.onDownloadProgress - Download progress callback
-     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
      */
     async put( endpoint, data = {}, cb = null, options = {} )
     {
@@ -270,7 +270,7 @@ class RestApi
      * @param {object=} options.queryParams - Query parameters object
      * @param {function=} options.onUploadProgress - Upload progress callback
      * @param {function=} options.onDownloadProgress - Download progress callback
-     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
+     * @returns {Promise<{requestId: string, result: (any|undefined)}>} Promise with request ID and result (if no callback)
      */
     async patch( endpoint, data = {}, cb = null, options = {} )
     {

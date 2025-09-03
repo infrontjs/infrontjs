@@ -169,6 +169,12 @@ class StateManager
         {
             previousStateId = this.currentState.getId();
             await this.currentState.exit();
+            
+            // Dispose of the current state to cleanup resources
+            if (typeof this.currentState.dispose === 'function') {
+                await this.currentState.dispose();
+            }
+            
             delete this.currentState;
         }
 

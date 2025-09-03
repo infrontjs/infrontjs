@@ -32,6 +32,25 @@ import { Helper } from "../util/Helper.js";
  *     retryAttempts: 1     // Override to 1 retry attempt
  * });
  *
+ * @example <caption>Headers management</caption>
+ * myRestApi.addHeader('Authorization', 'Bearer token123');
+ * myRestApi.addHeader('Content-Type', 'application/json');
+ * myRestApi.removeHeader('Content-Type');
+ * const headers = myRestApi.getHeaders(); // Get copy of current headers
+ *
+ * @example <caption>Query parameters</caption>
+ * // Simple query parameters
+ * const books = await myRestApi.get('/books', null, {
+ *     queryParams: { page: 1, limit: 10, search: 'javascript' }
+ * });
+ * // Results in: GET /books?page=1&limit=10&search=javascript
+ *
+ * // Array parameters
+ * const filtered = await myRestApi.get('/books', null, {
+ *     queryParams: { tags: ['fiction', 'drama'], author: 'Shakespeare' }
+ * });
+ * // Results in: GET /books?tags=fiction&tags=drama&author=Shakespeare
+ *
  */
 class RestApi
 {
@@ -69,14 +88,16 @@ class RestApi
      * @param {number=} options.timeout - Request timeout in milliseconds
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
+     * @param {object=} options.queryParams - Query parameters object
      * @returns {Promise<any|undefined>}
      */
     async get( endpoint, cb = null, options = {} )
     {
-        let r = Helper.trim( endpoint, "/" ),
-            req = new Request( this.url + '/' + r, this._createFetchOptions( "GET" ) );
+        const { queryParams, ...fetchOptions } = options;
+        const url = this._buildUrl(endpoint, queryParams);
+        const req = new Request( url, this._createFetchOptions( "GET" ) );
 
-        return await this._fetch( req, cb, options );
+        return await this._fetch( req, cb, fetchOptions );
     }
 
     /**
@@ -88,13 +109,15 @@ class RestApi
      * @param {number=} options.timeout - Request timeout in milliseconds
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
+     * @param {object=} options.queryParams - Query parameters object
      * @returns {Promise<any|undefined>}
      */
     async post( endpoint, data = {}, cb = null, options = {} )
     {
-        let r = Helper.trim( endpoint, "/" ),
-            req = new Request( this.url + '/' + r, this._createFetchOptions( "POST", data ) );
-        return await this._fetch( req, cb, options );
+        const { queryParams, ...fetchOptions } = options;
+        const url = this._buildUrl(endpoint, queryParams);
+        const req = new Request( url, this._createFetchOptions( "POST", data ) );
+        return await this._fetch( req, cb, fetchOptions );
     }
 
     /**
@@ -105,13 +128,15 @@ class RestApi
      * @param {number=} options.timeout - Request timeout in milliseconds
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
+     * @param {object=} options.queryParams - Query parameters object
      * @returns {Promise<any|undefined>}
      */
     async delete( endpoint, cb = null, options = {} )
     {
-        let r = Helper.trim( endpoint, "/" ),
-            req = new Request( this.url + '/' + r,  this._createFetchOptions( "DELETE" ) );
-        return await this._fetch( req, cb, options );
+        const { queryParams, ...fetchOptions } = options;
+        const url = this._buildUrl(endpoint, queryParams);
+        const req = new Request( url,  this._createFetchOptions( "DELETE" ) );
+        return await this._fetch( req, cb, fetchOptions );
     }
 
     /**
@@ -123,13 +148,15 @@ class RestApi
      * @param {number=} options.timeout - Request timeout in milliseconds
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
+     * @param {object=} options.queryParams - Query parameters object
      * @returns {Promise<any|undefined>}
      */
     async put( endpoint, data = {}, cb = null, options = {} )
     {
-        let r = Helper.trim( endpoint, "/" ),
-            req = new Request( this.url + '/' + r, this._createFetchOptions( "PUT", data )  );
-        return await this._fetch( req, cb, options );
+        const { queryParams, ...fetchOptions } = options;
+        const url = this._buildUrl(endpoint, queryParams);
+        const req = new Request( url, this._createFetchOptions( "PUT", data )  );
+        return await this._fetch( req, cb, fetchOptions );
     }
 
     /**
@@ -141,13 +168,15 @@ class RestApi
      * @param {number=} options.timeout - Request timeout in milliseconds
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
+     * @param {object=} options.queryParams - Query parameters object
      * @returns {Promise<any|undefined>}
      */
     async patch( endpoint, data = {}, cb = null, options = {} )
     {
-        let r = Helper.trim( endpoint, "/" ),
-            req = new Request( this.url + '/' + r, this._createFetchOptions( "PATCH", data ) );
-        return await this._fetch( req, cb, options );
+        const { queryParams, ...fetchOptions } = options;
+        const url = this._buildUrl(endpoint, queryParams);
+        const req = new Request( url, this._createFetchOptions( "PATCH", data ) );
+        return await this._fetch( req, cb, fetchOptions );
     }
 
     /**
@@ -167,6 +196,99 @@ class RestApi
             }
         }
         this._controllers.clear();
+    }
+
+    /**
+     * Add or update a base header
+     * @param {string} name - Header name
+     * @param {string} value - Header value
+     */
+    addHeader(name, value)
+    {
+        this.headers.set(name, value);
+    }
+
+    /**
+     * Remove a base header
+     * @param {string} name - Header name to remove
+     */
+    removeHeader(name)
+    {
+        this.headers.delete(name);
+    }
+
+    /**
+     * Get all current base headers
+     * @returns {Headers} Current headers object
+     */
+    getHeaders()
+    {
+        return new Headers(this.headers);
+    }
+
+    /**
+     * Set multiple headers at once
+     * @param {object|Headers} headers - Headers to set
+     */
+    setHeaders(headers)
+    {
+        if (headers instanceof Headers) {
+            this.headers = new Headers(headers);
+        } else if (typeof headers === 'object' && headers !== null) {
+            this.headers = new Headers(headers);
+        }
+    }
+
+    /**
+     * Build query string from parameters object
+     * @param {object} params - Query parameters object
+     * @returns {string} Query string (without leading ?)
+     */
+    _buildQueryString(params)
+    {
+        if (!params || typeof params !== 'object') {
+            return '';
+        }
+        
+        const searchParams = new URLSearchParams();
+        
+        for (const [key, value] of Object.entries(params)) {
+            if (value !== null && value !== undefined) {
+                if (Array.isArray(value)) {
+                    // Handle array values (e.g., tags: ['red', 'blue'] -> tags=red&tags=blue)
+                    value.forEach(item => {
+                        if (item !== null && item !== undefined) {
+                            searchParams.append(key, String(item));
+                        }
+                    });
+                } else {
+                    searchParams.append(key, String(value));
+                }
+            }
+        }
+        
+        return searchParams.toString();
+    }
+
+    /**
+     * Build complete URL with query parameters
+     * @param {string} endpoint - API endpoint
+     * @param {object=} queryParams - Query parameters object
+     * @returns {string} Complete URL
+     */
+    _buildUrl(endpoint, queryParams = null)
+    {
+        const trimmedEndpoint = Helper.trim(endpoint, "/");
+        let url = this.url + '/' + trimmedEndpoint;
+        
+        if (queryParams) {
+            const queryString = this._buildQueryString(queryParams);
+            if (queryString) {
+                url += (url.includes('?') ? '&' : '?') + queryString;
+            }
+        }
+        
+        return url;
     }
 
     /**

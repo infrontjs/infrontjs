@@ -51,6 +51,32 @@ import { Helper } from "../util/Helper.js";
  * });
  * // Results in: GET /books?tags=fiction&tags=drama&author=Shakespeare
  *
+ * @example <caption>Request cancellation</caption>
+ * // Make a request and get the request ID
+ * const { requestId, result } = await myRestApi.get('/large-data');
+ * 
+ * // Make a request with callback and get request ID immediately
+ * const { requestId } = await myRestApi.get('/books', (err, result) => {
+ *     if (err) console.error('Request failed:', err);
+ *     else console.log('Books:', result);
+ * });
+ *
+ * // Cancel the specific request
+ * const cancelled = myRestApi.cancelRequest(requestId);
+ * console.log('Request cancelled:', cancelled);
+ *
+ * // Check if request is still pending
+ * if (myRestApi.isRequestPending(requestId)) {
+ *     console.log('Request is still running');
+ * }
+ *
+ * // Get all pending requests
+ * const pending = myRestApi.getPendingRequests();
+ * console.log('Pending requests:', pending);
+ *
+ * // Cancel all requests
+ * myRestApi.abortAll();
+ *
  */
 class RestApi
 {
@@ -73,6 +99,8 @@ class RestApi
 
         this.headers = new Headers( headers );
         this._controllers = new Set();
+        this._requestMap = new Map(); // Map request IDs to controllers
+        this._requestIdCounter = 0;
         
         // Default configuration
         this.timeout = options.timeout || 30000;
@@ -89,15 +117,23 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
-     * @returns {Promise<any|undefined>}
+     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async get( endpoint, cb = null, options = {} )
     {
         const { queryParams, ...fetchOptions } = options;
         const url = this._buildUrl(endpoint, queryParams);
-        const req = new Request( url, this._createFetchOptions( "GET" ) );
+        const fetchOpts = this._createFetchOptions( "GET" );
+        const req = new Request( url, fetchOpts );
+        const requestId = fetchOpts.signal.requestId;
 
-        return await this._fetch( req, cb, fetchOptions );
+        if (cb) {
+            await this._fetch( req, cb, fetchOptions );
+            return { requestId };
+        } else {
+            const result = await this._fetch( req, cb, fetchOptions );
+            return { requestId, result };
+        }
     }
 
     /**
@@ -110,14 +146,23 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
-     * @returns {Promise<any|undefined>}
+     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async post( endpoint, data = {}, cb = null, options = {} )
     {
         const { queryParams, ...fetchOptions } = options;
         const url = this._buildUrl(endpoint, queryParams);
-        const req = new Request( url, this._createFetchOptions( "POST", data ) );
-        return await this._fetch( req, cb, fetchOptions );
+        const fetchOpts = this._createFetchOptions( "POST", data );
+        const req = new Request( url, fetchOpts );
+        const requestId = fetchOpts.signal.requestId;
+
+        if (cb) {
+            await this._fetch( req, cb, fetchOptions );
+            return { requestId };
+        } else {
+            const result = await this._fetch( req, cb, fetchOptions );
+            return { requestId, result };
+        }
     }
 
     /**
@@ -129,14 +174,23 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
-     * @returns {Promise<any|undefined>}
+     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async delete( endpoint, cb = null, options = {} )
     {
         const { queryParams, ...fetchOptions } = options;
         const url = this._buildUrl(endpoint, queryParams);
-        const req = new Request( url,  this._createFetchOptions( "DELETE" ) );
-        return await this._fetch( req, cb, fetchOptions );
+        const fetchOpts = this._createFetchOptions( "DELETE" );
+        const req = new Request( url, fetchOpts );
+        const requestId = fetchOpts.signal.requestId;
+
+        if (cb) {
+            await this._fetch( req, cb, fetchOptions );
+            return { requestId };
+        } else {
+            const result = await this._fetch( req, cb, fetchOptions );
+            return { requestId, result };
+        }
     }
 
     /**
@@ -149,14 +203,23 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
-     * @returns {Promise<any|undefined>}
+     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async put( endpoint, data = {}, cb = null, options = {} )
     {
         const { queryParams, ...fetchOptions } = options;
         const url = this._buildUrl(endpoint, queryParams);
-        const req = new Request( url, this._createFetchOptions( "PUT", data )  );
-        return await this._fetch( req, cb, fetchOptions );
+        const fetchOpts = this._createFetchOptions( "PUT", data );
+        const req = new Request( url, fetchOpts );
+        const requestId = fetchOpts.signal.requestId;
+
+        if (cb) {
+            await this._fetch( req, cb, fetchOptions );
+            return { requestId };
+        } else {
+            const result = await this._fetch( req, cb, fetchOptions );
+            return { requestId, result };
+        }
     }
 
     /**
@@ -169,14 +232,63 @@ class RestApi
      * @param {number=} options.retryAttempts - Number of retry attempts
      * @param {number=} options.retryDelay - Delay between retries in milliseconds
      * @param {object=} options.queryParams - Query parameters object
-     * @returns {Promise<any|undefined>}
+     * @returns {Promise<{requestId: string, result?: any}>} Promise with request ID and result (if no callback)
      */
     async patch( endpoint, data = {}, cb = null, options = {} )
     {
         const { queryParams, ...fetchOptions } = options;
         const url = this._buildUrl(endpoint, queryParams);
-        const req = new Request( url, this._createFetchOptions( "PATCH", data ) );
-        return await this._fetch( req, cb, fetchOptions );
+        const fetchOpts = this._createFetchOptions( "PATCH", data );
+        const req = new Request( url, fetchOpts );
+        const requestId = fetchOpts.signal.requestId;
+
+        if (cb) {
+            await this._fetch( req, cb, fetchOptions );
+            return { requestId };
+        } else {
+            const result = await this._fetch( req, cb, fetchOptions );
+            return { requestId, result };
+        }
+    }
+
+    /**
+     * Cancel a specific request by ID
+     * @param {string} requestId - The request ID to cancel
+     * @returns {boolean} True if request was found and cancelled, false otherwise
+     */
+    cancelRequest(requestId)
+    {
+        const controller = this._requestMap.get(requestId);
+        if (controller) {
+            try {
+                controller.abort();
+                this._requestMap.delete(requestId);
+                this._controllers.delete(controller);
+                return true;
+            } catch (e) {
+                // Fail silently and catch the AbortErrors.
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get all pending request IDs
+     * @returns {Array<string>} Array of pending request IDs
+     */
+    getPendingRequests()
+    {
+        return Array.from(this._requestMap.keys());
+    }
+
+    /**
+     * Check if a request is still pending
+     * @param {string} requestId - The request ID to check
+     * @returns {boolean} True if request is still pending
+     */
+    isRequestPending(requestId)
+    {
+        return this._requestMap.has(requestId);
     }
 
     /**
@@ -196,6 +308,7 @@ class RestApi
             }
         }
         this._controllers.clear();
+        this._requestMap.clear();
     }
 
     /**
@@ -382,12 +495,20 @@ class RestApi
     async _fetch(req, cb = null, options = {})
     {
         const controller = req.signal.controller;
+        const requestId = req.signal.requestId;
         const { timeout = this.timeout } = options;
         
         // Set up timeout
         const timeoutId = setTimeout(() => {
             controller.abort();
         }, timeout);
+        
+        const cleanup = () => {
+            if (controller) {
+                this._controllers.delete(controller);
+                this._requestMap.delete(requestId);
+            }
+        };
         
         if (cb)
         {
@@ -400,9 +521,7 @@ class RestApi
                     clearTimeout(timeoutId);
                     cb(error, null);
                 })
-                .finally(() => {
-                    if (controller) this._controllers.delete(controller);
-                });
+                .finally(cleanup);
         }
         else
         {
@@ -419,7 +538,7 @@ class RestApi
             }
             finally
             {
-                if (controller) this._controllers.delete(controller);
+                cleanup();
             }
         }
     }
@@ -427,7 +546,10 @@ class RestApi
     _createFetchOptions( method, data = null )
     {
         const controller = new AbortController();
+        const requestId = `req_${++this._requestIdCounter}_${Date.now()}`;
+        
         this._controllers.add(controller);
+        this._requestMap.set(requestId, controller);
 
         const opts = {
             method: method.toUpperCase(),
@@ -435,8 +557,9 @@ class RestApi
             signal: controller.signal
         };
 
-        // Attach controller to signal for cleanup access
+        // Attach controller and request ID to signal for cleanup access
         opts.signal.controller = controller;
+        opts.signal.requestId = requestId;
 
         if ( Helper.isPlainObject(data) )
         {

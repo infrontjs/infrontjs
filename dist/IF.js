@@ -551,10 +551,10 @@
 	        // Dispose all states in sub-manager
 	        if (this.subStateManager) {
 	            // Clean up any remaining states in the sub-state manager
-	            if (this.subStateManager.currentState && this.subStateManager.currentState !== this.currentSubState) {
+	            if (this.subStateManager?.currentState && this.subStateManager.currentState !== this.currentSubState) {
 	                await this.subStateManager.currentState.dispose();
 	            }
-	            
+
 	            // Clean up the sub-state manager itself
 	            this.subStateManager.currentState = null;
 	            this.subStateManager = null;
@@ -2176,19 +2176,25 @@ void main()
 	        this.app.container.innerHTML = `
             <div id="if-cover" style="margin: 0; padding: 0; width: 100%; height: 100%; min-height: 100vh;position: relative">
                 <canvas id="ds" style="margin: 0; padding: 0; width: 100%; height: 100%;position: absolute; top: 0; left: 0; z-index: 1"></canvas>;
-            </div>        
+            </div>
         `;
 	        this.canvas = null;
 	        this.gl = null;
 	        this.vp_size = null;
 	        this.progDraw = null;
 	        this.bufObj = {};
+	        this._boundResize = null;
+	        this._boundRender = null;
 	        this.initScene();
 	    }
 
 	    async exit()
 	    {
 	        this.destroyScene();
+	        if (this._boundResize) {
+	            window.removeEventListener('resize', this._boundResize);
+	            this._boundResize = null;
+	        }
 	        this.app.container.innerHTML = '';
 	    }
 
@@ -2266,9 +2272,11 @@ void main()
 	        this.gl.enable( this.gl.DEPTH_TEST );
 	        this.gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
 
-	        window.onresize = this.resize.bind( this );
+	        this._boundResize = this.resize.bind(this);
+	        this._boundRender = this.render.bind(this);
+	        window.addEventListener('resize', this._boundResize);
 	        this.resize();
-	        this.RAF_ID = requestAnimationFrame( this.render.bind( this ) );
+	        this.RAF_ID = requestAnimationFrame(this._boundRender);
 	    }
 
 	    resize() {
@@ -2288,7 +2296,7 @@ void main()
 	        this.gl.uniform2f(this.progDraw.iResolution, this.canvas.width, this.canvas.height);
 	        this.gl.drawElements( this.gl.TRIANGLES, this.bufObj.inx.len, this.gl.UNSIGNED_SHORT, 0 );
 
-	        this.RAF_ID = requestAnimationFrame(this.render.bind( this ));
+	        this.RAF_ID = requestAnimationFrame(this._boundRender);
 	    }
 
 	}
@@ -2610,352 +2618,9 @@ void main()
 	    }
 	}
 
-	const UrlPattern = new UP();
-
-	/**
-	 * Router for handling routing events (ie. changes of the URL) and resolving and triggering corresponding states.
-	 */
-	class Router
-	{
-	    /**
-	     * Constructor
-	     * @param {App} appInstance - Instance of app
-	     */
-	    constructor( appInstance )
-	    {
-	        this.app = appInstance;
-
-	        this.mode = this.app.config.get( 'router.mode', 'url' );
-	        this.basePath = this.app.config.get( 'router.basePath', null );
-
-	        this._routeActions = [];
-	        this.isEnabled = false;
-	        this.previousRoute = null;
-	        this.currentRoute = null;
-
-	        // Remove any index.html, index.php etc from url
-	        // Note: the query string (ie. window.location.search) gets also elimated here.
-	        const lastPathPart = window.location.href.split( "/" ).pop();
-	        if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
-	        {
-	            let cleanPath = window.location.href.replace( lastPathPart, '' );
-	            cleanPath = cleanPath.replace( window.location.origin, '' );
-	            cleanPath = Helper.trim( cleanPath, '/' );
-	            if ( cleanPath.length > 0 )
-	            {
-	                window.history.replaceState( null, null, `/${cleanPath}/` );
-	            }
-	        }
-
-	        if ( null === this.basePath )
-	        {
-	            // Try "best guess"
-	            this.basePath = "";
-	        }
-	        this.basePath = Helper.trim( this.basePath, '/' );
-	    }
-
-	    /**
-	     * Adds route and action
-	     *
-	     * @param {string} route - Route pattern
-	     * @param {State} stateClass - State class which belongs to route pattern
-	     */
-	    addRoute( route, stateClass )
-	    {
-	        let sRoute = Helper.trim( route, '/' );
-	        sRoute = '/' + sRoute;
-
-	        if ( true === Helper.isClass( stateClass ) )
-	        {
-	            if ( false === this.app.stateManager.exists( stateClass.ID ) )
-	            {
-	                this.app.stateManager.add( stateClass );
-	            }
-
-	            this._routeActions.push(
-	                {
-	                    "action" : stateClass.ID,
-	                    "route" : new UrlPattern( sRoute )
-	                }
-	            );
-	        }
-	        // else: check if object and if object has an enter and exit method
-	        else
-	        {
-	            throw new Error( 'Invalid action.' );
-	        }
-	    }
-
-	    resolveActionDataByRoute( route )
-	    {
-	        let routeData = null,
-	            params = {},
-	            query = {},
-	            routeSplits = route.split( "?" );
-
-	        route = routeSplits[ 0 ];
-	        if ( routeSplits.length > 1 )
-	        {
-	            let sp = new URLSearchParams( routeSplits[ 1 ] );
-	            query = Object.fromEntries( sp.entries() );
-	        }
-
-	        for (let si = 0; si < this._routeActions.length; si++ )
-	        {
-	            params = this._routeActions[ si ].route.match( route );
-	            if ( params )
-	            {
-	                routeData = {
-	                    "routeAction" : this._routeActions[ si ].action,
-	                    "routeParams" : new RouteParams( params, query )
-	                };
-	                break;
-	            }
-	        }
-
-	        // If it is default route
-	        if ( null === routeData )
-	        {
-	            this.app.dispatchEvent(
-	                new CustomEvent(CustomEvents.TYPE.ON_STATE_NOT_FOUND,
-	                {
-	                    detail: {
-	                        route: route
-	                    }
-	                })
-	            );
-
-	            if ( null !== this.app.stateManager.stateNotFoundClass )
-	            {
-	                routeData = {
-	                    "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
-	                    "routeParams" : null
-	                };
-	            }
-	        }
-
-	        return routeData;
-	    }
-
-	    createUrl( str )
-	    {
-	        if ( this.mode === 'hash' )
-	        {
-	            return '#/' + Helper.trim( str, '/' );
-	        }
-	        else if ( 'url' === this.mode )
-	        {
-	            return window.location.origin + '/' + this.basePath + '/' + Helper.trim( str, '/' );
-	        }
-	    }
-
-	    startsWithHash(string)
-	    {
-	        const regEx = /^#/;
-	        const startsWithHash = regEx.test(string);
-	        return Boolean(startsWithHash);
-	    }
-
-	    /**
-	     * Enables router logic
-	     */
-	    enable()
-	    {
-	        if ( true === this.isEnabled )
-	        {
-	            return;
-	        }
-	        this.isEnabled = true;
-
-	        if ( this.mode === 'url' )
-	        {
-	            this.app.container.addEventListener( 'click', this.processUrl.bind( this ), false);
-	            // Fix to properly handle backbutton
-	            window.addEventListener( 'popstate', ( e ) =>
-	            {
-	                this.app.dispatchEvent(
-	                    new CustomEvent(CustomEvents.TYPE.POPSTATE,
-	                    {
-	                        detail: {
-	                            originalEvent : e
-	                        }
-	                    })
-	                );
-	                this.processUrl();
-	            });
-	        }
-	        else if ( this.mode === 'hash' )
-	        {
-	            window.addEventListener( 'hashchange', this.processHash.bind( this ) );
-	        }
-	        else
-	        {
-	            console.error( `Invalid mode: ${mode} detected` );
-	        }
-	    }
-
-	    /**
-	     * Disables router logic
-	     */
-	    disable()
-	    {
-	        this.isEnabled = false;
-	        if ( this.mode === 'url' )
-	        {
-	            document.removeEventListener( 'click', this.processUrl.bind( this ) );
-	        }
-	        else if ( this.mode === 'hash' )
-	        {
-	            window.removeEventListener( 'hashchange', this.processHash.bind( this ) );
-	        }
-	    }
-
-	    /**
-	     * @private
-	     */
-	    process()
-	    {
-	        if ( this.mode === 'url' )
-	        {
-	            this.processUrl();
-	        }
-	        else if ( this.mode === 'hash' )
-	        {
-	            this.processHash();
-	        }
-	    }
-
-	    processHash()
-	    {
-	        const hash = location.hash || '#';
-	        let route = hash.slice(1);
-
-	        // always start with a leading slash
-	        route = '/' + Helper.trim( route, '/' );
-
-	        this.previousRoute = this.currentRoute;
-	        this.currentRoute = route;
-	        this.execute(  this.resolveActionDataByRoute( route ) );
-	    }
-
-	    processUrl( event = null )
-	    {
-	        let url = window.location.href;
-
-	        if ( event )
-	        {
-	            const target = event.target.closest('a');
-
-	            // we are interested only in anchor tag clicks
-	            if ( !target || target.hostname !== location.hostname ) {
-	                return;
-	            }
-
-	            event.preventDefault();
-
-	            url = target.getAttribute('href');
-	        }
-
-	        // we don't care about example.com#hash or
-	        // example.com/#hash links
-	        if (this.startsWithHash(url)) {
-	            return;
-	        }
-
-	        let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
-	        route = '/' + Helper.trim( route, '/' );
-
-	        this.previousRoute = this.currentRoute;
-	        this.currentRoute = route;
-
-	        const actionData = this.resolveActionDataByRoute( route );
-	        if ( actionData )
-	        {
-	            window.history.pushState( null, null, url );
-	        }
-	        this.execute( actionData );
-	    }
-
-	    redirect( url, forceReload = false )
-	    {
-	        if ( 'hash' === this.mode )
-	        {
-	            location.hash = '/' + Helper.trim( url, '/' );
-	            if ( true === forceReload )
-	            {
-	                this.processHash();
-	            }
-	        }
-	        else if ( 'url' === this.mode )
-	        {
-	            if ( true === forceReload )
-	            {
-	                window.history.pushState( null, null, url );
-	            }
-	            else
-	            {
-	                window.history.replaceState( null, null, url );
-	                this.processUrl();
-	            }
-	        }
-	    }
-
-	    /**
-	     * Update browser URL without triggering the processing
-	     *
-	     * @param {String} url - Sets the url part
-	     */
-	    setUrl( url )
-	    {
-	        if ( 'hash' === this.mode )
-	        {
-	            location.hash = '/' + Helper.trim( url, '/' );
-
-	        }
-	        else if ( 'url' === this.mode )
-	        {
-	            window.history.replaceState( null, null, url );
-	        }
-	    }
-
-	    resolveRoute( route )
-	    {
-	        let r = Helper.trim( route, '/#' );
-	        r = Helper.trim( r, '#' );
-	        r = Helper.trim( r, '/' );
-
-	        return '/' + r;
-	    }
-
-	    async execute( actionData )
-	    {
-	        // Get view call
-	        try
-	        {
-	            if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
-	            {
-	                let stateInstance = this.app.stateManager.create(
-	                    actionData.routeAction,
-	                    actionData.routeParams
-	                );
-	                await this.app.stateManager.switchTo( stateInstance );
-	            }
-	            else
-	            {
-	                console.error( 'No state found.' );
-	            }
-	        }
-	        catch( e )
-	        {
-	            console && console.error( e );
-	            // Uncatched error
-	        }
-	    }
-	}
-
-
 	// Generated by CoffeeScript 1.10.0
+	// URL Pattern matching library
+	// Extracted from Router.js for better code organization
 
 	function UP() {
 	    var slice = [].slice;
@@ -3382,6 +3047,354 @@ void main()
 	    UrlPattern.astNodeContainsSegmentsForProvidedParams = astNodeContainsSegmentsForProvidedParams;
 	    UrlPattern.stringify = stringify;
 	    return UrlPattern;
+	}
+
+	const UrlPattern = UP;
+
+	/**
+	 * Router for handling routing events (ie. changes of the URL) and resolving and triggering corresponding states.
+	 */
+	class Router
+	{
+	    /**
+	     * Constructor
+	     * @param {App} appInstance - Instance of app
+	     */
+	    constructor( appInstance )
+	    {
+	        this.app = appInstance;
+
+	        this.mode = this.app.config.get( 'router.mode', 'url' );
+	        this.basePath = this.app.config.get( 'router.basePath', null );
+
+	        this._routeActions = [];
+	        this.isEnabled = false;
+	        this.previousRoute = null;
+	        this.currentRoute = null;
+
+	        // Bind event handlers once to avoid memory leaks
+	        this._boundProcessUrl = this.processUrl.bind(this);
+	        this._boundProcessHash = this.processHash.bind(this);
+	        this._boundPopState = ((e) => {
+	            this.app.dispatchEvent(
+	                new CustomEvent(CustomEvents.TYPE.POPSTATE,
+	                {
+	                    detail: {
+	                        originalEvent : e
+	                    }
+	                })
+	            );
+	            this.processUrl();
+	        }).bind(this);
+
+	        // Remove any index.html, index.php etc from url
+	        // Note: the query string (ie. window.location.search) gets also elimated here.
+	        const lastPathPart = window.location.href.split( "/" ).pop();
+	        if ( lastPathPart && lastPathPart.split( "." ).length > 1 )
+	        {
+	            let cleanPath = window.location.href.replace( lastPathPart, '' );
+	            cleanPath = cleanPath.replace( window.location.origin, '' );
+	            cleanPath = Helper.trim( cleanPath, '/' );
+	            if ( cleanPath.length > 0 )
+	            {
+	                window.history.replaceState( null, null, `/${cleanPath}/` );
+	            }
+	        }
+
+	        if ( null === this.basePath )
+	        {
+	            // Try "best guess"
+	            this.basePath = "";
+	        }
+	        this.basePath = Helper.trim( this.basePath, '/' );
+	    }
+
+	    /**
+	     * Adds route and action
+	     *
+	     * @param {string} route - Route pattern
+	     * @param {State} stateClass - State class which belongs to route pattern
+	     */
+	    addRoute( route, stateClass )
+	    {
+	        Helper.trim( route, '/' );
+
+	        if ( true === Helper.isClass( stateClass ) )
+	        {
+	            if ( false === this.app.stateManager.exists( stateClass.ID ) )
+	            {
+	                this.app.stateManager.add( stateClass );
+	            }
+
+	            this._routeActions.push(
+	                {
+	                    "action" : stateClass.ID,
+	                    "route" : new UrlPattern()
+	                }
+	            );
+	        }
+	        // else: check if object and if object has an enter and exit method
+	        else
+	        {
+	            throw new Error( 'Invalid action.' );
+	        }
+	    }
+
+	    resolveActionDataByRoute( route )
+	    {
+	        let routeData = null,
+	            params = {},
+	            query = {},
+	            routeSplits = route.split( "?" );
+
+	        route = routeSplits[ 0 ];
+	        if ( routeSplits.length > 1 )
+	        {
+	            let sp = new URLSearchParams( routeSplits[ 1 ] );
+	            query = Object.fromEntries( sp.entries() );
+	        }
+
+	        for (let si = 0; si < this._routeActions.length; si++ )
+	        {
+	            params = this._routeActions[ si ].route.match( route );
+	            if ( params )
+	            {
+	                routeData = {
+	                    "routeAction" : this._routeActions[ si ].action,
+	                    "routeParams" : new RouteParams( params, query )
+	                };
+	                break;
+	            }
+	        }
+
+	        // If it is default route
+	        if ( null === routeData )
+	        {
+	            this.app.dispatchEvent(
+	                new CustomEvent(CustomEvents.TYPE.ON_STATE_NOT_FOUND,
+	                {
+	                    detail: {
+	                        route: route
+	                    }
+	                })
+	            );
+
+	            if ( null !== this.app.stateManager.stateNotFoundClass )
+	            {
+	                routeData = {
+	                    "routeAction" : this.app.stateManager.stateNotFoundClass.ID,
+	                    "routeParams" : null
+	                };
+	            }
+	        }
+
+	        return routeData;
+	    }
+
+	    createUrl( str )
+	    {
+	        if ( this.mode === 'hash' )
+	        {
+	            return '#/' + Helper.trim( str, '/' );
+	        }
+	        else if ( 'url' === this.mode )
+	        {
+	            return window.location.origin + '/' + this.basePath + '/' + Helper.trim( str, '/' );
+	        }
+	    }
+
+	    startsWithHash(string)
+	    {
+	        const regEx = /^#/;
+	        const startsWithHash = regEx.test(string);
+	        return Boolean(startsWithHash);
+	    }
+
+	    /**
+	     * Enables router logic
+	     */
+	    enable()
+	    {
+	        if ( true === this.isEnabled )
+	        {
+	            return;
+	        }
+	        this.isEnabled = true;
+
+	        if ( this.mode === 'url' )
+	        {
+	            this.app.container.addEventListener( 'click', this._boundProcessUrl, false);
+	            // Fix to properly handle backbutton
+	            window.addEventListener( 'popstate', this._boundPopState);
+	        }
+	        else if ( this.mode === 'hash' )
+	        {
+	            window.addEventListener( 'hashchange', this._boundProcessHash );
+	        }
+	        else
+	        {
+	            console.error( `Invalid mode: ${mode} detected` );
+	        }
+	    }
+
+	    /**
+	     * Disables router logic
+	     */
+	    disable()
+	    {
+	        this.isEnabled = false;
+	        if ( this.mode === 'url' )
+	        {
+	            this.app.container.removeEventListener( 'click', this._boundProcessUrl );
+	            window.removeEventListener( 'popstate', this._boundPopState );
+	        }
+	        else if ( this.mode === 'hash' )
+	        {
+	            window.removeEventListener( 'hashchange', this._boundProcessHash );
+	        }
+	    }
+
+	    /**
+	     * @private
+	     */
+	    process()
+	    {
+	        if ( this.mode === 'url' )
+	        {
+	            this.processUrl();
+	        }
+	        else if ( this.mode === 'hash' )
+	        {
+	            this.processHash();
+	        }
+	    }
+
+	    processHash()
+	    {
+	        const hash = location.hash || '#';
+	        let route = hash.slice(1);
+
+	        // always start with a leading slash
+	        route = '/' + Helper.trim( route, '/' );
+
+	        this.previousRoute = this.currentRoute;
+	        this.currentRoute = route;
+	        this.execute(  this.resolveActionDataByRoute( route ) );
+	    }
+
+	    processUrl( event = null )
+	    {
+	        let url = window.location.href;
+
+	        if ( event )
+	        {
+	            const target = event.target.closest('a');
+
+	            // we are interested only in anchor tag clicks
+	            if ( !target || target.hostname !== location.hostname ) {
+	                return;
+	            }
+
+	            event.preventDefault();
+
+	            url = target.getAttribute('href');
+	        }
+
+	        // we don't care about example.com#hash or
+	        // example.com/#hash links
+	        if (this.startsWithHash(url)) {
+	            return;
+	        }
+
+	        let route = url.replace( window.location.origin + '/' + Helper.trim( this.basePath, '/' ), '' );
+	        route = '/' + Helper.trim( route, '/' );
+
+	        this.previousRoute = this.currentRoute;
+	        this.currentRoute = route;
+
+	        const actionData = this.resolveActionDataByRoute( route );
+	        if ( actionData )
+	        {
+	            window.history.pushState( null, null, url );
+	        }
+	        this.execute( actionData );
+	    }
+
+	    redirect( url, forceReload = false )
+	    {
+	        if ( 'hash' === this.mode )
+	        {
+	            location.hash = '/' + Helper.trim( url, '/' );
+	            if ( true === forceReload )
+	            {
+	                this.processHash();
+	            }
+	        }
+	        else if ( 'url' === this.mode )
+	        {
+	            if ( true === forceReload )
+	            {
+	                window.history.pushState( null, null, url );
+	            }
+	            else
+	            {
+	                window.history.replaceState( null, null, url );
+	                this.processUrl();
+	            }
+	        }
+	    }
+
+	    /**
+	     * Update browser URL without triggering the processing
+	     *
+	     * @param {String} url - Sets the url part
+	     */
+	    setUrl( url )
+	    {
+	        if ( 'hash' === this.mode )
+	        {
+	            location.hash = '/' + Helper.trim( url, '/' );
+
+	        }
+	        else if ( 'url' === this.mode )
+	        {
+	            window.history.replaceState( null, null, url );
+	        }
+	    }
+
+	    resolveRoute( route )
+	    {
+	        let r = Helper.trim( route, '/#' );
+	        r = Helper.trim( r, '#' );
+	        r = Helper.trim( r, '/' );
+
+	        return '/' + r;
+	    }
+
+	    async execute( actionData )
+	    {
+	        // Get view call
+	        try
+	        {
+	            if ( actionData && actionData.hasOwnProperty( 'routeAction' ) && actionData.hasOwnProperty( 'routeParams' ) )
+	            {
+	                let stateInstance = this.app.stateManager.create(
+	                    actionData.routeAction,
+	                    actionData.routeParams
+	                );
+	                await this.app.stateManager.switchTo( stateInstance );
+	            }
+	            else
+	            {
+	                console.error( 'No state found.' );
+	            }
+	        }
+	        catch( e )
+	        {
+	            console && console.error( e );
+	            // Uncatched error
+	        }
+	    }
 	}
 
 	/*
@@ -4568,10 +4581,9 @@ void main()
 	     * @param {HTMLElement|null} container - Container in which template should be rendered.
 	     * @param {string} tmpl - EJS template string
 	     * @param {object=} [data={}] - Template data.
-	     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
 	     * @param {object=} [tmplOptions=null] - EJS template options. @see {@link https://ejs.co/#docs}
 	     */
-	    render( container, tmpl, data = {}, forceRepaint = false, tmplOptions = null )
+	    render( container, tmpl, data = {}, tmplOptions = null )
 	    {
 	        const html = this.getHtml( tmpl, data, tmplOptions );
 	        this.renderHtml( container, html );
@@ -4748,6 +4760,7 @@ void main()
 	        this.dictionary = new Map(); // lang -> translations map
 	        this.loadingPromises = new Map(); // track async loading
 	        this.formatters = new Map(); // cached formatters
+	        this._interpolationRegex = null; // cached interpolation regex
 
 	        // Initialize current language
 	        let initialLang = this.defaultLanguage;
@@ -5148,6 +5161,23 @@ void main()
 	    }
 
 	    /**
+	     * Build and cache interpolation regex
+	     * @private
+	     */
+	    _buildInterpolationRegex() {
+	        if (!this._interpolationRegex) {
+	            const { prefix, suffix } = this.options.interpolation;
+	            const escapedPrefix = this._escapeRegex(prefix);
+	            const escapedSuffix = this._escapeRegex(suffix);
+	            this._interpolationRegex = new RegExp(
+	                `${escapedPrefix}([^${escapedSuffix}]+)${escapedSuffix}`,
+	                'g'
+	            );
+	        }
+	        return this._interpolationRegex;
+	    }
+
+	    /**
 	     * Flatten nested translation object
 	     * @private
 	     */
@@ -5213,15 +5243,15 @@ void main()
 	            return text;
 	        }
 
-	        const { prefix, suffix } = this.options.interpolation;
-	        
-	        return text.replace(new RegExp(`${this._escapeRegex(prefix)}([^${this._escapeRegex(suffix)}]+)${this._escapeRegex(suffix)}`, 'g'), (match, key) => {
+	        const regex = this._buildInterpolationRegex();
+
+	        return text.replace(regex, (match, key) => {
 	            // Handle array parameters (numbered: {0}, {1}, etc.)
 	            if (Array.isArray(params)) {
 	                const index = parseInt(key, 10);
 	                return !isNaN(index) && params[index] !== undefined ? params[index] : match;
 	            }
-	            
+
 	            // Handle object parameters (named: {name}, {count}, etc.)
 	            return params.hasOwnProperty(key) ? params[key] : match;
 	        });
@@ -6498,7 +6528,7 @@ void main()
 	        }
 
 	        // If container property is a string, check if it is a querySelector
-	        if ( this.container !== null && false === this.container instanceof HTMLElement )
+	        if ( this.container !== null && !(this.container instanceof HTMLElement) )
 	        {
 	            throw new Error( 'Invalid app container.' );
 	        }
@@ -7377,8 +7407,10 @@ void main()
 	    _createFetchOptions( method, data = null )
 	    {
 	        const controller = new AbortController();
-	        const requestId = `req_${++this._requestIdCounter}_${Date.now()}`;
-	        
+	        // Handle counter overflow by resetting when reaching max safe integer
+	        this._requestIdCounter = (this._requestIdCounter % Number.MAX_SAFE_INTEGER) + 1;
+	        const requestId = `req_${this._requestIdCounter}_${Date.now()}`;
+
 	        this._controllers.add(controller);
 	        this._requestMap.set(requestId, controller);
 

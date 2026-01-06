@@ -1871,32 +1871,100 @@ class Helper
     }
 
     /**
-     * Serialize given from
-     * @param {HTMLFormElement} form - The form element to serialize
-     * @returns {object} - Plain javascript object containing the name and value of given form.
+     * Collects form data as a plain object.
+     *
+     * - Text-ish inputs -> string
+     * - checkbox:
+     *    - single checkbox name -> boolean
+     *    - multiple checkboxes with same name -> array of checked values
+     * - radio:
+     *    - selected value or null if none selected
+     * - select[multiple] -> array of values
+     * - file inputs -> FileList (or array of FileList if multiple inputs share the same name)
+     *
+     * @param {HTMLFormElement} form - The form element
+     * @param {boolean} [includeDisabled=false] - Include disabled form controls
+     * @returns {Object} Plain object of form data
      */
-    static serializeForm( form )
+    static serializeForm( form, includeDisabled = false)
     {
-        // todo - check for disabled form elements which cannot be resolved and show an info/warning
-        const object = {};
-        new FormData( form ).forEach(( value, key) =>
-        {
-            // Reflect.has in favor of: object.hasOwnProperty(key)
-            if( !Reflect.has( object, key ) )
-            {
-                object[ key ] = value;
-                return;
-            }
+        if (!(form instanceof HTMLFormElement)) {
+            throw new Error("First parameter must be a form element");
+        }
 
-            if( !Array.isArray( object[ key ] ) )
-            {
-                object[ key ] = [ object[ key ] ];
-            }
-
-            object[ key ].push( value );
+        const data = {};
+        const elements = Array.from(form.elements).filter(el => {
+            if (!el.name) return false;
+            if (!includeDisabled && el.disabled) return false;
+            return true;
         });
-        return object;
+
+        // Pre-count names for special handling (checkbox/file groups)
+        const nameCounts = elements.reduce((acc, el) => {
+            const t = (el.type || "").toLowerCase();
+            const key = `${t}:${el.name}`;
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
+
+        for (const el of elements) {
+            const type = (el.type || "").toLowerCase();
+
+            switch (type) {
+                case "checkbox": {
+                    const key = `checkbox:${el.name}`;
+                    const isGroup = nameCounts[key] > 1;
+
+                    if (isGroup) {
+                        // collect checked values into an array
+                        if (!Array.isArray(data[el.name])) data[el.name] = [];
+                        if (el.checked) data[el.name].push(el.value);
+                    } else {
+                        // single checkbox -> boolean
+                        data[el.name] = !!el.checked;
+                    }
+                    break;
+                }
+
+                case "radio": {
+                    // store the selected value; ensure null if none is selected
+                    if (el.checked) {
+                        data[el.name] = el.value;
+                    } else if (!(el.name in data)) {
+                        data[el.name] = null;
+                    }
+                    break;
+                }
+
+                case "select-multiple": {
+                    data[el.name] = Array.from(el.selectedOptions).map(opt => opt.value);
+                    break;
+                }
+
+                case "file": {
+                    const key = `file:${el.name}`;
+                    const isGroup = nameCounts[key] > 1;
+
+                    // Return the native FileList as requested.
+                    // If multiple <input type="file" name="..."> exist, return an array of FileLists.
+                    if (isGroup) {
+                        if (!Array.isArray(data[el.name])) data[el.name] = [];
+                        data[el.name].push(el.files); // FileList
+                    } else {
+                        data[el.name] = el.files; // FileList (length 0..n)
+                    }
+                    break;
+                }
+
+                default: {
+                    data[el.name] = el.value;
+                }
+            }
+        }
+
+        return data;
     }
+
 
     /**
      * Creates an unique ID
@@ -2717,7 +2785,7 @@ class Router
         }
         else
         {
-            console.erorr( `Invalid mode: ${mode} detected` );
+            console.error( `Invalid mode: ${mode} detected` );
         }
     }
 
@@ -4537,7 +4605,8 @@ class View
         }
         else
         {
-            data[ '_lcn' ] = this.app.l18n.n.bind( this.app.l18n );        }
+            data[ '_lcn' ] = this.app.l18n.n.bind( this.app.l18n );
+        }
 
         if ( data.hasOwnProperty( '_lcd' ) )
         {
@@ -6444,7 +6513,7 @@ class App extends CustomEvents
         this.initView();
 
         // Add app to global app pool
-        App.POOL[ this.uid ] = this;
+        App.POOL[ this.config.get('app.id') ] = this;
 
         if ( true === this.config.get( 'app.sayHello' ) && console )
         {
@@ -6511,12 +6580,45 @@ class App extends CustomEvents
     }
 
     /**
-     * Destorys InfrontJS application instance
+     * Destroys InfrontJS application instance
      * @returns {Promise<void>}
      */
     async destroy()
     {
-        // @todo Implement logic, set innerHTML to zero ... etc
+        // Disable router to stop processing events
+        if (this.router) {
+            this.router.disable();
+        }
+
+        // Exit current state and clean up state manager
+        if (this.stateManager && this.stateManager.currentState) {
+            try {
+                await this.stateManager.currentState.exit();
+                await this.stateManager.currentState.dispose();
+            } catch (error) {
+                console.warn('Error during state cleanup:', error);
+            }
+            this.stateManager.currentState = null;
+        }
+
+        // Clear container content
+        if (this.container) {
+            this.container.innerHTML = '';
+            this.container.removeAttribute('data-ifjs-app-id');
+        }
+
+        // Remove from global app pool
+        if (App.POOL[this.config.get('app.id')]) {
+            delete App.POOL[this.config.get('app.id')];
+        }
+
+        // Clear references to prevent memory leaks
+        this.router = null;
+        this.stateManager = null;
+        this.view = null;
+        this.l18n = null;
+        this.container = null;
+        this.config = null;
     }
 }
 

@@ -106,7 +106,7 @@ class App extends CustomEvents
         this.initView();
 
         // Add app to global app pool
-        App.POOL[ this.uid ] = this;
+        App.POOL[ this.config.get('app.id') ] = this;
 
         if ( true === this.config.get( 'app.sayHello' ) && console )
         {
@@ -173,12 +173,45 @@ class App extends CustomEvents
     }
 
     /**
-     * Destorys InfrontJS application instance
+     * Destroys InfrontJS application instance
      * @returns {Promise<void>}
      */
     async destroy()
     {
-        // @todo Implement logic, set innerHTML to zero ... etc
+        // Disable router to stop processing events
+        if (this.router) {
+            this.router.disable();
+        }
+
+        // Exit current state and clean up state manager
+        if (this.stateManager && this.stateManager.currentState) {
+            try {
+                await this.stateManager.currentState.exit();
+                await this.stateManager.currentState.dispose();
+            } catch (error) {
+                console.warn('Error during state cleanup:', error);
+            }
+            this.stateManager.currentState = null;
+        }
+
+        // Clear container content
+        if (this.container) {
+            this.container.innerHTML = '';
+            this.container.removeAttribute('data-ifjs-app-id');
+        }
+
+        // Remove from global app pool
+        if (App.POOL[this.config.get('app.id')]) {
+            delete App.POOL[this.config.get('app.id')];
+        }
+
+        // Clear references to prevent memory leaks
+        this.router = null;
+        this.stateManager = null;
+        this.view = null;
+        this.l18n = null;
+        this.container = null;
+        this.config = null;
     }
 }
 

@@ -184,7 +184,7 @@ class Router
         }
         else
         {
-            console.erorr( `Invalid mode: ${mode} detected` );
+            console.error( `Invalid mode: ${mode} detected` );
         }
     }
 

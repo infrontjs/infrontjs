@@ -100,7 +100,7 @@ class View
         }
         else
         {
-            data[ '_lcn' ] = this.app.l18n.n.bind( this.app.l18n );;
+            data[ '_lcn' ] = this.app.l18n.n.bind( this.app.l18n );
         }
 
         if ( data.hasOwnProperty( '_lcd' ) )

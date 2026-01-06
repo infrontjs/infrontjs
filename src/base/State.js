@@ -475,10 +475,10 @@ class State
         // Dispose all states in sub-manager
         if (this.subStateManager) {
             // Clean up any remaining states in the sub-state manager
-            if (this.subStateManager.currentState && this.subStateManager.currentState !== this.currentSubState) {
+            if (this.subStateManager?.currentState && this.subStateManager.currentState !== this.currentSubState) {
                 await this.subStateManager.currentState.dispose();
             }
-            
+
             // Clean up the sub-state manager itself
             this.subStateManager.currentState = null;
             this.subStateManager = null;

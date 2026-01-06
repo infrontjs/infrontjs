@@ -85,7 +85,7 @@ class App extends CustomEvents
         }
 
         // If container property is a string, check if it is a querySelector
-        if ( this.container !== null && false === this.container instanceof HTMLElement )
+        if ( this.container !== null && !(this.container instanceof HTMLElement) )
         {
             throw new Error( 'Invalid app container.' );
         }

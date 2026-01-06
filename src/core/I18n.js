@@ -108,6 +108,7 @@ class I18n {
         this.dictionary = new Map(); // lang -> translations map
         this.loadingPromises = new Map(); // track async loading
         this.formatters = new Map(); // cached formatters
+        this._interpolationRegex = null; // cached interpolation regex
 
         // Initialize current language
         let initialLang = this.defaultLanguage;
@@ -508,6 +509,23 @@ class I18n {
     }
 
     /**
+     * Build and cache interpolation regex
+     * @private
+     */
+    _buildInterpolationRegex() {
+        if (!this._interpolationRegex) {
+            const { prefix, suffix } = this.options.interpolation;
+            const escapedPrefix = this._escapeRegex(prefix);
+            const escapedSuffix = this._escapeRegex(suffix);
+            this._interpolationRegex = new RegExp(
+                `${escapedPrefix}([^${escapedSuffix}]+)${escapedSuffix}`,
+                'g'
+            );
+        }
+        return this._interpolationRegex;
+    }
+
+    /**
      * Flatten nested translation object
      * @private
      */
@@ -573,15 +591,15 @@ class I18n {
             return text;
         }
 
-        const { prefix, suffix } = this.options.interpolation;
-        
-        return text.replace(new RegExp(`${this._escapeRegex(prefix)}([^${this._escapeRegex(suffix)}]+)${this._escapeRegex(suffix)}`, 'g'), (match, key) => {
+        const regex = this._buildInterpolationRegex();
+
+        return text.replace(regex, (match, key) => {
             // Handle array parameters (numbered: {0}, {1}, etc.)
             if (Array.isArray(params)) {
                 const index = parseInt(key, 10);
                 return !isNaN(index) && params[index] !== undefined ? params[index] : match;
             }
-            
+
             // Handle object parameters (named: {name}, {count}, etc.)
             return params.hasOwnProperty(key) ? params[key] : match;
         });

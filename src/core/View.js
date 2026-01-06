@@ -57,10 +57,9 @@ class View
      * @param {HTMLElement|null} container - Container in which template should be rendered.
      * @param {string} tmpl - EJS template string
      * @param {object=} [data={}] - Template data.
-     * @param {boolean} [forceRepaint=false] - If false, DOM diffing is enabled.
      * @param {object=} [tmplOptions=null] - EJS template options. @see {@link https://ejs.co/#docs}
      */
-    render( container, tmpl, data = {}, forceRepaint = false, tmplOptions = null )
+    render( container, tmpl, data = {}, tmplOptions = null )
     {
         const html = this.getHtml( tmpl, data, tmplOptions );
         this.renderHtml( container, html );

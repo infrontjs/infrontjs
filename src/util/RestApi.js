@@ -749,8 +749,10 @@ class RestApi
     _createFetchOptions( method, data = null )
     {
         const controller = new AbortController();
-        const requestId = `req_${++this._requestIdCounter}_${Date.now()}`;
-        
+        // Handle counter overflow by resetting when reaching max safe integer
+        this._requestIdCounter = (this._requestIdCounter % Number.MAX_SAFE_INTEGER) + 1;
+        const requestId = `req_${this._requestIdCounter}_${Date.now()}`;
+
         this._controllers.add(controller);
         this._requestMap.set(requestId, controller);
 

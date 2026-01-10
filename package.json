@@ -1,7 +1,7 @@
 {
   "name": "infrontjs",
-  "version": "1.0.0-rc.2",
-  "description": "An AI powered antiframework for pure javascript devs",
+  "version": "1.0.0",
+  "description": "An anti-framework for vanilla javascript devs",
   "main": "src/IF.js",
   "type": "module",
   "scripts": {

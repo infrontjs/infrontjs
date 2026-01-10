@@ -38,7 +38,7 @@
           "target": "_blank"
         }
       ],
-      "footer" :  "<small>Maintained by <a href=\"https://www.infrontjs\">InfontJS</a> - <a href=\"https://www.infrontjs.com/imprint.txt\">Imprint</a> - <a href=\"https://www.infrontjs.com/privacy.txt\">Privacy</a></small>"
+      "footer" :  "<small>Maintained by <a href=\"https://www.infrontjs\">InfrontJS</a> - <a href=\"https://www.infrontjs.com/imprint.txt\">Imprint</a> - <a href=\"https://www.infrontjs.com/privacy.txt\">Privacy</a></small>"
     }
   },
   "markdown": {

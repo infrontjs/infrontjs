@@ -10,20 +10,28 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
           registry-url: 'https://registry.npmjs.org'
-
-      - run: node -v && npm -v
 
       - run: npm ci && npm run build && npm run generate-docs
 
-      - name: Publish package on NPM 📦 (OIDC)
+      # Stable release => latest
+      - name: Publish package on NPM 📦 (stable)
+        if: ${{ github.event.release.prerelease == false }}
         run: npm publish
+        env:
+          NPM_CONFIG_PROVENANCE: "true"
+
+      # Pre-release (rc/beta/alpha) => next (or rc)
+      - name: Publish package on NPM 📦 (pre-release)
+        if: ${{ github.event.release.prerelease == true }}
+        run: npm publish --tag next
         env:
           NPM_CONFIG_PROVENANCE: "true"
 

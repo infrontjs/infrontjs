@@ -6,24 +6,74 @@
 
 	/**
 	 * RouteParams
-	 * The router params of current state call
+	 * Container class for route parameters and query string values.
+	 * Instances are passed to State lifecycle methods when a route is matched.
+	 *
+	 * @class
+	 *
+	 * @example
+	 * // Route: /users/:userId/posts/:postId
+	 * // URL: /users/123/posts/456?sort=date&order=desc
+	 *
+	 * class UserPostState extends State {
+	 *     static ROUTE = '/users/:userId/posts/:postId';
+	 *
+	 *     async onEnter() {
+	 *         const userId = this.getParam('userId');     // '123'
+	 *         const postId = this.getParam('postId');     // '456'
+	 *         const sort = this.getQuery('sort');         // 'date'
+	 *         const order = this.getQuery('order');       // 'desc'
+	 *         const limit = this.getQuery('limit', 10);   // 10 (default)
+	 *
+	 *         // Get all params/queries at once
+	 *         const allParams = this.getParams();   // { userId: '123', postId: '456' }
+	 *         const allQueries = this.getQueries(); // { sort: 'date', order: 'desc' }
+	 *     }
+	 * }
 	 */
 	class RouteParams
 	{
 	    /**
+	     * Create a new RouteParams instance
 	     *
-	     * @param {object} [params={}]
-	     * @param {object} [query={}]
+	     * @constructor
+	     * @param {object} [params={}] - Route parameters (e.g., from :param patterns)
+	     * @param {object} [query={}] - Query string parameters (e.g., from ?key=value)
+	     *
+	     * @example
+	     * // Usually created automatically by the Router
+	     * const routeParams = new RouteParams(
+	     *     { userId: '123', postId: '456' },
+	     *     { sort: 'date', order: 'desc' }
+	     * );
 	     */
 	    constructor( params = {}, query = {} )
 	    {
+	        /**
+	         * Route parameters
+	         * @private
+	         * @type {Object}
+	         */
 	        this._p = params;
+
+	        /**
+	         * Query string parameters
+	         * @private
+	         * @type {Object}
+	         */
 	        this._q = query;
 	    }
 
 	    /**
-	     * Get param object
-	     * @returns {Object}
+	     * Get all route parameters as an object
+	     *
+	     * @returns {Object} Object containing all route parameters
+	     *
+	     * @example
+	     * // Route: /users/:userId/posts/:postId
+	     * // URL: /users/123/posts/456
+	     * const params = this.getParams();
+	     * // Returns: { userId: '123', postId: '456' }
 	     */
 	    getParams()
 	    {
@@ -31,10 +81,23 @@
 	    }
 
 	    /**
-	     * Get param value by given key. If key does not exists, the defaultValue is returned
-	     * @param {string} key - Param key
-	     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
-	     * @returns {*|null}
+	     * Get a single route parameter value by key
+	     *
+	     * @param {string} key - Parameter name (from route pattern)
+	     * @param {*} [defaultValue=null] - Value to return if parameter doesn't exist
+	     * @returns {*} Parameter value or defaultValue
+	     *
+	     * @example
+	     * // Route: /users/:userId
+	     * // URL: /users/123
+	     * const userId = this.getParam('userId');        // '123'
+	     * const missing = this.getParam('foo', 'bar');   // 'bar'
+	     *
+	     * @example
+	     * // Wildcard routes
+	     * // Route: /files/*
+	     * // URL: /files/documents/report.pdf
+	     * const path = this.getParam('_');  // 'documents/report.pdf'
 	     */
 	    getParam( key, defaultValue = null )
 	    {
@@ -49,10 +112,23 @@
 	    }
 
 	    /**
-	     * Get query value by given key. If key does not exitss, the defaultValue is returned
-	     * @param {string} key - Query key
-	     * @param {*|null} [defaultValue=null] - The default return value if given key does not exists
-	     * @returns {*|null}
+	     * Get a single query string parameter value by key
+	     *
+	     * @param {string} key - Query parameter name
+	     * @param {*} [defaultValue=null] - Value to return if query parameter doesn't exist
+	     * @returns {*} Query parameter value or defaultValue
+	     *
+	     * @example
+	     * // URL: /search?q=javascript&category=tutorials&page=2
+	     * const searchTerm = this.getQuery('q');          // 'javascript'
+	     * const category = this.getQuery('category');     // 'tutorials'
+	     * const page = this.getQuery('page');             // '2'
+	     * const limit = this.getQuery('limit', 10);       // 10 (default)
+	     *
+	     * @example
+	     * // Type conversion
+	     * const pageNum = parseInt(this.getQuery('page', '1'));  // 2 (as number)
+	     * const isActive = this.getQuery('active') === 'true';   // boolean conversion
 	     */
 	    getQuery( key, defaultValue = null )
 	    {
@@ -67,8 +143,21 @@
 	    }
 
 	    /**
-	     * Get query object
-	     * @returns {Object}
+	     * Get all query string parameters as an object
+	     *
+	     * @returns {Object} Object containing all query parameters
+	     *
+	     * @example
+	     * // URL: /search?q=javascript&category=tutorials&page=2
+	     * const queries = this.getQueries();
+	     * // Returns: { q: 'javascript', category: 'tutorials', page: '2' }
+	     *
+	     * @example
+	     * // Check if any filters applied
+	     * const filters = this.getQueries();
+	     * if (Object.keys(filters).length > 0) {
+	     *     console.log('Filters active:', filters);
+	     * }
 	     */
 	    getQueries()
 	    {
@@ -2543,24 +2632,74 @@ void main()
 	});
 
 	/**
-	 * Events
-	 * Super simple custom events
+	 * CustomEvents
+	 * Lightweight event system implementation providing DOM-like event API.
+	 * Used as base class for App and provides centralized event handling.
+	 *
+	 * @class
 	 *
 	 * @example
-	 * class MyClass {
-	 *   constructor() {
-	 *       this.events = new CustomEvents();
-	 *   }
-	 *   start() {
-	 *       this.events.dispatchEvent(new CustomEvent("start", { detail: { myData: '...' } }));
-	 *   }
+	 * // Basic usage with custom class
+	 * class MyService extends CustomEvents {
+	 *     constructor() {
+	 *         super();
+	 *     }
+	 *
+	 *     start() {
+	 *         this.dispatchEvent(new CustomEvent('start', {
+	 *             detail: { timestamp: Date.now() }
+	 *         }));
+	 *     }
 	 * }
 	 *
-	 * const myInstance = new MyClass();
-	 * myInstance.events.addEventListener("start", e => { console.log(e.detail); });
+	 * const service = new MyService();
+	 * service.addEventListener('start', (e) => {
+	 *     console.log('Service started at', e.detail.timestamp);
+	 * });
+	 * service.start();
 	 *
+	 * @example
+	 * // Using with InfrontJS App
+	 * const app = new IF.App(container);
+	 *
+	 * // Listen to framework events
+	 * app.addEventListener(CustomEvents.TYPE.READY, () => {
+	 *     console.log('App is ready');
+	 * });
+	 *
+	 * app.addEventListener(CustomEvents.TYPE.BEFORE_STATE_CHANGE, (e) => {
+	 *     console.log('Changing from', e.detail.currentStateId, 'to', e.detail.nextStateId);
+	 * });
+	 *
+	 * @example
+	 * // Removing event listeners
+	 * const handler = (e) => console.log('State changed');
+	 * app.addEventListener(CustomEvents.TYPE.AFTER_STATE_CHANGE, handler);
+	 * // Later...
+	 * app.removeEventListener(CustomEvents.TYPE.AFTER_STATE_CHANGE, handler);
 	 */
 	class CustomEvents {
+	    /**
+	     * Built-in event types used by InfrontJS framework
+	     *
+	     * @static
+	     * @readonly
+	     * @returns {Object.<string, string>} Object mapping event names to their types
+	     *
+	     * @property {string} READY - App initialization complete
+	     * @property {string} POPSTATE - Browser back/forward navigation
+	     * @property {string} BEFORE_STATE_CHANGE - Before state transition (cancelable)
+	     * @property {string} AFTER_STATE_CHANGE - After state transition complete
+	     * @property {string} BEFORE_LANGUAGE_SWITCH - Before language change
+	     * @property {string} AFTER_LANGUAGE_SWITCH - After language change complete
+	     * @property {string} ON_STATE_NOT_FOUND - When no matching state found (404)
+	     *
+	     * @example
+	     * // Using built-in event types
+	     * app.addEventListener(CustomEvents.TYPE.READY, () => {
+	     *     console.log('App ready');
+	     * });
+	     */
 	    static get TYPE() {
 	        return {
 	            'READY': 'ready',
@@ -2573,13 +2712,40 @@ void main()
 	        };
 	    }
 
+	    /**
+	     * Create a new CustomEvents instance
+	     *
+	     * @constructor
+	     */
 	    constructor() {
+	        /**
+	         * Internal map of event type to array of listeners
+	         * @private
+	         * @type {Map<string, Array<Function>>}
+	         */
 	        this.listeners = new Map();
 	    }
 
 	    /**
-	     * @param {string} type
-	     * @param {EventListenerOrEventListenerObject} listener
+	     * Add an event listener for a specific event type
+	     *
+	     * @param {string} type - Event type to listen for
+	     * @param {Function|EventListenerOrEventListenerObject} listener - Callback function or event listener object
+	     *
+	     * @example
+	     * // Function listener
+	     * app.addEventListener('customEvent', (event) => {
+	     *     console.log('Custom event fired:', event.detail);
+	     * });
+	     *
+	     * @example
+	     * // Object listener
+	     * const listener = {
+	     *     handleEvent(event) {
+	     *         console.log('Event:', event.type);
+	     *     }
+	     * };
+	     * app.addEventListener('myEvent', listener);
 	     */
 	    addEventListener(type, listener) {
 	        if (!this.listeners.has(type)) {
@@ -2589,8 +2755,24 @@ void main()
 	    }
 
 	    /**
-	     * @param {string} type
-	     * @param {EventListenerOrEventListenerObject} listener
+	     * Remove an event listener for a specific event type
+	     *
+	     * @param {string} type - Event type to remove listener from
+	     * @param {Function|EventListenerOrEventListenerObject} listener - The exact listener function or object to remove
+	     *
+	     * @example
+	     * // Remove specific listener
+	     * const handler = (e) => console.log('Event fired');
+	     * app.addEventListener('myEvent', handler);
+	     * app.removeEventListener('myEvent', handler);
+	     *
+	     * @example
+	     * // One-time event listener pattern
+	     * const onceHandler = (e) => {
+	     *     console.log('This runs only once');
+	     *     app.removeEventListener('myEvent', onceHandler);
+	     * };
+	     * app.addEventListener('myEvent', onceHandler);
 	     */
 	    removeEventListener(type, listener) {
 	        if (!this.listeners.has(type)) {
@@ -2604,7 +2786,36 @@ void main()
 	    }
 
 	    /**
-	     * @param {Event} event
+	     * Dispatch an event to all registered listeners
+	     * Executes all listeners in the order they were added.
+	     *
+	     * @param {Event|CustomEvent} event - Event object to dispatch. Use CustomEvent for custom data.
+	     * @returns {boolean} True unless event.preventDefault() was called
+	     *
+	     * @example
+	     * // Dispatch simple event
+	     * app.dispatchEvent(new Event('refresh'));
+	     *
+	     * @example
+	     * // Dispatch event with data
+	     * app.dispatchEvent(new CustomEvent('userLogin', {
+	     *     detail: {
+	     *         userId: 123,
+	     *         username: 'john',
+	     *         timestamp: Date.now()
+	     *     }
+	     * }));
+	     *
+	     * @example
+	     * // Cancelable event
+	     * const event = new CustomEvent('beforeSave', {
+	     *     detail: { data: formData },
+	     *     cancelable: true
+	     * });
+	     * const allowed = app.dispatchEvent(event);
+	     * if (!allowed) {
+	     *     console.log('Save was prevented');
+	     * }
 	     */
 	    dispatchEvent(event) {
 	        if (!this.listeners.has(event.type)) {
@@ -4526,23 +4737,69 @@ void main()
 
 	/**
 	 * View
-	 * Provides management and rendering of ejs templates including DOM diffing.
+	 * Template rendering system using EJS (Embedded JavaScript) templates.
+	 * Provides automatic injection of localization helpers and efficient DOM updates.
+	 *
+	 * @class
+	 *
+	 * @example
+	 * // Basic template rendering
+	 * app.view.render(container, `
+	 *     <h1>Welcome <%= username %></h1>
+	 *     <p><%= _lcs('greeting') %></p>
+	 * `, { username: 'John' });
+	 *
+	 * @example
+	 * // With localization helpers
+	 * app.view.render(container, `
+	 *     <h1><%= _lcs('welcome', { name: username }) %></h1>
+	 *     <p>Price: <%= _lcn(price, { style: 'currency', currency: 'USD' }) %></p>
+	 *     <time><%= _lcd(date, { dateStyle: 'long' }) %></time>
+	 * `, { username: 'John', price: 29.99, date: new Date() });
+	 *
+	 * @example
+	 * // Pre-compile templates for performance
+	 * const template = app.view.compile(`<h1><%= title %></h1>`);
+	 * // Later, use compiled template multiple times
+	 * const html1 = template({ title: 'Page 1' });
+	 * const html2 = template({ title: 'Page 2' });
 	 */
 	class View
 	{
 	    /**
-	     * Constructor
-	     * @param {App} appInstance - App reference
+	     * Create a new View instance
+	     *
+	     * @constructor
+	     * @param {App} appInstance - Reference to the parent App instance
 	     */
 	    constructor( appInstance )
 	    {
+	        /**
+	         * Parent app instance
+	         * @type {App}
+	         */
 	        this.app = appInstance;
+
+	        /**
+	         * Global data available to all templates
+	         * @type {Object}
+	         */
 	        this.globalViewData = {};
 	    }
 
 	    /**
-	     * Sets window title
+	     * Set the browser window title
+	     *
 	     * @param {string} title - Title to set
+	     *
+	     * @example
+	     * app.view.setWindowTitle('My App - Dashboard');
+	     *
+	     * @example
+	     * // In state onEnter
+	     * async onEnter() {
+	     *     this.app.view.setWindowTitle(`User Profile - ${userName}`);
+	     * }
 	     */
 	    setWindowTitle( title )
 	    {
@@ -4553,10 +4810,29 @@ void main()
 	    }
 
 	    /**
-	     * Compiles template with given options
-	     * @param {string} template - EJS based template
-	     * @param {object} opts - EJS template options. @see {@link https://ejs.co/#docs}
-	     * @returns {*} - Compiled template function
+	     * Compile an EJS template into a reusable function
+	     * Useful for templates that will be rendered multiple times.
+	     *
+	     * @param {string} template - EJS template string
+	     * @param {object} [opts=null] - EJS compiler options
+	     * @param {boolean} [opts.client=false] - Generate standalone client function
+	     * @param {string} [opts.filename] - Used by cache to key caches
+	     * @param {boolean} [opts.strict=false] - Use strict mode
+	     * @returns {Function} Compiled template function that accepts data object
+	     *
+	     * @see {@link https://ejs.co/#docs}
+	     *
+	     * @example
+	     * // Compile once, use many times
+	     * const userCard = app.view.compile(`
+	     *     <div class="user-card">
+	     *         <h3><%= name %></h3>
+	     *         <p><%= email %></p>
+	     *     </div>
+	     * `);
+	     *
+	     * const html1 = userCard({ name: 'John', email: 'john@example.com' });
+	     * const html2 = userCard({ name: 'Jane', email: 'jane@example.com' });
 	     */
 	    compile( template, opts )
 	    {
@@ -4564,11 +4840,25 @@ void main()
 	    }
 
 	    /**
-	     * Generate HTML from given template string and data
-	     * @param tmpl
-	     * @param data
-	     * @param tmplOptions
-	     * @returns {string} - Generated HTML
+	     * Generate HTML string from template and data without rendering to DOM
+	     *
+	     * @param {string} tmpl - EJS template string
+	     * @param {object} [data={}] - Template data
+	     * @param {object} [tmplOptions=null] - EJS rendering options
+	     * @returns {string} Rendered HTML string
+	     *
+	     * @example
+	     * // Get HTML for manual insertion
+	     * const html = app.view.getHtml(`<h1><%= title %></h1>`, { title: 'Hello' });
+	     * console.log(html); // '<h1>Hello</h1>'
+	     *
+	     * @example
+	     * // Use in AJAX response
+	     * const itemHtml = app.view.getHtml(itemTemplate, itemData);
+	     * fetch('/api/items', {
+	     *     method: 'POST',
+	     *     body: JSON.stringify({ html: itemHtml })
+	     * });
 	     */
 	    getHtml( tmpl, data = {}, tmplOptions = null )
 	    {
@@ -4576,12 +4866,43 @@ void main()
 	    }
 
 	    /**
-	     * Renders template with given data to html container.
+	     * Render template with data directly to a DOM container
+	     * Automatically injects localization helpers (_lcs, _lcn, _lcd) into template data.
 	     *
-	     * @param {HTMLElement|null} container - Container in which template should be rendered.
+	     * @param {HTMLElement} container - Container element to render into
 	     * @param {string} tmpl - EJS template string
-	     * @param {object=} [data={}] - Template data.
-	     * @param {object=} [tmplOptions=null] - EJS template options. @see {@link https://ejs.co/#docs}
+	     * @param {object} [data={}] - Template data variables
+	     * @param {object} [tmplOptions=null] - EJS rendering options
+	     *
+	     * @throws {Error} If container is not an HTMLElement
+	     *
+	     * @example
+	     * // Simple rendering
+	     * app.view.render(this.app.container, `
+	     *     <h1>Hello <%= name %></h1>
+	     * `, { name: 'World' });
+	     *
+	     * @example
+	     * // With loops and conditions
+	     * app.view.render(container, `
+	     *     <ul>
+	     *     <% users.forEach(user => { %>
+	     *         <li><%= user.name %> - <%= user.email %></li>
+	     *     <% }); %>
+	     *     </ul>
+	     *     <% if (users.length === 0) { %>
+	     *         <p>No users found</p>
+	     *     <% } %>
+	     * `, { users: userList });
+	     *
+	     * @example
+	     * // Using localization helpers (auto-injected)
+	     * app.view.render(container, `
+	     *     <h1><%= _lcs('welcome') %></h1>
+	     *     <p><%= _lcs('greeting', { name: userName }) %></p>
+	     *     <span><%= _lcn(price, { style: 'currency', currency: 'EUR' }) %></span>
+	     *     <time><%= _lcd(date, { dateStyle: 'medium' }) %></time>
+	     * `, { userName: 'John', price: 99.99, date: new Date() });
 	     */
 	    render( container, tmpl, data = {}, tmplOptions = null )
 	    {
@@ -4590,9 +4911,23 @@ void main()
 	    }
 
 	    /**
+	     * Render pre-generated HTML string directly to a container
+	     * Uses replaceChildren() for efficient DOM updates.
 	     *
-	     * @param {HTMLElement|null} container - Container in which template should be rendered.
-	     * @param {string} html - HTML string to be rendered
+	     * @param {HTMLElement} container - Container element to render into
+	     * @param {string} html - Pre-generated HTML string
+	     *
+	     * @throws {Error} If container is not an HTMLElement
+	     *
+	     * @example
+	     * // Render pre-generated HTML
+	     * const html = '<h1>Hello</h1><p>World</p>';
+	     * app.view.renderHtml(container, html);
+	     *
+	     * @example
+	     * // Combined with getHtml
+	     * const html = app.view.getHtml(template, data);
+	     * app.view.renderHtml(container, html);
 	     */
 	    renderHtml( container, html )
 	    {
@@ -6476,15 +6811,62 @@ void main()
 	/**
 	 * App
 	 * The App class is the logical core unit of every InfrontJS application.
+	 * It serves as a dependency injection container and lifecycle manager for the framework's core subsystems:
+	 * Router, StateManager, View, and I18n.
+	 *
+	 * @class
+	 * @extends CustomEvents
+	 *
+	 * @example
+	 * // Basic app setup
+	 * const container = document.querySelector('#app');
+	 * const app = new IF.App(container, {
+	 *     app: { title: 'My Application' },
+	 *     router: { mode: 'url' },
+	 *     l18n: { defaultLanguage: 'en' }
+	 * });
+	 *
+	 * // Register states
+	 * app.stateManager.add(HomeState, AboutState, UserState);
+	 *
+	 * // Start the application
+	 * await app.run();
+	 *
+	 * @example
+	 * // Multiple app instances
+	 * const app1 = new IF.App(container1, { app: { id: 'main-app' } });
+	 * const app2 = new IF.App(container2, { app: { id: 'widget-app' } });
+	 *
+	 * // Access by ID
+	 * const mainApp = IF.App.get('main-app');
+	 *
+	 * @example
+	 * // Cleanup when done
+	 * await app.destroy(); // Properly cleans up all resources
 	 */
 	class App extends CustomEvents
 	{
+	    /**
+	     * Global pool of all app instances
+	     * @static
+	     * @type {Object.<string, App>}
+	     */
 	    static POOL = {};
 
 	    /**
+	     * Get an app instance from the global pool by UID
 	     *
-	     * @param {string|null} uid - Get instance by given uid. If no uid is given, the first app from pool is returned.
-	     * @returns {(App|null)}
+	     * @static
+	     * @param {string|null} [uid=null] - Unique identifier of the app. If null, returns the first app in the pool.
+	     * @returns {(App|null)} The app instance or null if not found
+	     *
+	     * @example
+	     * // Get specific app
+	     * const app = IF.App.get('my-app-id');
+	     *
+	     * @example
+	     * // Get first app (useful for single-app setups)
+	     * const app = IF.App.get();
 	     */
 	    static get( uid = null )
 	    {
@@ -6504,11 +6886,56 @@ void main()
 
 	    /**
 	     * Create an app instance
-	     * @param {HTMLElement} [container=document.body] - The root container of the application.
-	     * @param {object=} config - Application configuration object.
-	     * @param {object=} config.app - App configuration.
-	     * @param {string|null} [settings.app.title=null] - App's title, if set it will be set to the title header value.
-	     * @param {string|null} [settings.app.id=null] - Unique id of app instance. If not set, it will be auto generated.
+	     *
+	     * @constructor
+	     * @param {HTMLElement|null} [container=null] - The root container of the application. If null, creates a new <section> element in document.body
+	     * @param {object} [config={}] - Application configuration object
+	     * @param {object} [config.app] - App-level configuration
+	     * @param {string|null} [config.app.id=null] - Unique ID of app instance. Auto-generated if not provided
+	     * @param {string|null} [config.app.title=null] - App's title. If set, updates document.title
+	     * @param {boolean} [config.app.sayHello=true] - Whether to log InfrontJS version to console
+	     * @param {object} [config.l18n] - Internationalization configuration
+	     * @param {string} [config.l18n.defaultLanguage='en'] - Default language code
+	     * @param {object} [config.router] - Router configuration
+	     * @param {boolean} [config.router.isEnabled=true] - Enable/disable routing
+	     * @param {string} [config.router.mode='url'] - Router mode: 'url' (pushState) or 'hash'
+	     * @param {string|null} [config.router.basePath=null] - Base path for subdirectory deployments
+	     * @param {object} [config.stateManager] - State manager configuration
+	     * @param {Function} [config.stateManager.notFoundState] - State class to use for 404 errors
+	     *
+	     * @throws {Error} If not running in browser environment
+	     * @throws {Error} If container is not an HTMLElement
+	     *
+	     * @example
+	     * // Minimal setup with auto-generated container
+	     * const app = new IF.App();
+	     *
+	     * @example
+	     * // Full configuration
+	     * const app = new IF.App(document.querySelector('#app'), {
+	     *     app: {
+	     *         id: 'my-app',
+	     *         title: 'My Application',
+	     *         sayHello: false
+	     *     },
+	     *     router: {
+	     *         mode: 'url',
+	     *         basePath: '/myapp'
+	     *     },
+	     *     l18n: {
+	     *         defaultLanguage: 'de'
+	     *     },
+	     *     stateManager: {
+	     *         notFoundState: Custom404State
+	     *     }
+	     * });
+	     *
+	     * @example
+	     * // Using existing container
+	     * const container = document.createElement('div');
+	     * container.id = 'app-root';
+	     * document.body.appendChild(container);
+	     * const app = new IF.App(container);
 	     */
 	    constructor( container = null, config = {} )
 	    {
@@ -6559,20 +6986,37 @@ void main()
 	        this.dispatchEvent(new CustomEvent( CustomEvents.TYPE.READY ));
 	    }
 
+	    /**
+	     * Initialize internationalization subsystem
+	     * @private
+	     */
 	    initL18n()
 	    {
 	        this.l18n = new I18n( this );
 	    }
+
+	    /**
+	     * Initialize state management subsystem
+	     * @private
+	     */
 	    initStates()
 	    {
 	        this.stateManager = new StateManager( this );
 	    }
 
+	    /**
+	     * Initialize routing subsystem
+	     * @private
+	     */
 	    initRouter()
 	    {
 	        this.router = new Router( this );
 	    }
 
+	    /**
+	     * Initialize view/template rendering subsystem
+	     * @private
+	     */
 	    initView()
 	    {
 	        this.view = new View( this );
@@ -6581,7 +7025,11 @@ void main()
 	    /**
 	     * Get InfrontJS version
 	     *
-	     * @returns {string} - Version string
+	     * @returns {string} Version string (e.g., '1.0.0-rc9')
+	     *
+	     * @example
+	     * const version = app.getVersion();
+	     * console.log('Running InfrontJS', version);
 	     */
 	    getVersion()
 	    {
@@ -6589,12 +7037,32 @@ void main()
 	    }
 
 	    /**
-	     * Run application logic. This activates the InfrontJS application logic.
-	     * Note:
-	     * This is an asynchronous function providing the possibility to e.g. loading assets etc.
+	     * Run application logic and activate routing
+	     * This is an asynchronous function that starts the application lifecycle.
+	     * It enables the router and processes the initial route.
 	     *
-	     * @param {string|null} [route=null] - If route is set, this route is set initially.
+	     * @async
+	     * @param {string|null} [route=null] - Initial route to navigate to. If null, uses current URL
 	     * @returns {Promise<void>}
+	     *
+	     * @example
+	     * // Start with current URL
+	     * await app.run();
+	     *
+	     * @example
+	     * // Start at specific route
+	     * await app.run('/dashboard');
+	     *
+	     * @example
+	     * // Complete startup flow
+	     * const app = new IF.App(container, config);
+	     * app.stateManager.add(HomeState, AboutState);
+	     *
+	     * // Load translations before starting
+	     * await app.l18n.loadTranslations('en', '/locales/en.json');
+	     *
+	     * // Start application
+	     * await app.run('/home');
 	     */
 	    async run( route = null )
 	    {
@@ -6616,8 +7084,28 @@ void main()
 	    }
 
 	    /**
-	     * Destroys InfrontJS application instance
+	     * Destroys InfrontJS application instance and cleans up all resources
+	     * This method properly disposes of all subsystems, removes event listeners,
+	     * cleans up the DOM, and removes the app from the global pool.
+	     *
+	     * @async
 	     * @returns {Promise<void>}
+	     *
+	     * @example
+	     * // Cleanup when app is no longer needed
+	     * await app.destroy();
+	     *
+	     * @example
+	     * // Cleanup before page navigation
+	     * window.addEventListener('beforeunload', async () => {
+	     *     await app.destroy();
+	     * });
+	     *
+	     * @example
+	     * // Switch between apps
+	     * await oldApp.destroy();
+	     * const newApp = new IF.App(container, newConfig);
+	     * await newApp.run();
 	     */
 	    async destroy()
 	    {

@@ -5,13 +5,13 @@ export default {
         {
             format: 'umd',
             name: 'IF',
-            file: 'dist/IF.js',
+            file: 'dist/infrontjs.js',
             indent: '\t'
         },
         // Keep the bundle as an ES module file. Suitable for other bundlers and inclusion as a <script type=module> tag in modern browsers (alias: esm, module).
         {
             format: 'es',
-            file: 'dist/IF.es.js',
+            file: 'dist/infrontjs.esm.js',
             indent: '\t'
         }
         // Refer to: https://betterprogramming.pub/what-are-cjs-amd-umd-esm-system-and-iife-3633a112db62

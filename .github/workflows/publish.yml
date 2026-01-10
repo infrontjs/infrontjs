@@ -2,29 +2,35 @@ name: Publish to NPM
 on:
   release:
     types: [created]
+
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 16.x ]
+        node-version: [20.x]
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies and build 🔧
-        run: npm install && npm run build && npm run generate-docs
+        run: npm ci && npm run build && npm run generate-docs
 
-      - name: Publish package on NPM 📦
+      - name: Publish package on NPM 📦 (OIDC)
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -37,4 +43,3 @@ jobs:
 
       - name: Deploy client with rsync
         run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./apidocs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEST_PATH }}
-

@@ -1,6 +1,6 @@
 {
   "name": "infrontjs",
-  "version": "1.0.0-rca",
+  "version": "1.0.0-rc.2",
   "description": "An AI powered antiframework for pure javascript devs",
   "main": "src/IF.js",
   "type": "module",

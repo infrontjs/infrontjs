@@ -3260,7 +3260,7 @@ void main()
 	    return UrlPattern;
 	}
 
-	const UrlPattern = UP;
+	const UrlPattern = UP();
 
 	/**
 	 * Router for handling routing events (ie. changes of the URL) and resolving and triggering corresponding states.
@@ -3328,7 +3328,8 @@ void main()
 	     */
 	    addRoute( route, stateClass )
 	    {
-	        Helper.trim( route, '/' );
+	        let sRoute = Helper.trim( route, '/' );
+	        sRoute = '/' + sRoute;
 
 	        if ( true === Helper.isClass( stateClass ) )
 	        {
@@ -3340,7 +3341,7 @@ void main()
 	            this._routeActions.push(
 	                {
 	                    "action" : stateClass.ID,
-	                    "route" : new UrlPattern()
+	                    "route" : new UrlPattern( sRoute )
 	                }
 	            );
 	        }
@@ -6787,7 +6788,7 @@ void main()
 	    }
 	}
 
-	const VERSION = '1.0.0-rc9';
+	const VERSION = '1.0.1';
 
 	const DEFAULT_CONFIG = {
 	    "app" : {

@@ -4,7 +4,7 @@ import { StateManager } from "./StateManager.js";
 import { CustomEvents } from "./CustomEvents.js";
 import { UP } from "../_external/url-pattern/UrlPattern.js";
 
-const UrlPattern = UP;
+const UrlPattern = UP();
 
 /**
  * Router for handling routing events (ie. changes of the URL) and resolving and triggering corresponding states.
